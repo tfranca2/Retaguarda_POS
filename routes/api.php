@@ -31,16 +31,9 @@ Route::group(['middleware' => 'auth:api'], function( $router ){
 
 	Route::get('perfil', 'PerfilController@getAll');
 	Route::get('perfil/{id}', 'PerfilController@show');
-	// Route::post('perfil', 'PerfilController@store');
-	// Route::put('perfil/{id}', 'PerfilController@update');
-	// Route::delete('perfil/{id}', 'PerfilController@destroy');
 
 	Route::get('empresa', 'EmpresaController@getAll');
 	Route::get('empresa/{id}', 'EmpresaController@show');
-	// Route::post('empresa', 'EmpresaController@store');
-	// Route::put('empresa/{id}', 'EmpresaController@update');
-	// Route::delete('empresa/{id}', 'EmpresaController@destroy');
-
 
 	Route::get('distribuidor', 'DistribuidorController@getAll');
 	Route::get('distribuidor/{id}', 'DistribuidorController@show');

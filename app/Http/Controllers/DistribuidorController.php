@@ -44,8 +44,8 @@ class DistribuidorController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nome'         => 'required|string|max:255',
-            'email'        => 'required|email|max:255|unique:distribuidor,email',
-            // 'cpf'          => 'required|string|max:255|unique:distribuidor,cpf',
+            'email'        => 'required|email|max:255|unique:distribuidores,email',
+            // 'cpf'          => 'required|string|max:255|unique:distribuidores,cpf',
             'latitude'     => 'required|string|max:255',
             'longitude'    => 'required|string|max:255',
         ]);
@@ -104,8 +104,8 @@ class DistribuidorController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nome'         => 'required|string|max:255',
-            'email'        => 'required|email|max:255|unique:distribuidor,email,'. $id,
-            // 'cpf'          => 'required|string|max:255|unique:distribuidor,cpf,'. $id,
+            'email'        => 'required|email|max:255|unique:distribuidores,email,'. $id,
+            // 'cpf'          => 'required|string|max:255|unique:distribuidores,cpf,'. $id,
             'latitude'     => 'required|string|max:255',
             'longitude'    => 'required|string|max:255',
         ]);

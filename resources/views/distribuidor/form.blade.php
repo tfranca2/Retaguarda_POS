@@ -62,14 +62,25 @@
 
 					<div class="row">
 
-						<div class="col-md-6 p-lr-o">
+						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">CPF</label>
 								<input type="text" class="form-control" name="cpf" placeholder="CPF" value="{{ (isset($distribuidor)? Helper::formatCpfCnpj($distribuidor->cpf):'') }}" data-parsley-cpf="true" data-parsley-required="true" required="" >
 							</div>
 						</div>
-
-						<div class="col-md-5 p-lr-o">
+						<div class="col-md-3 p-lr-o">
+							<div class="form-group">
+								<label for="">RG</label>
+								<input type="text" class="form-control" name="rg" placeholder="RG" value="{{ (isset($distribuidor)?$distribuidor->rg:'') }}" data-parsley-required="true" required="" >
+							</div>
+						</div>
+						<div class="col-md-3 p-lr-o">
+							<div class="form-group">
+								<label for="">Área</label>
+								<input type="text" class="form-control" name="area" placeholder="Área" value="{{ (isset($distribuidor)?$distribuidor->area:'') }}" data-parsley-required="true" required="" >
+							</div>
+						</div>
+						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">Telefone</label>
 								<input type="text" class="form-control telefone" name="telefone" placeholder="Telefone" value="{{ (isset($distribuidor)?$distribuidor->telefone:'') }}" data-parsley-required="true" required="" >
@@ -86,30 +97,6 @@
 									checked
 								@endif
 								>
-							</div>
-						</div>
-
-					</div>
-					<div class="row">
-						
-						<div class="col-md-4 p-lr-o">
-							<div class="form-group">
-								<label for="">Condomínio</label>
-								<input type="text" class="form-control" name="condominio" value="{{ ((isset($distribuidor))?$distribuidor->condominio:'') }}" placeholder="Condomínio" data-parsley-required="true" required="" >
-							</div>
-						</div>
-
-						<div class="col-md-4 p-lr-o">
-							<div class="form-group">
-								<label for="">Bloco</label>
-								<input type="text" class="form-control" name="bloco" value="{{ ((isset($distribuidor))?$distribuidor->bloco:'') }}" placeholder="Bloco" >
-							</div>
-						</div>
-
-						<div class="col-md-4 p-lr-o">
-							<div class="form-group">
-								<label for="">Unidade</label>
-								<input type="text" class="form-control" name="unidade" value="{{ ((isset($distribuidor))?$distribuidor->unidade:'') }}" placeholder="Unidade" data-parsley-required="true" required="" >
 							</div>
 						</div>
 

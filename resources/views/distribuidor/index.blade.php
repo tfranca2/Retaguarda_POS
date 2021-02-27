@@ -24,7 +24,7 @@
 							<tr>
 								<th>Imagem</th>
 								<th>Nome</th>
-								<th>Condomínio</th>
+								<th>Área</th>
 								<th>Ativo</th>
 								<th>Ações</th>
 							</tr>
@@ -42,7 +42,7 @@
 										</div>
 									</td>
 									<td>{{ $distribuidor->nome }}</td>
-									<td>{{ $distribuidor->condominio }}</td>
+									<td>{{ $distribuidor->area }}</td>
 									<td class="text-center">
 									@if( $distribuidor->deleted_at )
 										<i class="fa fa-times" aria-hidden="true"></i>
