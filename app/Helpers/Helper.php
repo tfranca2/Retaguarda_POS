@@ -13,12 +13,8 @@ class Helper
 	        "usuarios" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	        "perfis" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	        "empresas" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "servicos" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	        "configuracoes"	=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "prestadores" 	=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "clientes" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "mural" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "faq" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
+	        "distribuidores"=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	    );
 	}
 

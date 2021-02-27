@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Contratacaofoto extends Migration
+class Clientestodistribuidores extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,7 @@ class Contratacaofoto extends Migration
      */
     public function up()
     {
-        Schema::table('contratacao', function (Blueprint $table) {
-            $table->text('fotos')->nullable();
-        });
+        Schema::rename('cliente', 'distribuidores');
     }
 
     /**
@@ -25,8 +23,6 @@ class Contratacaofoto extends Migration
      */
     public function down()
     {
-        Schema::table('contratacao', function (Blueprint $table) {
-            $table->dropColumn('fotos');
-        });
+        Schema::rename('distribuidores', 'cliente');
     }
 }

@@ -3,49 +3,49 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Cliente;
+use App\Distribuidor;
 use Session;
 use Validator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\Helper;
 
-class ClienteController extends Controller
+class DistribuidorController extends Controller
 {
     
 
     public function getAll( Request $request ){
 
-        $clientes = Cliente::orderBy('nome')->paginate(10);
-        return response()->json( $clientes, 200 );
+        $distribuidores = Distribuidor::orderBy('nome')->paginate(10);
+        return response()->json( $distribuidores, 200 );
 
     }
 
     public function index( Request $request ){
 
-    	$clientes = Cliente::orderBy('nome')->paginate(10);
-    	return view('cliente.index',[ 'clientes' => $clientes ]);
+    	$distribuidores = Distribuidor::orderBy('nome')->paginate(10);
+    	return view('distribuidor.index',[ 'distribuidores' => $distribuidores ]);
 
     }
 
     public function create( Request $request ){
 
-    	return view('cliente.form');
+    	return view('distribuidor.form');
 
     }
     
     public function store( Request $request ){
 
         if( $request->has('email') ){
-            $cliente = Cliente::where('email',$request->email)->first();
-            if( $cliente )
-                return Self::update( $request, $cliente->id );
+            $distribuidor = Distribuidor::where('email',$request->email)->first();
+            if( $distribuidor )
+                return Self::update( $request, $distribuidor->id );
         }
 
         $validator = Validator::make($request->all(), [
             'nome'         => 'required|string|max:255',
-            'email'        => 'required|email|max:255|unique:cliente,email',
-            // 'cpf'          => 'required|string|max:255|unique:cliente,cpf',
+            'email'        => 'required|email|max:255|unique:distribuidor,email',
+            // 'cpf'          => 'required|string|max:255|unique:distribuidor,cpf',
             'latitude'     => 'required|string|max:255',
             'longitude'    => 'required|string|max:255',
         ]);
@@ -56,26 +56,26 @@ class ClienteController extends Controller
 
         $inputs = Input::except('id', '_method', '_token', 'ativo');
         foreach( $inputs as $key => $value ){
-            $cliente[$key] = $value;
+            $distribuidor[$key] = $value;
         }
 
         if( $request->has('ativo') )
-            $cliente['deleted_at'] = null;
+            $distribuidor['deleted_at'] = null;
         else 
-            $cliente['deleted_at'] = date('Y-m-d H:i:s');
+            $distribuidor['deleted_at'] = date('Y-m-d H:i:s');
 
-        $cliente['cpf'] = Helper::onlyNumbers( $request->cpf  );
+        $distribuidor['cpf'] = Helper::onlyNumbers( $request->cpf  );
 
         // UPLOAD IMAGEM
         if( $request->has('imagem') ){
             $imageName = \Str::random(20). time() .'.'. request()->imagem->getClientOriginalExtension();
             request()->imagem->move( public_path('images'), $imageName );
-            $cliente['imagem'] = $imageName;
+            $distribuidor['imagem'] = $imageName;
         }
 
-        $cliente = Cliente::create($cliente);
+        $distribuidor = Distribuidor::create($distribuidor);
 
-        return response()->json([ 'message' => 'Criado com sucesso', 'redirectURL' => url('/clientes'), 'cliente' => $cliente ], 201 );
+        return response()->json([ 'message' => 'Criado com sucesso', 'redirectURL' => url('/distribuidores'), 'distribuidor' => $distribuidor ], 201 );
 
     }
     
@@ -83,7 +83,7 @@ class ClienteController extends Controller
     
         try {
     
-        	return response()->json( Cliente::findOrFail($id) );
+        	return response()->json( Distribuidor::findOrFail($id) );
     
         } catch( \Exception $e ){
             return response()->json([ 'error' => $e->getMessage() ], 404 );
@@ -93,19 +93,19 @@ class ClienteController extends Controller
     
     public function edit( Request $request, $id ){
 
-    	$cliente = Cliente::findOrFail($id);
-    	return view('cliente.form',[ 'cliente' => $cliente ]);
+    	$distribuidor = Distribuidor::findOrFail($id);
+    	return view('distribuidor.form',[ 'distribuidor' => $distribuidor ]);
 
     }
     
     public function update( Request $request, $id ){
 
-        $cliente = Cliente::find($id);
+        $distribuidor = Distribuidor::find($id);
 
         $validator = Validator::make($request->all(), [
             'nome'         => 'required|string|max:255',
-            'email'        => 'required|email|max:255|unique:cliente,email,'. $id,
-            // 'cpf'          => 'required|string|max:255|unique:cliente,cpf,'. $id,
+            'email'        => 'required|email|max:255|unique:distribuidor,email,'. $id,
+            // 'cpf'          => 'required|string|max:255|unique:distribuidor,cpf,'. $id,
             'latitude'     => 'required|string|max:255',
             'longitude'    => 'required|string|max:255',
         ]);
@@ -117,36 +117,36 @@ class ClienteController extends Controller
         $inputs = Input::except('id', '_method', '_token', 'ativo', 'imagem');
 
         if( $request->has('ativo') )
-        	$cliente->deleted_at = null;
+        	$distribuidor->deleted_at = null;
         else 
-        	$cliente->deleted_at = date('Y-m-d H:i:s');
+        	$distribuidor->deleted_at = date('Y-m-d H:i:s');
 
         foreach( $inputs as $key => $value ){
-            $cliente->$key = $value;
+            $distribuidor->$key = $value;
         }
 
         if( $request->has('password') and strlen( $request->password )>1 )
-            $cliente->password = Hash::make( $request->password );
+            $distribuidor->password = Hash::make( $request->password );
 
-        $cliente->cpf = Helper::onlyNumbers( $request->cpf  );
+        $distribuidor->cpf = Helper::onlyNumbers( $request->cpf  );
 
         // UPLOAD IMAGEM
         if( $request->has('imagem') ){
             $imageName = \Str::random(20). time() .'.'. request()->imagem->getClientOriginalExtension();
             request()->imagem->move( public_path('images'), $imageName );
-            $cliente->imagem = $imageName;
+            $distribuidor->imagem = $imageName;
         }
 
-        $cliente->save();
+        $distribuidor->save();
 
-        return response()->json([ 'message' => 'Atualizado com sucesso', 'redirectURL' => url('/clientes'), 'cliente' => $cliente ], 200 );
+        return response()->json([ 'message' => 'Atualizado com sucesso', 'redirectURL' => url('/distribuidores'), 'distribuidor' => $distribuidor ], 200 );
 
     }
     
     public function destroy( Request $request, $id ){
 
-    	$cliente = Cliente::findOrFail($id);
-        $cliente->delete();
+    	$distribuidor = Distribuidor::findOrFail($id);
+        $distribuidor->delete();
 
         return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
     }

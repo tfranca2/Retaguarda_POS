@@ -26,46 +26,13 @@
         <div class="col-md-3"></div>
         <div class="col-md-3">
             <div class="panel short-states bg-1" style="background: {{ \Auth::user()->empresa()->menu_background }};">
-                <div class="pull-right state-icon"><i class="fa fa-home"></i></div>
+                <div class="pull-right state-icon"><i class="fa fa-money"></i></div>
                 <div class="panel-body">
-                    <h1>{{ $clientes }}</h1>
-                    <strong class="text-uppercase">Clientes</strong>
+                    <h1>{{ $distribuidores }}</h1>
+                    <strong class="text-uppercase">Distribuidores</strong>
                 </div>
             </div>
         </div>
-        <!-- <div class="col-md-3">
-            <div class="panel short-states bg-2" style="background: {{ \Auth::user()->empresa()->menu_background }};">
-                <div class="pull-right state-icon"><i class="fa fa-address-card"></i></div>
-                <div class="panel-body">
-                    <h1 class="text-center">{{ $prestadores }}</h1>
-                    <strong class="text-uppercase">Prestadores de serviço</strong>
-                </div>
-            </div>
-        </div> -->
-    </div>
-    <div class="row">
-        <!-- <div class="col-md-6">
-            <div class="panel short-states ">
-                <div class="pull-right state-icon"><i class="fa fa-line-chart"></i></div>
-                <div class="panel-body">
-                    <h1>R$ {{ $faturamento }}</h1>
-                    <strong class="text-uppercase">Faturamento Anual</strong>
-                    <br><br>
-                    <canvas id="faturamento" style="height: 150px;"></canvas>
-                </div>
-            </div>
-        </div> -->
-        <!-- <div class="col-md-6">
-            <div class="panel short-states ">
-                <div class="pull-right state-icon"><i class="fa fa-handshake-o"></i></div>
-                <div class="panel-body">
-                    <h1>{{ $contratacoes }}</h1>
-                    <strong class="text-uppercase">Contratações <small>(Últimos 6 Meses)</small></strong>
-                    <br><br>
-                    <canvas id="contratacoes" style="height: 150px;"></canvas>
-                </div>
-            </div>
-        </div> -->
     </div>
     @else
     <div class="row">
@@ -114,63 +81,4 @@
         }
     }
 </style>
-
-<script type="text/javascript">
-
-    $(document).ready(function(){
-    
-        new Chart(document.getElementById("faturamento"), {
-          type: 'bar',
-          data: <?php echo $graficofaturamento; ?>,
-          options: {
-            title: {
-              display: false,
-            }, 
-            legend: {
-              position: 'bottom',
-              display: false,
-            }, 
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            tooltips: {
-              callbacks: {
-                label: function(tooltipItems, data) { 
-                  return ': R$ '+tooltipItems.yLabel;
-                }
-              }
-            },
-          }
-        });
-
-        new Chart(document.getElementById("contratacoes"), {
-          type: 'bar',
-          data: <?php echo $graficocontratacoes; ?>,
-          options: {
-            title: {
-              display: false,
-            }, 
-            legend: {
-              position: 'bottom',
-              display: false,
-            }, 
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-                        // stepSize: 1,
-                    }
-                }]
-            },
-          }
-        });
-
-    });
-
-</script>
-
 @endsection

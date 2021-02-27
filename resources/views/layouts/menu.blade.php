@@ -16,8 +16,8 @@
             </ul>
         </li>
         @endif
-        @if( Helper::temPermissao('clientes-listar') )
-        <li><a href="<?php echo url('/'); ?>/clientes"><i class="fa fa-home"></i><span>Clientes</span></a></li>
+        @if( Helper::temPermissao('distribuidores-listar') )
+        <li><a href="<?php echo url('/'); ?>/distribuidores"><i class="fa fa-money"></i><span>Distribuidores</span></a></li>
         @endif
         @if( Helper::temPermissao('configuracoes-listar') )
         <li><a href="<?php echo url('/'); ?>/configuracoes"><i class="fa fa-cogs"></i><span>Configurações</span></a></li>
