@@ -2,60 +2,6 @@
 @extends('layouts.app')
 @section('content')
 
-
-<div class="desconto" style="display: none;">
-	<div class="row">
-		<div class="col-md-3">
-			<div class="form-group">
-				<label for="">Tipo de serviço</label>
-				<select name="servico_id[]" class="form-control" required="">
-					<option></option>
-					@forelse( $servicos as $servico )
-					<option value="{{ $servico->id }}">{{ $servico->nome }}</option>
-					@empty
-					<option>Sem itens para listar</option>
-					@endforelse
-				</select>
-			</div>
-		</div>
-		<div class="col-md-2">
-			<div class="form-group">
-				<label for="">Dia da semana</label>
-				<select name="diasemana[]" class="form-control">
-					<option value=""></option>
-					<option value="domingo">Domingo</option>
-					<option value="segunda">Segunda</option>
-					<option value="terca">Terça</option>
-					<option value="quarta">Quarta</option>
-					<option value="quinta">Quinta</option>
-					<option value="sexta">Sexta</option>
-					<option value="sabado">Sábado</option>
-				</select>
-			</div>
-		</div>
-		<div class="col-md-2">
-			<label for="">Início</label>
-			<input type="time" class="form-control" name="inicio[]">
-		</div>
-		<div class="col-md-2">
-			<label for="">Fim</label>
-			<input type="time" class="form-control" name="fim[]">
-		</div>
-		<div class="col-md-2">
-			<div class="form-group">
-				<label for="">Desconto %</label>
-				<input type="text" class="form-control desc" name="desconto[]" >
-			</div>
-		</div>
-		<div class="col-md-1">
-			<div class="form-group">
-				<label for=""><br></label><br>
-				<a href="#" class="btn btn-danger remove-desconto" title="Remover"><i class="fa fa-minus"></i></a>
-			</div>
-		</div>
-	</div>
-</div>
-
 <div class="row">
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">

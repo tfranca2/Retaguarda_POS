@@ -10,7 +10,6 @@ use App\Helpers\Helper;
 use Auth;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Storage;
-use App\Servico;
 
 class EmpresaController extends Controller
 {
@@ -30,10 +29,7 @@ class EmpresaController extends Controller
     }
 
     public function create( Request $request ){
-
-        $servicos = Servico::All();
-    	return view('empresa.form',['servicos'=>$servicos]);
-
+    	return view('empresa.form');
     }
     
     public function store( Request $request ){
@@ -102,9 +98,7 @@ class EmpresaController extends Controller
     public function edit( Request $request, $id ){
 
         $empresa = Empresa::findOrFail($id);
-        $servicos = Servico::All();
-
-    	return view('empresa.form',[ 'empresa' => $empresa, 'servicos' => $servicos ]);
+    	return view('empresa.form',[ 'empresa' => $empresa ]);
 
     }
     
@@ -121,7 +115,7 @@ class EmpresaController extends Controller
 
         $empresa = Empresa::find($id);
 
-        $inputs = Input::except('id', '_method', '_token', 'ativo', 'main_logo', 'favicon', 'menu_logo', 'contracted_menu_logo', 'servico_id', 'diasemana', 'inicio', 'fim', 'desconto' );
+        $inputs = Input::except('id', '_method', '_token', 'ativo', 'main_logo', 'favicon', 'menu_logo', 'contracted_menu_logo' );
         foreach( $inputs as $key => $value ){
             $empresa->$key = $value;
         }
@@ -132,19 +126,6 @@ class EmpresaController extends Controller
         	$empresa->deleted_at = date('Y-m-d H:i:s');
 
         $empresa->cnpj = Helper::onlyNumbers( $request->cnpj  );
-
-        if( $request->has('servico_id') ){
-            foreach( $request->servico_id as $key => $servico ){
-                $desconto[] = array( 
-                    'servico_id' => $servico, 
-                    'diasemana' => $request->diasemana[$key], 
-                    'inicio' => $request->inicio[$key], 
-                    'fim' => $request->fim[$key], 
-                    'desconto' => $request->desconto[$key], 
-                );
-            }
-            $empresa->descontos = json_encode( $desconto );
-        }
 
         // UPLOAD LOGOS
         if( $request->has('main_logo') ){
