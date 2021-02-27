@@ -1,0 +1,16 @@
+
+.form-control.parsley-error {
+    color: #ff1a1a;
+	background: #F8D2D2;
+}
+
+ul.parsley-errors-list {
+    color: #ff1a1a;
+	padding-left: 0;
+}
+
+ul.parsley-errors-list li {
+    margin-top: 5px;
+    list-style: none;
+}
+

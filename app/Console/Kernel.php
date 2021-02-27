@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        // Commands\EmailCron::class,
+        Commands\AgendamentoCron::class,
+        Commands\PagseguroCron::class,
     ];
 
     /**
@@ -24,7 +26,18 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+
+        // VERIFICA A FILA E DISPARA OS EMAILS
+        // $schedule->command('email:cron')->appendOutputTo( storage_path('logs/email-'.date('Y-m-d').'.log') );
+
+        // ALERTA O ADMIN DOS AGENDAMENTOS SEM PRESTADOR
+        $schedule->command('agendamento:cron');
+
+
+        // VERIFICA DIARIAMENTE OS PAGAMENTOS NA API DO PAGSEGURO
+        $schedule->command('pagseguro:cron')
+                ->dailyAt('00:00')
+                ->appendOutputTo( storage_path('logs/pagseguro.log') );
     }
 
     /**
