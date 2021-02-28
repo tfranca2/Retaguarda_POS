@@ -8,6 +8,8 @@
 				{{ ((isset($menu))?'Editar':'Novo') }} menu
 				<div class="pull-right">
 					<div class="btn-group">
+						@if( Helper::temPermissao('menus-listar') )
+						@endif
 						<a href="<?php echo url('/menus'); ?>" class="btn btn-info btn-xs"><span class="fa fa-list"></span> Lista</a>
 					</div>
 				</div>

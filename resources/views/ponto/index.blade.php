@@ -5,12 +5,12 @@
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">
 			<div class="panel-heading">
-				menus
+				pontos
 				<div class="pull-right">
 					<div class="btn-group">
-						@if( Helper::temPermissao('menus-incluir') )
+						@if( Helper::temPermissao('pontos-incluir') )
+						<a href="<?php echo url('/'); ?>/pontos/create" class="btn btn-info btn-xs"><span class="fa fa-plus"></span> Novo</a>
 						@endif
-						<a href="<?php echo url('/'); ?>/menus/create" class="btn btn-info btn-xs"><span class="fa fa-plus"></span> Novo</a>
 					</div>
 				</div>
 			</div>
@@ -19,26 +19,24 @@
 					<table id="basic-datatables" class="table table-striped table-bordered">
 						<thead>
 							<tr>
-								<th>Menu</th>
-								<th>Link</th>
+								<th>Nome</th>
 								<th>Ações</th>
 							</tr>
 						</thead>
 						<tbody>
-							@forelse( $menus as $menu )
+							@forelse( $pontos as $ponto )
 								<tr>
-									<td>@if( $menu->parent )&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@endif <i class="{{ $menu->icon }}"></i> {{ $menu->label }}</td>
-									<td>{{ $menu->link }}</td>
+									<td>{{ $ponto->nome }}</td>
 									<td class="text-center">
-										@if( Helper::temPermissao('menus-editar') )
+										@if( Helper::temPermissao('pontos-editar') )
+										<a href="{{ url('/pontos/'.$ponto->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
 										@endif
-										<a href="{{ url('/menus/'.$menu->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
-										@if( Helper::temPermissao('menus-excluir') )
-										@endif
-										<form action="{{url('/menus/'.$menu->id)}}" method="POST" style="display: inline-block;">
+										@if( Helper::temPermissao('pontos-excluir') )
+										<form action="{{url('/pontos/'.$ponto->id)}}" method="POST" style="display: inline-block;">
 											@method('DELETE') @csrf
 											<button type="submit" class="btn btn-danger form-delete" title="Apagar"><i class="fa fa-trash" aria-hidden="true"></i></button>
 										</form>
+										@endif
 									</td>
 								</tr>
 							@empty
@@ -47,7 +45,7 @@
 						</tbody>
 					</table>
 				</div>
-				{{ $menus->links() }}
+				{{ $pontos->links() }}
 			</div>
 		</div>
 	</div>
