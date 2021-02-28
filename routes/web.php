@@ -36,5 +36,6 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('cidades', 'CidadeController');
 	Route::resource('bairros', 'BairroController');
 	Route::resource('pontos', 'PontoController');
+	Route::resource('etapas', 'EtapaController');
 
 });
