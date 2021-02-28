@@ -32,6 +32,7 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('menus', 'MenuController');
 
 	Route::resource('distribuidores', 'DistribuidorController');
+	Route::resource('matrizes', 'MatrizController');
 	Route::resource('cidades', 'CidadeController');
 	Route::resource('bairros', 'BairroController');
 	Route::resource('pontos', 'PontoController');
