@@ -10,15 +10,15 @@ class Helper
 
 	public static function grupos(){
 	    return array(
+	        "empresas" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	        "usuarios" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	        "perfis" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "empresas" 		=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	        "configuracoes"	=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
-	        "distribuidores"=> [ 'listar', 'incluir', 'editar', 'excluir', 'gerenciar' ],
 	    );
 	}
 
     public static function temPermissao($role){
+    	if(!$role) return true;
     	if( Auth::user()->permissions()->where(['role'=>$role])->first() )
 			return true;
 		return false;

@@ -1,4 +1,15 @@
-<?php use App\Helpers; ?>
+<?php 
+
+use App\Helpers; 
+use App\Menu; 
+
+$grupos = Helper::grupos();
+$menus = Menu::orderBy('label')->get()->pluck('label')->toArray();
+foreach ( $menus as $menu ){
+	$grupos[strtolower(Helper::sanitizeString($menu))] = ['listar','incluir','editar','excluir','gerenciar'];
+}
+
+?>
 @extends('layouts.app')
 @section('content')
 <div class="row">
@@ -46,13 +57,13 @@
 									<tr>
 										<th></th>
 										<th>Módulo</th>
-										@foreach( array_values( Helper::grupos()[array_key_first( Helper::grupos() )] ) as $permissao )
+										@foreach( array_values( $grupos[array_key_first( Helper::grupos() )] ) as $permissao )
 										<th><label class="checkbox-inline i-checks" title="Marcar todos"><input type="checkbox" class="all" onclick="checkAll(this)" data-permission="{{$permissao}}"><i></i></label> {{$permissao}}</th>
 										@endforeach
 									</tr>
 								</thead>
 								<tbody>
-									<?php foreach( Helper::grupos() as $key => $permissao ): ?>
+									<?php foreach( $grupos as $key => $permissao ): ?>
 								    <tr>
 								        <td>
 								        	<label class="checkbox-inline i-checks" title="Marcar todos"><input type="checkbox" class="all" onclick="checkAll(this)" data-module="{{ $key }}"><i></i></label>

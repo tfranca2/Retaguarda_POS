@@ -29,6 +29,8 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::get('/configuracoes', 'EmpresaController@configuracoes');
 	Route::resource('empresas', 'EmpresaController');
 
+	Route::resource('menus', 'MenuController');
+
 	Route::resource('distribuidores', 'DistribuidorController');
 
 });
