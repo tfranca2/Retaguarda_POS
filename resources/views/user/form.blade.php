@@ -70,7 +70,7 @@
 								<input type="text" class="form-control" name="cpf" placeholder="CPF" value="{{ (isset($user)? Helper::formatCpfCnpj($user->cpf):'') }}" data-parsley-cpf="true" data-parsley-required="true" required="" >
 							</div>
 						</div>
-	
+						@if( Helper::temPermissao('usuarios-gerenciar') and isset($user) and $user->id != Auth::user()->id )
 						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">Ativo?</label><br>
@@ -83,6 +83,7 @@
 								>
 							</div>
 						</div>
+						@endif
 
 					</div>
 					<div class="row">
