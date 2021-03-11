@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Cidade;
 use App\Bairro;
+use App\Estado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
