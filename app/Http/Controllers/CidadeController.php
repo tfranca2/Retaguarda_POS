@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Cidade;
+use App\Bairro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -25,6 +26,8 @@ class CidadeController extends Controller
     
     public function store( Request $request ){
         $cidade = Cidade::create( Input::except( 'id', '_method', '_token' ) );
+        $bairro = Bairro::create([ 'nome' => 'Centro', 'cidade_id' => $cidade->id ]);
+        // INSERT INTO bairros ( nome, cidade_id ) SELECT 'Centro', cidades.id FROM cidades WHERE cidades.id NOT IN ( SELECT DISTINCT cidade_id FROM bairros );
         return response()->json([ 
             'message' => 'Criado com sucesso', 
             'redirectURL' => url('/cidades'), 
