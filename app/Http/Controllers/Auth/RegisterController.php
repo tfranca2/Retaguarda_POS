@@ -7,6 +7,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+<<<<<<< HEAD
+=======
+use Illuminate\Support\Facades\Redirect;
+>>>>>>> 1d91ff8bc737758845fc134f2119c1a3d8c9e294
 
 class RegisterController extends Controller
 {
@@ -37,7 +41,12 @@ class RegisterController extends Controller
      */
     public function __construct()
     {
+<<<<<<< HEAD
         $this->middleware('guest');
+=======
+        // $this->middleware('guest');
+        Redirect::to('/')->send();
+>>>>>>> 1d91ff8bc737758845fc134f2119c1a3d8c9e294
     }
 
     /**
