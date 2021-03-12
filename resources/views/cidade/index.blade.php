@@ -20,6 +20,7 @@
 						<thead>
 							<tr>
 								<th>Nome</th>
+								<th>Estado</th>
 								<th>População</th>
 								<th>Ações</th>
 							</tr>
@@ -27,7 +28,11 @@
 						<tbody>
 							@forelse( $cidades as $cidade )
 								<tr>
+									@php
+									$estado = $cidade->estado()->first();
+									@endphp
 									<td>{{ $cidade->nome }}</td>
+									<td>{{ $estado->nome }}</td>
 									<td>{{ $cidade->populacao }}</td>
 									<td class="text-center">
 										@if( Helper::temPermissao('cidades-editar') )

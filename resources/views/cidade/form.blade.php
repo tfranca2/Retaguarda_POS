@@ -29,7 +29,20 @@
 								<input type="text" class="form-control" name="nome" value="{{(isset($cidade) and $cidade->nome)?$cidade->nome:''}}">
 							</div>
 						</div>
-						<div class="col-md-6 p-lr-o">
+						<div class="col-md-4 p-lr-o">
+							<div class="form-group">
+								<label for="">Estado</label>
+								<select name="estado_id" class="form-control select2">
+									<option value="">Selecione</option>
+									@forelse( $estados as $estado )
+									<option value="{{$estado->id}}" @if( isset($cidade) and $cidade->estado_id == $estado->id ) selected="selected" @endif >{{$estado->nome}}</option>
+									@empty
+									<option value="">Nada por aqui</option>
+									@endforelse
+								</select>
+							</div>
+						</div>
+						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">População</label>
 								<input type="text" class="form-control" name="populacao" value="{{(isset($cidade) and $cidade->populacao)?$cidade->populacao:''}}">

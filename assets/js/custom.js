@@ -1,7 +1,27 @@
 $(document).ready(function(){
 
-    $('.select2').select2();
+    $('.select2').select2({language: "pt-BR"});
     // $('.tags').tagsinput();
+
+    $('.select2CidadeAjax').select2({
+        minimumInputLength: 3,
+        language: "pt-BR",
+        ajax: {
+            url: base_url+"/search/cidades",
+            dataType: 'json',
+            type: "GET",
+            processResults: function (data) {
+                return {
+                    results: $.map(data, function (item) {
+                        return {
+                            text: item.name,
+                            id: item.id,
+                        }
+                    })
+                };
+            },
+        }
+    });
 
 });
 

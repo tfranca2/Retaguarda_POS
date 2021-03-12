@@ -258,8 +258,9 @@
         <script src="<?php echo url('/'); ?>/assets/js/tagsinput.js"></script>
         <link href="<?php echo url('/'); ?>/assets/css/tagsinput.css" rel="stylesheet" />
 
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+        <link href="<?php echo url('/'); ?>/assets/css//select2.min.css" rel="stylesheet" />
+        <script src="<?php echo url('/'); ?>/assets/js/select2.min.js"></script>
+        <script src="<?php echo url('/'); ?>/assets/js/i18n/pt-BR.js"></script>
 
         <script>
             var base_url = "{{ url('/') }}";
@@ -267,6 +268,8 @@
         </script>
 
         <script src="{{asset('assets/js/custom.js')}}"></script>
+
+        @yield('scripts')
 
     </body>
 </html>
