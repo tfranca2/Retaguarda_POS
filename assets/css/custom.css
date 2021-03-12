@@ -1,0 +1,124 @@
+
+.form-control.parsley-error {
+    color: #ff1a1a;
+	background: #F8D2D2;
+}
+
+ul.parsley-errors-list {
+    color: #ff1a1a;
+	padding-left: 0;
+}
+
+ul.parsley-errors-list li {
+    margin-top: 5px;
+    list-style: none;
+}
+
+.img_perfil {
+	max-width: 30px !important;
+	margin-top: -5px;
+	border-radius: 2em;
+}
+
+.p-0 {
+	padding: 0;
+}
+
+.form-group img {
+	display: block;
+	margin: 15px auto;
+	max-height: 80px;
+}
+
+.toast-message ul {
+	padding-left: 20px;
+	margin-bottom: 0px;
+}
+
+.select2-container .select2-selection--single {
+	height: 34px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	padding-top: 2px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 30px !important;
+}
+
+#filter .row {
+	padding-top: 12px; 
+	background: #f9f9f9;
+}
+
+.customfile {
+	display: inline-block;
+	width: 100%;
+	background: #eeeeee;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	padding: 2px 5px;
+	height: 34px;
+	overflow: hidden;
+}
+.customfile input {
+	float: left;
+	display: none;
+}
+.customfile label {
+	float: right;
+	margin: -3px -6px;
+	border-radius: 0 5px 5px 0;
+}
+.customfile .file_name {
+	display: inline-block;
+    width: calc( 100% - 105px );
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.customfile .parsley-errors-list {
+	position: absolute;
+	margin-top: 30px;
+}
+
+.bootstrap-tagsinput .badge {
+    margin: 2px 1px !important;
+}
+
+.bootstrap-tagsinput .badge [data-role="remove"] { 
+	margin-left: 3px !important;
+}
+.bootstrap-tagsinput .badge [data-role="remove"]::after { 
+	padding: 0px 5px !important;
+}
+
+input[type="date"].form-control, 
+input[type="time"].form-control, 
+input[type="datetime-local"].form-control, 
+input[type="month"].form-control {
+	line-height: 15px !important;
+	padding: 6px 10px !important;
+}
+
+.disabled {
+	background: #eee !important;
+}
+
+.ui-header .navbar-brand { 
+	max-width: 200px;
+	float: none;
+	display: block !important;
+	margin: auto;
+}
+
+.imgshell {
+	width: 80px;
+	height: 80px;
+	margin: auto;
+	border-radius: 5em;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+}
