@@ -16,7 +16,7 @@ class CreateMatrizsTable extends Migration
         Schema::create('matrizes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('bilhete');
-            $table->char('combinacoes',45);
+            $table->char('combinacoes',59);
             $table->timestamps();
         });
     }
