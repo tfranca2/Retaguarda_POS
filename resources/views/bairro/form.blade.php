@@ -32,12 +32,15 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Cidade</label>
-								<select name="cidade_id" class="form-control select2">
-									<option value=""></option>
+								<select name="cidade_id" class="form-control select2CidadeAjax">
+									<option value="">Selecione</option>
 									@forelse( $cidades as $cidade )
-									<option value="{{$cidade->id}}" 
-										@if( isset($bairro) and $bairro->cidade_id == $cidade->id ) selected="selected" @endif
-									>{{$cidade->nome}}</option>
+										@if( isset($bairro) and $bairro->cidade_id == $cidade->id ) 
+										@php
+										$estado = $cidade->estado()->first();
+										@endphp
+										<option value="{{$cidade->id}}"selected="selected">{{$cidade->nome}} @if( $estado ) {{ '- '. $estado->uf }} @endif</option> 
+										@endif
 									@empty
 									@endforelse
 								</select>

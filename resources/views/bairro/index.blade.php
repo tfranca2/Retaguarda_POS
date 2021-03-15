@@ -30,8 +30,9 @@
 									<td>{{ $bairro->nome }}</td>
 									@php
 									$cidade = $bairro->cidade()->first();
+									$estado = $cidade->estado()->first();
 									@endphp
-									<td>@if( $cidade ) {{ $cidade->nome }} @endif</td>
+									<td>@if( $cidade ) {{ $cidade->nome }} @endif @if( $estado ) {{ '- '. $estado->uf }} @endif</td>
 									<td class="text-center">
 										@if( Helper::temPermissao('bairros-editar') )
 										<a href="{{ url('/bairros/'.$bairro->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
