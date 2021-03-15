@@ -46,13 +46,13 @@
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Inicial</label>
-								<input type="text" class="form-control" name="range_inicial" value="{{(isset($range_inicial) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
+								<input type="text" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Final</label>
-								<input type="text" class="form-control" name="range_final" value="{{(isset($range_final) and $etapa->range_final)?$etapa->range_final:''}}">
+								<input type="text" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
@@ -60,18 +60,18 @@
 								<label for="">Tipo</label>
 								<select name="tipo" class="form-control">
 									<option value="">Selecione</option>
-									<option value="1">Simples</option>
-									<option value="2">Dupla</option>
-									<option value="3">Tripla</option>
-									<option value="4">Simples e Dupla</option>
-									<option value="5">Simples e Tripla</option>
+									<option value="1" @if( isset( $etapa ) and $etapa->tipo == 1 ) echo selected="selected"   @endif >Simples</option>
+									<option value="2" @if( isset( $etapa ) and $etapa->tipo == 2 ) echo selected="selected"   @endif >Dupla</option>
+									<option value="3" @if( isset( $etapa ) and $etapa->tipo == 3 ) echo selected="selected"   @endif >Tripla</option>
+									<option value="4" @if( isset( $etapa ) and $etapa->tipo == 4 ) echo selected="selected"   @endif >Simples e Dupla</option>
+									<option value="5" @if( isset( $etapa ) and $etapa->tipo == 5 ) echo selected="selected"   @endif >Simples e Tripla</option>
 								</select>
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Intervalo</label>
-								<input type="text" class="form-control" name="intervalo" value="{{(isset($intervalo) and $etapa->intervalo)?$etapa->intervalo:''}}">
+								<input type="text" class="form-control" name="intervalo" value="{{(isset($etapa) and $etapa->intervalo)?$etapa->intervalo:''}}">
 							</div>
 						</div>
 					</div><!-- /row -->
@@ -79,37 +79,37 @@
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">valor Simples</label>
-								<input type="text" class="form-control" name="valor_simples" value="{{(isset($valor_simples) and $etapa->valor_simples)?$etapa->valor_simples:''}}">
+								<input type="text" class="form-control" name="valor_simples" value="{{(isset($etapa) and $etapa->valor_simples)?$etapa->valor_simples:''}}">
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">valor Duplo</label>
-								<input type="text" class="form-control" name="valor_duplo" value="{{(isset($valor_duplo) and $etapa->valor_simples)?$etapa->valor_duplo:''}}">
+								<input type="text" class="form-control" name="valor_duplo" value="{{(isset($etapa) and $etapa->valor_simples)?$etapa->valor_duplo:''}}">
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">valor Triplo</label>
-								<input type="text" class="form-control" name="valor_triplo" value="{{(isset($valor_triplo) and $etapa->valor_triplo)?$etapa->valor_triplo:''}}">
+								<input type="text" class="form-control" name="valor_triplo" value="{{(isset($etapa) and $etapa->valor_triplo)?$etapa->valor_triplo:''}}">
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">valor comissão Simpl.</label>
-								<input type="text" class="form-control" name="v_comissao_simples" value="{{(isset($v_comissao_simples) and $etapa->v_comissao_simples)?$etapa->v_comissao_simples:''}}">
+								<input type="text" class="form-control" name="v_comissao_simples" value="{{(isset($etapa) and $etapa->v_comissao_simples)?$etapa->v_comissao_simples:''}}">
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">valor comissão Dupla</label>
-								<input type="text" class="form-control" name="v_comissao_dupla" value="{{(isset($v_comissao_dupla) and $etapa->v_comissao_dupla)?$etapa->v_comissao_dupla:''}}">
+								<input type="text" class="form-control" name="v_comissao_dupla" value="{{(isset($etapa) and $etapa->v_comissao_dupla)?$etapa->v_comissao_dupla:''}}">
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">valor comissão Tripla</label>
-								<input type="text" class="form-control" name="v_comissao_tripla" value="{{(isset($v_comissao_tripla) and $etapa->v_comissao_tripla)?$etapa->v_comissao_tripla:''}}">
+								<input type="text" class="form-control" name="v_comissao_tripla" value="{{(isset($etapa) and $etapa->v_comissao_tripla)?$etapa->v_comissao_tripla:''}}">
 							</div>
 						</div>
 					</div><!-- /row -->
