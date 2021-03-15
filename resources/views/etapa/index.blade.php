@@ -19,6 +19,7 @@
 					<table id="basic-datatables" class="table table-striped table-bordered">
 						<thead>
 							<tr>
+								<th>Nº Etapa</th>
 								<th>Descrição</th>
 								<th>Data</th>
 								<th>Ações</th>
@@ -27,6 +28,7 @@
 						<tbody>
 							@forelse( $etapas as $etapa )
 								<tr>
+									<td>{{ $etapa->etapa}}</td>
 									<td>{{ $etapa->descricao }}</td>
 									<td>{{ $etapa->data }}</td>
 									<td class="text-center">

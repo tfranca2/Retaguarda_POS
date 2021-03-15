@@ -16,6 +16,7 @@ class CreateEtapas extends Migration
         Schema::create('etapas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('etapa')->unique();
+            $table->integer('tipo')->comment('1=simples|2=dupla|3=tripla|4=simples e dupla|5=simples e tripla');
             $table->string('descricao',45);
             $table->date('data');
             $table->integer('range_inicial');

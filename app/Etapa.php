@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Etapa extends Model
 {
+    
     protected $table = 'etapas';
-	protected $fillable = [ 'descricao', 'data' ];
+
+	protected $fillable = [ 'etapa', 'descricao','data','range_inicial','range_final','tipo' ];
 }
