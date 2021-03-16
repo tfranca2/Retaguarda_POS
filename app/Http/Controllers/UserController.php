@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\User;
 use App\Perfil;
 use App\Empresa;
-use App\Cliente;
+// use App\Cliente;
 use Session;
 use Validator;
 use Illuminate\Support\Facades\Input;
@@ -94,39 +94,39 @@ class UserController extends Controller
             $request->latitude = $geocode->results[0]->geometry->location->lat;
             $request->longitude = $geocode->results[0]->geometry->location->lng;
 
-            $cliente['nome'] = $request->name;
-            $cliente['email'] = $request->email;
-            $cliente['cpf'] = $request->cpf;
-            $cliente['telefone'] = $request->telefone;
-            $cliente['data_nascimento'] = $request->data_nascimento;
-            $cliente['cep'] = $request->cep;
-            $cliente['endereco'] = $request->endereco;
+            // $cliente['nome'] = $request->name;
+            // $cliente['email'] = $request->email;
+            // $cliente['cpf'] = $request->cpf;
+            // $cliente['telefone'] = $request->telefone;
+            // $cliente['data_nascimento'] = $request->data_nascimento;
+            // $cliente['cep'] = $request->cep;
+            // $cliente['endereco'] = $request->endereco;
 
-            if( $request->has('numero') )
-                $cliente['numero'] = $request->numero;
-            if( $request->has('complemento') )
-                $cliente['complemento'] = $request->complemento;
-            if( $request->has('bairro') )
-                $cliente['bairro'] = $request->bairro;
+            // if( $request->has('numero') )
+            //     $cliente['numero'] = $request->numero;
+            // if( $request->has('complemento') )
+            //     $cliente['complemento'] = $request->complemento;
+            // if( $request->has('bairro') )
+            //     $cliente['bairro'] = $request->bairro;
 
-            $cliente['cidade'] = $request->cidade;
-            $cliente['estado'] = $request->estado;
-            $cliente['latitude'] = $request->latitude;
-            $cliente['longitude'] = $request->longitude;
+            // $cliente['cidade'] = $request->cidade;
+            // $cliente['estado'] = $request->estado;
+            // $cliente['latitude'] = $request->latitude;
+            // $cliente['longitude'] = $request->longitude;
 
-            if( $request->has('condominio') )
-                $cliente['condominio'] = $request->condominio;
-            if( $request->has('unidade') )
-                $cliente['unidade'] = $request->unidade;
-            if( $request->has('bloco') )
-                $cliente['bloco'] = $request->bloco;
+            // if( $request->has('condominio') )
+            //     $cliente['condominio'] = $request->condominio;
+            // if( $request->has('unidade') )
+            //     $cliente['unidade'] = $request->unidade;
+            // if( $request->has('bloco') )
+            //     $cliente['bloco'] = $request->bloco;
             
 
-            $cliente['usuario_id'] = $user->id;
-            if( $request->has('imagem') )
-                $cliente['imagem'] = $user->imagem;
+            // $cliente['usuario_id'] = $user->id;
+            // if( $request->has('imagem') )
+            //     $cliente['imagem'] = $user->imagem;
 
-            $cliente = Cliente::create($cliente);
+            // $cliente = Cliente::create($cliente);
 
         }
 
@@ -270,7 +270,7 @@ class UserController extends Controller
             $user->save();
         }
 
-        $user->cliente = Cliente::where('usuario_id',$user->id)->first();
+        // $user->cliente = Cliente::where('usuario_id',$user->id)->first();
 
         if( isset( $user->imagem ) )
             $user->imagem = url('/public/images/'.$user->imagem);

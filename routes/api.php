@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 Route::post('login', 'UserController@login');
 Route::post('resetpassword', 'UserController@resetpassword');
 
-Route::post('usuario', 'UserController@store');
+// Route::post('usuario', 'UserController@store');
 
 Route::group(['middleware' => 'auth:api'], function( $router ){
 	
@@ -24,21 +24,30 @@ Route::group(['middleware' => 'auth:api'], function( $router ){
 
 	Route::get('me', function( Request $request ){ return $request->user(); });
 
-	Route::get('usuario', 'UserController@getAll');
-	Route::get('usuario/{id}', 'UserController@show');
-	Route::put('usuario/{id}', 'UserController@update');
-	Route::delete('usuario/{id}', 'UserController@destroy');
+	// Route::get('usuario', 'UserController@getAll');
+	// Route::get('usuario/{id}', 'UserController@show');
+	// Route::put('usuario/{id}', 'UserController@update');
+	// Route::delete('usuario/{id}', 'UserController@destroy');
 
-	Route::get('perfil', 'PerfilController@getAll');
-	Route::get('perfil/{id}', 'PerfilController@show');
-
-	Route::get('empresa', 'EmpresaController@getAll');
-	Route::get('empresa/{id}', 'EmpresaController@show');
-
-	Route::get('distribuidor', 'DistribuidorController@getAll');
+	Route::get('distribuidores', 'DistribuidorController@getAll');
 	Route::get('distribuidor/{id}', 'DistribuidorController@show');
-	Route::post('distribuidor', 'DistribuidorController@store');
-	Route::put('distribuidor/{id}', 'DistribuidorController@update');
-	Route::delete('distribuidor/{id}', 'DistribuidorController@destroy');
+
+	Route::get('estados', 'EstadoController@get');
+	Route::get('estado/{id}', 'EstadoController@show');
+	Route::get('estado/{id}/cidades', 'EstadoController@cidades');
+
+	Route::get('cidades', 'CidadeController@getAll');
+	Route::get('cidade/{id}', 'CidadeController@show');
+	Route::get('cidade/{id}/bairros', 'CidadeController@bairros');
+
+	Route::get('pontos', 'PontoController@getAll');
+	Route::get('ponto/{id}', 'PontoController@show');
+
+	Route::get('dispositivos', 'DispositivoController@getAll');
+	Route::get('dispositivo/{id}', 'DispositivoController@show');
+
+	// Route::get('etapa', 'etapaController@show');
+	// Route::get('vendas', 'VendaController@show');
+	// matrizes?
 
 });

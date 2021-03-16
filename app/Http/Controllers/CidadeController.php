@@ -85,5 +85,15 @@ class CidadeController extends Controller
         $cidade->delete();
         return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
     }
+
+    public function bairros( Request $request, $id ){
+        $cidade = Cidade::findOrFail($id);
+        $bairros = Cidade::where('estado_id',$id)->orderBy('nome');
+        if( $request->has('term') ){
+            $bairros = $bairros->where('nome','like','%'.$request->term.'%');
+        }
+        $bairros = $bairros->get();
+        return response()->json($bairros, 200 );
+    }
     
 }
