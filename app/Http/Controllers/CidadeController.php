@@ -16,15 +16,20 @@ class CidadeController extends Controller
     }
 
     public function get( Request $request ){
-        if($request->has('term')){
+        if( $request->has('term') ){
             $cidades = Cidade::select('cidades.id')
                         ->selectRaw('CONCAT(cidades.nome," - ",estados.uf) AS name')
                         ->where('cidades.nome','like','%'.$request->term.'%')
                         ->orWhere('estados.nome','like','%'.$request->term.'%')
                         ->leftJoin('estados', 'cidades.estado_id', '=', 'estados.id')
                         ->orderBy('estados.nome')
-                        ->orderBy('cidades.nome')
-                        ->get();
+                        ->orderBy('cidades.nome');
+
+            if( false ){
+                $cidades = $cidades->where('cidades.estado_id',$estado_id);
+            }
+
+            $cidades = $cidades->get();
 
             return response()->json( $cidades, 200 );
         }
@@ -87,7 +92,7 @@ class CidadeController extends Controller
 
     public function bairros( Request $request, $id ){
         $cidade = Cidade::findOrFail($id);
-        $bairros = Cidade::where('estado_id',$id)->orderBy('nome');
+        $bairros = Bairro::where('cidade_id',$id)->orderBy('nome');
         if( $request->has('term') ){
             $bairros = $bairros->where('nome','like','%'.$request->term.'%');
         }

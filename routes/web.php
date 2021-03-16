@@ -36,6 +36,7 @@ Route::group(['middleware' => ['auth']], function(){
 
 	Route::resource('cidades', 'CidadeController');
 	Route::get('/search/cidades', 'CidadeController@get');
+	Route::get('/cidades/{id}/bairros', 'CidadeController@bairros');
 
 	Route::resource('bairros', 'BairroController');
 	Route::resource('pontos', 'PontoController');

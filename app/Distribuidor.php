@@ -11,7 +11,7 @@ class Distribuidor extends Model
 	// use SoftDeletes;
 
 	protected $table = 'distribuidores';
-    protected $fillable = [ 'nome', 'email', 'cpf', 'rg', 'area', 'imagem', 'usuario_id', 'condominio', 'unidade', 'bloco', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'estado', 'latitude', 'longitude', 'telefone','complemento','data_nascimento', 'deleted_at' ];
+    protected $fillable = [ 'nome', 'email', 'cpf', 'rg', 'area', 'imagem', 'usuario_id', 'condominio', 'unidade', 'bloco', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'estado', 'latitude', 'longitude', 'telefone','complemento','data_nascimento', 'deleted_at', 'cidade_id', 'estado_id' ];
 
     // JOINS
     public function usuario(){

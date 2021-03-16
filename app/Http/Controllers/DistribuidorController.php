@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Distribuidor;
+use App\Estado;
+use App\Cidade;
 use Session;
 use Validator;
 use Illuminate\Support\Facades\Input;
@@ -73,6 +75,14 @@ class DistribuidorController extends Controller
             $distribuidor['imagem'] = $imageName;
         }
 
+        $estado = Estado::where('uf',$distribuidor['estado'])->first();
+        if( $estado ){
+            $distribuidor['estado_id'] = $estado->id;
+            $cidade = Cidade::where('estado_id',$estado->id)->where('nome','like','%'.$distribuidor['cidade'].'%')->first();
+            if( $cidade )
+                $distribuidor['cidade_id'] = $cidade->id;
+        }
+
         $distribuidor = Distribuidor::create($distribuidor);
 
         return response()->json([ 'message' => 'Criado com sucesso', 'redirectURL' => url('/distribuidores'), 'distribuidor' => $distribuidor ], 201 );
@@ -135,6 +145,14 @@ class DistribuidorController extends Controller
             $imageName = \Str::random(20). time() .'.'. request()->imagem->getClientOriginalExtension();
             request()->imagem->move( public_path('images'), $imageName );
             $distribuidor->imagem = $imageName;
+        }
+
+        $estado = Estado::where('uf',$distribuidor->estado)->first();
+        if( $estado ){
+            $distribuidor->estado_id = $estado->id;
+            $cidade = Cidade::where('estado_id',$estado->id)->where('nome','like','%'.$distribuidor->cidade.'%')->first();
+            if( $cidade )
+                $distribuidor->cidade_id = $cidade->id;
         }
 
         $distribuidor->save();
