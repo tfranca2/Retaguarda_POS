@@ -13,12 +13,9 @@ class CreateEtapas extends Migration
      */
     public function up()
     {
-        Schema::create('etapas', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::table('etapas', function (Blueprint $table) {
             $table->integer('etapa')->unique();
             $table->integer('tipo')->comment('1=simples|2=dupla|3=tripla|4=simples e dupla|5=simples e tripla');
-            $table->string('descricao',45);
-            $table->date('data');
             $table->integer('range_inicial');
             $table->integer('range_final');
             $table->integer('intervalo')->nullable();
@@ -29,7 +26,6 @@ class CreateEtapas extends Migration
             $table->double('v_comissao_duplo',5,2)->nullable();
             $table->double('v_comissao_triplo',5,2)->nullable();
             $table->integer('ativo')->default('0');
-            $table->timestamps();
         });
     }
 
@@ -40,6 +36,19 @@ class CreateEtapas extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('etapas');
+        Schema::table('etapas', function (Blueprint $table) {
+            $table->dropColumn('etapa');
+            $table->dropColumn('tipo');
+            $table->dropColumn('range_inicial');
+            $table->dropColumn('range_final');
+            $table->dropColumn('intervalo');
+            $table->dropColumn('valor_simples');
+            $table->dropColumn('valor_duplo');
+            $table->dropColumn('valor_triplo');
+            $table->dropColumn('v_comissao_simples');
+            $table->dropColumn('v_comissao_duplo');
+            $table->dropColumn('v_comissao_triplo');
+            $table->dropColumn('ativo');
+        });
     }
 }
