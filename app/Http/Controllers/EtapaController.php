@@ -10,7 +10,7 @@ class EtapaController extends Controller
 {
 
     public function getAll( Request $request ){
-        $etapas = Etapa::orderBy('descricao')->paginate(10);
+        $etapas = Etapa::orderBy('etapa')->paginate(10);
         return response()->json( $etapas, 200 );
     }
 
