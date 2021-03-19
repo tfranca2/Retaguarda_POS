@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Cidade;
 use App\Bairro;
 use App\Estado;
+use App\Helpers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -17,16 +18,21 @@ class CidadeController extends Controller
 
     public function get( Request $request ){
         if( $request->has('term') ){
+
+            $term = $request->term;
+            
             $cidades = Cidade::select('cidades.id')
                         ->selectRaw('CONCAT(cidades.nome," - ",estados.uf) AS name')
-                        ->where('cidades.nome','like','%'.$request->term.'%')
-                        ->orWhere('estados.nome','like','%'.$request->term.'%')
+                        ->where(function ($query) use ($term) {
+                            $query->where('cidades.nome', 'like', '%'.$term.'%')
+                                  ->orWhere('estados.nome', 'like', '%'.$term.'%');
+                        })
                         ->leftJoin('estados', 'cidades.estado_id', '=', 'estados.id')
                         ->orderBy('estados.nome')
                         ->orderBy('cidades.nome');
 
-            if( false ){
-                $cidades = $cidades->where('cidades.estado_id',$estado_id);
+            if( ! \Helper::temPermissao('cidades-gerenciar') ){
+                $cidades = $cidades->where('cidades.estado_id',\Auth::user()->estado_id);
             }
 
             $cidades = $cidades->get();

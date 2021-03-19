@@ -86,21 +86,26 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Observação</label>
-								<textarea name="observacao"class="form-control" cols="30" rows="8">{{(isset($ponto) and $ponto->observacao)?$ponto->observacao:''}}</textarea>
+								<textarea name="observacao" class="form-control" cols="30" rows="8">{{(isset($ponto) and $ponto->observacao)?$ponto->observacao:''}}</textarea>
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Distribuidor</label>
+								@if( \Helper::temPermissao('cidades-gerenciar') )
 								<select name="distribuidor_id" class="form-control select2">
 									<option value=""></option>
 									@forelse( $usuarios as $usuario )
 									<option value="{{$usuario->id}}" 
 										@if( isset($ponto) and $ponto->usuario_id == $usuario->id ) selected="selected" @endif
-									>{{$usuario->nome}}</option>
+									>{{$usuario->name}}</option>
 									@empty
 									@endforelse
 								</select>
+								@else
+								<input type="text" value="{{\Auth::user()->name}}" class="form-control disabled" disabled="disabled">
+								<input type="hidden" name="distribuidor_id" value="{{\Auth::user()->id}}">
+								@endif
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
@@ -125,12 +130,6 @@
 								<label for="">Bairro</label>
 								<select name="bairro_id" class="form-control select2">
 									<option value=""></option>
-									@forelse( $bairros as $bairro )
-									<option value="{{$bairro->id}}" 
-										@if( isset($ponto) and $ponto->bairro_id == $cidade->id ) selected="selected" @endif
-									>{{$bairro->nome}}</option>
-									@empty
-									@endforelse
 								</select>
 							</div>
 						</div>
