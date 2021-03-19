@@ -28,8 +28,8 @@
             <div class="panel short-states bg-1" style="background: {{ \Auth::user()->empresa()->menu_background }};">
                 <div class="pull-right state-icon"><i class="fa fa-money"></i></div>
                 <div class="panel-body">
-                    <h1>{{ $distribuidores }}</h1>
-                    <strong class="text-uppercase">Distribuidores</strong>
+                    <h1>{{ $usuarios }}</h1>
+                    <strong class="text-uppercase">Usuários</strong>
                 </div>
             </div>
         </div>

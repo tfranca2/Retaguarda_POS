@@ -16,7 +16,7 @@ class Dispositivo extends Model
 
 	// JOINS
     public function distribuidor(){
-        return $this->hasOne( 'App\Distribuidor', 'id', 'distribuidor_id' );
+        return $this->hasOne( 'App\User', 'id', 'distribuidor_id' );
     }
     
 }

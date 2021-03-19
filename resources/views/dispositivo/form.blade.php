@@ -64,10 +64,10 @@
 								<label for="">Distribuidor</label>
 								<select name="distribuidor_id" class="form-control select2">
 									<option value=""></option>
-									@forelse( $distribuidores as $distribuidor )
-									<option value="{{$distribuidor->id}}" 
-										@if( isset($dispositivo) and $dispositivo->distribuidor_id == $distribuidor->id ) selected="selected" @endif
-									>{{$distribuidor->nome}}</option>
+									@forelse( $usuarios as $usuario )
+									<option value="{{$usuario->id}}" 
+										@if( isset($dispositivo) and $dispositivo->usuario_id == $usuario->id ) selected="selected" @endif
+									>{{$usuario->name}}</option>
 									@empty
 									@endforelse
 								</select>

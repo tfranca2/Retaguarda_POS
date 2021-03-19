@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dispositivo;
-use App\Distribuidor;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -21,8 +21,8 @@ class DispositivoController extends Controller
     }
 
     public function create( Request $request ){
-        $distribuidores = Distribuidor::get();
-        return view('dispositivo.form',[ 'distribuidores' => $distribuidores ]);
+        $usuarios = User::get();
+        return view('dispositivo.form',[ 'usuarios' => $usuarios ]);
     }
     
     public function store( Request $request ){
@@ -48,9 +48,9 @@ class DispositivoController extends Controller
     }
     
     public function edit( Request $request, $id ){
-        $distribuidores = Distribuidor::get();
+        $usuarios = User::get();
         $dispositivo = Dispositivo::withTrashed()->findOrFail($id);
-        return view('dispositivo.form',[ 'dispositivo' => $dispositivo, 'distribuidores' => $distribuidores ]);
+        return view('dispositivo.form',[ 'dispositivo' => $dispositivo, 'usuarios' => $usuarios ]);
     }
     
     public function update( Request $request, $id ){

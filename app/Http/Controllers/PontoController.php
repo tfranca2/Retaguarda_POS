@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Ponto;
 use App\Cidade;
 use App\Bairro;
-use App\Distribuidor;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -25,8 +25,8 @@ class PontoController extends Controller
     public function create( Request $request ){
         $cidades = Cidade::get();
         $bairros = Bairro::get();
-        $distribuidores = Distribuidor::get();
-        return view('ponto.form', [ 'cidades' => $cidades, 'bairros' => $bairros, 'distribuidores' => $distribuidores ]);
+        $usuarios = User::get();
+        return view('ponto.form', [ 'cidades' => $cidades, 'bairros' => $bairros, 'usuarios' => $usuarios ]);
     }
     
     public function store( Request $request ){
@@ -49,9 +49,9 @@ class PontoController extends Controller
     public function edit( Request $request, $id ){
         $cidades = Cidade::get();
         $bairros = Bairro::get();
-        $distribuidores = Distribuidor::get();
+        $usuarios = User::get();
         $ponto = Ponto::findOrFail($id);
-        return view('ponto.form', [ 'ponto' => $ponto, 'cidades' => $cidades, 'bairros' => $bairros, 'distribuidores' => $distribuidores ]);
+        return view('ponto.form', [ 'ponto' => $ponto, 'cidades' => $cidades, 'bairros' => $bairros, 'usuarios' => $usuarios ]);
     }
     
     public function update( Request $request, $id ){

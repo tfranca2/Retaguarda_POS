@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\User;
-use App\Perfil;
-use App\Empresa;
-// use App\Cliente;
 use Session;
 use Validator;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Hash;
-use App\Helpers\Helper;
+use App\User;
+use App\Perfil;
+use App\Estado;
+use App\Cidade;
+use App\Empresa;
 use App\Token_fcm;
+use App\Helpers\Helper;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
@@ -58,7 +59,7 @@ class UserController extends Controller
             // 'endereco'         => 'required|string|max:255',
             // 'bairro'           => 'required|string|max:255',
             // 'cidade'           => 'required|string|max:255',
-            // 'estado'           => 'required|string|max:255',
+            'estado'           => 'required|string|max:255',
             // 'latitude'         => 'required|string|max:255',
             // 'longitude'        => 'required|string|max:255',
 
@@ -68,7 +69,7 @@ class UserController extends Controller
             return response()->json([ 'error' => $validator->messages() ], 400 );
         }
 
-        $inputs = Input::except('id', '_method', '_token', 'password', 'password_confirmation', 'ativo', 'telefone', 'data_nascimento', 'cep', 'endereco', 'numero', 'bairro', 'complemento', 'cidade', 'estado', 'latitude', 'longitude' );
+        $inputs = Input::except('id', '_method', '_token', 'password', 'password_confirmation', 'ativo', 'imagem' );
         foreach( $inputs as $key => $value ){
             $user[$key] = $value;
         }
@@ -84,51 +85,21 @@ class UserController extends Controller
             $user['imagem'] = $imageName;
         }
 
+        $estado = Estado::where('uf',$user['estado'])->first();
+        if( $estado ){
+            $user['estado_id'] = $estado->id;
+            $cidade = Cidade::where('estado_id',$estado->id)->where('nome','like','%'.$user['cidade'].'%')->first();
+            if( $cidade )
+                $user['cidade_id'] = $cidade->id;
+        }
+
         $user = User::create($user);
 
-        if( $request->perfil_id == 2 ){
-
-            
-            $empresa = Empresa::find($request->empresa_id);
-            $geocode = json_decode( file_get_contents("https://maps.googleapis.com/maps/api/geocode/json?key=". $empresa->google_maps_api_key ."&address=". urlencode( $request->endereco .', '. $request->bairro .', '. $request->numero .', '. $request->cidade .', '. $request->estado ) ) );
-            $request->latitude = $geocode->results[0]->geometry->location->lat;
-            $request->longitude = $geocode->results[0]->geometry->location->lng;
-
-            // $cliente['nome'] = $request->name;
-            // $cliente['email'] = $request->email;
-            // $cliente['cpf'] = $request->cpf;
-            // $cliente['telefone'] = $request->telefone;
-            // $cliente['data_nascimento'] = $request->data_nascimento;
-            // $cliente['cep'] = $request->cep;
-            // $cliente['endereco'] = $request->endereco;
-
-            // if( $request->has('numero') )
-            //     $cliente['numero'] = $request->numero;
-            // if( $request->has('complemento') )
-            //     $cliente['complemento'] = $request->complemento;
-            // if( $request->has('bairro') )
-            //     $cliente['bairro'] = $request->bairro;
-
-            // $cliente['cidade'] = $request->cidade;
-            // $cliente['estado'] = $request->estado;
-            // $cliente['latitude'] = $request->latitude;
-            // $cliente['longitude'] = $request->longitude;
-
-            // if( $request->has('condominio') )
-            //     $cliente['condominio'] = $request->condominio;
-            // if( $request->has('unidade') )
-            //     $cliente['unidade'] = $request->unidade;
-            // if( $request->has('bloco') )
-            //     $cliente['bloco'] = $request->bloco;
-            
-
-            // $cliente['usuario_id'] = $user->id;
-            // if( $request->has('imagem') )
-            //     $cliente['imagem'] = $user->imagem;
-
-            // $cliente = Cliente::create($cliente);
-
-        }
+        $token = \Str::random(60);
+        if( $user->api_token )
+            $token = $user->api_token;
+        $user->api_token = $token;
+        $user->save();
 
         return response()->json([ 'message' => 'Criado com sucesso', 'redirectURL' => url('/usuarios'), 'user' => $user ], 201 );
 
@@ -187,7 +158,7 @@ class UserController extends Controller
             }
         }
 
-        $inputs = Input::except('id', '_method', '_token', 'password', 'password_confirmation', 'ativo', 'imagem');
+        $inputs = Input::except('id', '_method', '_token', 'password', 'password_confirmation', 'ativo', 'imagem' );
 
         if( $request->has('ativo') )
         	$user->deleted_at = null;
@@ -209,6 +180,19 @@ class UserController extends Controller
             request()->imagem->move( public_path('images'), $imageName );
             $user->imagem = $imageName;
         }
+
+        $estado = Estado::where('uf',$user->estado)->first();
+        if( $estado ){
+            $user->estado_id = $estado->id;
+            $cidade = Cidade::where('estado_id',$estado->id)->where('nome','like','%'.$user->cidade.'%')->first();
+            if( $cidade )
+                $user->cidade_id = $cidade->id;
+        }
+
+        $token = \Str::random(60);
+        if( $user->api_token )
+            $token = $user->api_token;
+        $user->api_token = $token;
 
         $user->save();
 
@@ -269,8 +253,6 @@ class UserController extends Controller
             $user->api_token = $token;
             $user->save();
         }
-
-        // $user->cliente = Cliente::where('usuario_id',$user->id)->first();
 
         if( isset( $user->imagem ) )
             $user->imagem = url('/public/images/'.$user->imagem);
