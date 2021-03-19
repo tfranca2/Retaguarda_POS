@@ -103,7 +103,7 @@ input[type="month"].form-control {
 }
 
 .disabled {
-	background: #eee !important;
+	/* background: #eee !important; */
 }
 
 .ui-header .navbar-brand { 

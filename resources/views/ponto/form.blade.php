@@ -44,13 +44,13 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Telefone</label>
-								<input type="text" class="form-control" name="telefone" value="{{(isset($ponto) and $ponto->telefone)?$ponto->telefone:''}}">
+								<input type="text" class="form-control telefone" name="telefone" value="{{(isset($ponto) and $ponto->telefone)?$ponto->telefone:''}}">
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Telefone 2</label>
-								<input type="text" class="form-control" name="telefone2" value="{{(isset($ponto) and $ponto->telefone2)?$ponto->telefone2:''}}">
+								<input type="text" class="form-control telefone" name="telefone2" value="{{(isset($ponto) and $ponto->telefone2)?$ponto->telefone2:''}}">
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
@@ -74,7 +74,7 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Encerramento</label>
-								<input type="hour" class="form-control" name="encerramento" value="{{(isset($ponto) and $ponto->encerramento)?$ponto->encerramento:''}}">
+								<input type="time" class="form-control" name="encerramento" value="{{(isset($ponto) and $ponto->encerramento)?$ponto->encerramento:''}}">
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
@@ -111,10 +111,10 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Cidade</label>
-								<select name="cidade_id" class="form-control select2CidadeAjax">
+								<select name="cidade_id" id="cidade_id" class="form-control select2CidadeAjax">
 									<option value="">Selecione</option>
 									@forelse( $cidades as $cidade )
-										@if( isset($bairro) and $bairro->cidade_id == $cidade->id ) 
+										@if( isset($ponto) and $ponto->cidade_id == $cidade->id ) 
 										@php
 										$estado = $cidade->estado()->first();
 										@endphp
@@ -126,12 +126,23 @@
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
+							@if( Helper::temPermissao('bairros-incluir') )
+							<div class="form-group pull-left" style="width: 90%; padding-right: 10px;">
+							@else
 							<div class="form-group">
+							@endif
 								<label for="">Bairro</label>
-								<select name="bairro_id" class="form-control select2">
+								<input type="hidden" id="_bairro_id" value="{{(isset($ponto) and $ponto->bairro_id)?$ponto->bairro_id:''}}">
+								<select name="bairro_id" id="bairro_id" class="form-control select2">
 									<option value=""></option>
 								</select>
 							</div>
+							@if( Helper::temPermissao('bairros-incluir') )
+							<div class="form-group pull-right text-right" style="width: 10%;">
+								<label for=""><br></label><br>
+								<a href="#" class="btn btn-info disabled addBairroBtn" data-toggle="modal" data-target="#addBairroModal" title="Adicionar Bairro"><i class="fa fa-plus"></i></a>
+							</div>
+							@endif
 						</div>
 					</div>
 					<div class="row">
@@ -146,4 +157,65 @@
 		</div>
 	</div>
 </div>
+
+<div class="modal fade" id="addBairroModal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">&times;</button>
+			<h4 class="modal-title">Adicionar Bairro</h4>
+        </div>
+        <div class="modal-body">
+        	<label for="">Nome</label>
+        	<input type="text" class="form-control" name="bairronome" id="bairronome" value="" >
+        </div>
+        <div class="modal-footer">
+        	<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        	<a href="#" class="btn btn-info addBairro">Salvar e Selecionar</a>
+        </div>
+      </div>
+    </div>
+</div>
+@endsection
+@section('scripts')
+<script type="text/javascript">
+	$(document).ready(function(){
+
+		$('#cidade_id').on('change', function(){
+			$.get('{{ url("/cidades") }}/'+ $('#cidade_id option:selected').val() +'/bairros', function(objs){
+				$('#bairro_id').empty();
+				$('#bairro_id').append('<option value="">Selecione</option>');
+				$(objs).each(function(){
+					$('#bairro_id').append('<option value="'+this.id+'">'+this.nome+'</option>');
+				});
+
+				if( $('#_bairro_id').val() ){
+					$('#bairro_id').val( $('#_bairro_id').val() ).trigger('change');
+				}
+
+			});
+
+			$('.addBairroBtn').removeClass('disabled');
+		});
+
+		$('#addBairroModal').on('shown.bs.modal', function(){
+		  $('#bairronome').trigger('focus');
+		})
+
+		$('.addBairro').click(function(){
+			if( $('#bairronome').val().length >= 3 ){
+				$.post( "{{url('/bairros')}}", { nome: $('#bairronome').val(), cidade_id: $('#cidade_id option:selected').val(), _token: $('input[name="_token"]').val() })
+					.done(function( data ) {
+					$('#bairro_id').append('<option value="'+data.bairro.id+'" selected="selected">'+data.bairro.nome+'</option>');
+				});
+				$('#bairronome').val('');
+				$('#addBairroModal .close')[0].click();
+			} else {
+				toastr.error('Escreva algum nome para o bairro!');
+			}
+		});
+
+		@if( isset($ponto) and $ponto->cidade_id ) $('#cidade_id').change(); @endif
+	});
+</script>
 @endsection

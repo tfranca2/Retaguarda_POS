@@ -335,6 +335,28 @@ $('body').on('click', '#toggleFilter', function(e){
 
 $('body').on('focus', 'input[name=cpf]', function(){ $(this).mask('999.999.999-99') });
 $('body').on('focus', 'input[name=cnpj]', function(){ $(this).mask('99.999.999/9999-99') });
+$('body').on('keydown', 'input[name=cpf_cnpj]', function(){ 
+    try {
+        $(this).unmask();
+    } catch (e) {}
+
+    if($(this).val().length < 11){
+        $(this).mask("999.999.999-99");
+    } else {
+        $(this).mask("99.999.999/9999-99");
+    }
+
+    // ajustando foco
+    var elem = this;
+    setTimeout(function(){
+        // mudo a posição do seletor
+        elem.selectionStart = elem.selectionEnd = 10000;
+    }, 0);
+    // reaplico o valor para mudar o foco
+    var currentValue = $(this).val();
+    $(this).val('');
+    $(this).val(currentValue);
+});
 $('body').on('focus', 'input[name=cep]', function(){ $(this).mask('99.999-999') });
 $('body').on('focus', '.telefone', function(){ $(this).mask('(99) 9 9999-9999') });
 $('body').on('focus', '.decimal', function(){ $(this).mask("#.##0,00", {reverse: true}) });
