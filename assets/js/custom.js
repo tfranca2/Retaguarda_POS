@@ -501,3 +501,10 @@ window.ParsleyValidator.addValidator('cpf', function (value, requirement) {
 window.ParsleyValidator.addValidator('cnpj', function (value, requirement) {
     return validarCNPJ(value);
 }, 32).addMessage('en', 'cnpj', 'CNPJ inválido.');
+
+window.ParsleyValidator.addValidator('cpf_cnpj', function (value, requirement) {
+    if( value.length == 14 )
+        return validarCPF(value);
+    else
+        return validarCNPJ(value);
+}, 32).addMessage('en', 'cnpj', 'CNPJ inválido.');

@@ -26,7 +26,7 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Nome</label>
-								<input type="text" class="form-control" name="nome" value="{{(isset($ponto) and $ponto->nome)?$ponto->nome:''}}">
+								<input type="text" class="form-control" name="nome" value="{{(isset($ponto) and $ponto->nome)?$ponto->nome:''}}" data-parsley-required="true" required="">
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
@@ -35,6 +35,8 @@
 								<input type="text" class="form-control" name="responsavel" value="{{(isset($ponto) and $ponto->responsavel)?$ponto->responsavel:''}}">
 							</div>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Endereço</label>
@@ -44,9 +46,11 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Telefone</label>
-								<input type="text" class="form-control telefone" name="telefone" value="{{(isset($ponto) and $ponto->telefone)?$ponto->telefone:''}}">
+								<input type="text" class="form-control telefone" name="telefone" value="{{(isset($ponto) and $ponto->telefone)?$ponto->telefone:''}}"data-parsley-required="true" required="">
 							</div>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Telefone 2</label>
@@ -56,9 +60,11 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">CPF/CNPJ</label>
-								<input type="text" class="form-control cpf" name="cpf_cnpj" value="{{(isset($ponto) and $ponto->cpf_cnpj)?$ponto->cpf_cnpj:''}}">
+								<input type="text" class="form-control cpf" name="cpf_cnpj" value="{{(isset($ponto) and $ponto->cpf_cnpj)?$ponto->cpf_cnpj:''}}"data-parsley-required="true" required="" data-parsley-cpf_cnpj="true">
 							</div>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">RG</label>
@@ -71,6 +77,8 @@
 								<input type="text" class="form-control" name="funcionamento" value="{{(isset($ponto) and $ponto->funcionamento)?$ponto->funcionamento:''}}">
 							</div>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Encerramento</label>
@@ -83,6 +91,8 @@
 								<input type="text" class="form-control" name="ponto_referencia" value="{{(isset($ponto) and $ponto->ponto_referencia)?$ponto->ponto_referencia:''}}">
 							</div>
 						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Observação</label>
@@ -111,7 +121,7 @@
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Cidade</label>
-								<select name="cidade_id" id="cidade_id" class="form-control select2CidadeAjax">
+								<select name="cidade_id" id="cidade_id" class="form-control select2CidadeAjax" data-parsley-required="true" required="">
 									<option value="">Selecione</option>
 									@forelse( $cidades as $cidade )
 										@if( isset($ponto) and $ponto->cidade_id == $cidade->id ) 
@@ -133,7 +143,7 @@
 							@endif
 								<label for="">Bairro</label>
 								<input type="hidden" id="_bairro_id" value="{{(isset($ponto) and $ponto->bairro_id)?$ponto->bairro_id:''}}">
-								<select name="bairro_id" id="bairro_id" class="form-control select2">
+								<select name="bairro_id" id="bairro_id" class="form-control select2" data-parsley-required="true" required="">
 									<option value=""></option>
 								</select>
 							</div>
