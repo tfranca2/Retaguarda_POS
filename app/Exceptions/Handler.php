@@ -46,6 +46,13 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if( $this->isHttpException($exception) ){
+            switch( intval( $exception->getStatusCode() ) ){
+                case 404: return redirect()->route('home')->with('error','Página não localizada!'); break;
+                // case 500: return \Response::view('custom.500',array(),500); break;
+                default: return parent::render($request, $exception); break;
+            }
+        } 
         return parent::render($request, $exception);
     }
 }

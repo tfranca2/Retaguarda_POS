@@ -11,15 +11,19 @@
 |
 */
 
-Route::get('/', function(){ return view('welcome'); });
+Route::get('/', function(){ 
+	if( Auth::check() )
+        return redirect()->route('home');
+	return view('welcome'); 
+});
 
 Auth::routes();
 
 Route::get('/logout', '\App\Http\Controllers\Auth\LoginController@logout');
 
-Route::get('/home', 'HomeController@index')->name('home');
-
 Route::group(['middleware' => ['auth']], function(){
+
+	Route::get('/home', 'HomeController@index')->name('home');
 
 	Route::get('/perfil', 'UserController@perfil');
 	Route::resource('usuarios', 'UserController');
