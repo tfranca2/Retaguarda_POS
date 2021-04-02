@@ -102,4 +102,28 @@ class Helper
             'AAAAEEIOOOUUCNaaaaeeiooouucn'));
     }
 
+    public static function convertDate( $date, $printHour = true ){
+		$twopoints = strpos( $date, ':' );
+		$dash = strpos( $date, '-' );
+		if( $dash === false ){
+			$d = explode(' ', $date);
+			$date = explode('/', $d[0]);
+			$date = $date[2].'-'.$date[1].'-'.$date[0].' '.$d[1];
+		}
+
+        if( $printHour and $twopoints !== false ){
+			if( $dash === false )
+				$newdate = date("Y-m-d H:i:s", strtotime($date));
+			else
+				$newdate = date("d/m/Y H:i:s", strtotime($date));
+		} else {
+			if( $dash === false )
+				$newdate = date("Y-m-d", strtotime($date));
+			else
+				$newdate = date("d/m/Y", strtotime($date));
+        }
+
+		return $newdate;
+	}
+
 }

@@ -24,7 +24,19 @@ class EtapaController extends Controller
     }
     
     public function store( Request $request ){
-        $etapa = Etapa::create( Input::except( 'id', '_method', '_token' ) );
+
+        $inputs = Input::except( 'id', '_method', '_token', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo' );
+        foreach( $inputs as $key => $value )
+            $etapa[$key] = $value;
+
+        $etapa['valor_simples'] = \Helper::formatDecimalToDb($request->valor_simples);
+        $etapa['valor_duplo'] = \Helper::formatDecimalToDb($request->valor_duplo);
+        $etapa['valor_triplo'] = \Helper::formatDecimalToDb($request->valor_triplo);
+        $etapa['v_comissao_simples'] = \Helper::formatDecimalToDb($request->v_comissao_simples);
+        $etapa['v_comissao_duplo'] = \Helper::formatDecimalToDb($request->v_comissao_duplo);
+        $etapa['v_comissao_triplo'] = \Helper::formatDecimalToDb($request->v_comissao_triplo);
+
+        $etapa = Etapa::create( $etapa );
         return response()->json([ 
             'message' => 'Criado com sucesso', 
             'redirectURL' => url('/etapas'), 
@@ -48,10 +60,18 @@ class EtapaController extends Controller
     public function update( Request $request, $id ){
 
         $etapa = Etapa::find($id);
-        $inputs = Input::except( 'id', '_method', '_token' );
+        $inputs = Input::except( 'id', '_method', '_token', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo' );
         foreach( $inputs as $key => $value ){
             $etapa->$key = $value;
         }
+
+        $etapa->valor_simples = \Helper::formatDecimalToDb($request->valor_simples);
+        $etapa->valor_duplo = \Helper::formatDecimalToDb($request->valor_duplo);
+        $etapa->valor_triplo = \Helper::formatDecimalToDb($request->valor_triplo);
+        $etapa->v_comissao_simples = \Helper::formatDecimalToDb($request->v_comissao_simples);
+        $etapa->v_comissao_duplo = \Helper::formatDecimalToDb($request->v_comissao_duplo);
+        $etapa->v_comissao_triplo = \Helper::formatDecimalToDb($request->v_comissao_triplo);
+
         $etapa->save();
         return response()->json([ 
             'message' => 'Atualizado com sucesso', 

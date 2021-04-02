@@ -30,7 +30,7 @@
 								<tr>
 									<td>{{ $etapa->etapa}}</td>
 									<td>{{ $etapa->descricao }}</td>
-									<td>{{ $etapa->data }}</td>
+									<td>{{ Helper::convertDate($etapa->data) }}</td>
 									<td class="text-center">
 										@if( Helper::temPermissao('etapas-editar') )
 										<a href="{{ url('/etapas/'.$etapa->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>

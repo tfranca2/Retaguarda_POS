@@ -12,7 +12,7 @@
 		  digitsOptional: false,
 		  placeholder: '0',
 		  rightAlign: false,
-		  prefix: 'R$',
+		  prefix: 'R$ ',
 		  onBeforeMask: function (value, opts) {
 			return value;
 		  }

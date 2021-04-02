@@ -30,41 +30,18 @@
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/themify-icons/css/themify-icons.css">
         <!-- endinject -->
 
-        <!--Data Table-->
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables/media/css/jquery.dataTables.css" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-tabletools/css/dataTables.tableTools.css" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-colvis/css/dataTables.colVis.css" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-responsive/css/responsive.dataTables.scss" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-scroller/css/scroller.dataTables.scss" rel="stylesheet">
-        <!-- <link href="<?php echo url('/'); ?>/assets/bower_components/jqBootstrapValidation.js" rel="stylesheet"> -->
-
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css">
 
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/main.css">
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/lightbox.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/jquery-ui.css">
+        <!-- <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/jquery-ui.css"> -->
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css">
-
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css/toastr.min.css">
-        
         <link rel="stylesheet" href="{{asset('assets/css/custom.css')}}">
-
         <script src="<?php echo url('/'); ?>/assets/js/modernizr-custom.js"></script>
         <script src="<?php echo url('/'); ?>/assets/js/jquery-3.3.1.min.js"></script>
-        <!-- <script
-        src="https://code.jquery.com/jquery-3.2.1.min.js"
-        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-        crossorigin="anonymous"></script> -->
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
-
-        <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;600&display=swap" rel="stylesheet"> 
-        
+        <script src="<?php echo url('/'); ?>/assets/js/jquery.form-validator.min.js"></script>
         <style>
-
-            * {
-                font-family: 'Exo', sans-serif;
-            }
-
             .lb-data .lb-close {
               background: url('{{ url('/').'/assets/imgs/close.png' }}') no-repeat center;
             }
@@ -172,44 +149,27 @@
                         @yield('content')
 
                         <!-- fim conteudo da view -->
-                        <script>
-                            $.validate({
-                                lang : 'pt'
-                            });
-                        </script>
                     </div>
-
                 </div>
             </div>
             <!--main content end-->
 
             <!--footer start-->
-
+            <footer class="ui-footer" style="background: transparent; text-align: right; padding-right: 10px;">&copy;{{date('Y')}} {{ $empresa->nome }}</footer>
             <!--footer end-->
-
         </div>
 
         <script src="{{asset('assets/bower_components/jquery/dist/jquery.min.js')}}"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
+        <script src="<?php echo url('/'); ?>/assets/js/moment.min.js"></script>
         <!-- inject:js -->
         <script src="<?php echo url('/'); ?>/assets/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/jquery.nicescroll/dist/jquery.nicescroll.min.js"></script>
         <script src="<?php echo url('/'); ?>/assets/bower_components/autosize/dist/autosize.min.js"></script>
         <!-- endinject -->
 
         <!--Data Table-->
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-tabletools/js/dataTables.tableTools.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-colvis/js/dataTables.colVis.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-responsive/js/dataTables.responsive.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-scroller/js/dataTables.scroller.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/init-datatables.js"></script>
         <script src="<?php echo url('/'); ?>/assets/dist/js/main.js"></script>
         <script src="<?php echo url('/'); ?>/assets/dist/js/lightbox.js"></script>
         <script src="<?php echo url('/'); ?>/assets/js/validator.js"></script>
-        <!-- <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script> -->
-        <!-- <script src="<?php echo url('/'); ?>/assets/js/init-switchery.js"></script> -->
         <script src="<?php echo url('/'); ?>/assets/bower_components/input-mask/jquery.inputmask.bundle.min.js"></script>
         <script src="<?php echo url('/'); ?>/assets/bower_components/bootstrap-filestyle/bootstrap-filestyle.js"></script>
         <link rel="stylesheet" href="{{asset('assets/bower_components/fullcalendar/dist/fullcalendar.min.css')}}">
@@ -227,30 +187,16 @@
         <script src="{{asset('assets/js/validator.js')}}"></script>
         <script src="{{asset('assets/dist/js/site.js')}}"></script>
 
-
-        <script type="text/javascript" src="{{asset('assets/bower_components/datetimepicker/bootstrap-datetimepicker.js')}}"></script>
-        <script type="text/javascript" src="{{asset('assets/bower_components/datetimepicker/bootstrap-datetimepicker.pt-BR.js')}}"></script>
-
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
-        <script src="{{asset('assets/bower_components/jquery-ui/jquery-ui.min.js')}}"></script>
+        <!-- <script src="{{asset('assets/bower_components/jquery-ui/jquery-ui.min.js')}}"></script> -->
         <script src="{{asset('assets/bower_components/autosize/dist/autosize.min.js')}}"></script>
         <script src="{{asset('assets/bower_components/fullcalendar/dist/fullcalendar.js')}}"></script>
         <script type="text/javascript" src="{{asset('assets/bower_components/fullcalendar/dist/locale/pt-br.js')}}"></script>
-         <!-- <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script> -->
-        <!-- <script src="{{asset('assets/js/init-calendar.js')}}"></script> -->
-        <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script> -->
-         <!-- <script type="text/javascript" src="{{asset('assets/js/custom-advanced-form.js')}}"></script> -->
-
          <!-- <script src="<?php echo url('/'); ?>/assets/dist/js/custom.js"></script> -->
          <script src="<?php echo url('/'); ?>/assets/dist/js/ajax.js"></script>
 
         <script src="{{asset('assets/js/init-calendar.js')}}"></script>
 
-        <!-- <script src="{{asset('assets/js/init-datepicker.js')}}"></script> -->
-
-        <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9.7.0/dist/sweetalert2.all.min.js"></script> -->
-        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+        <script src="<?php echo url('/'); ?>/assets/js/sweetalert.min.js"></script>
         <script src="<?php echo url('/'); ?>/assets/js/parsley.min.js"></script>
         <script src="<?php echo url('/'); ?>/assets/js/parsley.pt-br.js"></script>
         <script src="<?php echo url('/'); ?>/assets/js/jquery.mask.min.js"></script>
