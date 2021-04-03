@@ -508,3 +508,7 @@ window.ParsleyValidator.addValidator('cpf_cnpj', function (value, requirement) {
     else
         return validarCNPJ(value);
 }, 32).addMessage('en', 'cnpj', 'CNPJ inválido.');
+
+$('.js-switch').each(function(i,html){
+    new Switchery(html,{size:'small'});
+});

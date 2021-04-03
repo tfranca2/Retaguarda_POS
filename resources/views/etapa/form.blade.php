@@ -5,7 +5,7 @@
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">
 			<div class="panel-heading">
-				{{ ((isset($etapa))?'Editar':'Novo') }} etapa
+				{{ ((isset($etapa))?'Editar':'Nova') }} etapa
 				<div class="pull-right">
 					<div class="btn-group">
 						@if( Helper::temPermissao('etapas-listar') )
@@ -26,7 +26,7 @@
 						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">Nº Etapa</label>
-								<input type="number" class="form-control" name="etapa" value="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:''}}" required="">
+								<input type="number" min="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" class="form-control" name="etapa" value="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" required="">
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
@@ -46,13 +46,13 @@
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Inicial</label>
-								<input type="number" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
+								<input type="number" min="0" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Final</label>
-								<input type="number" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
+								<input type="number" min="0" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">

@@ -44,8 +44,10 @@ Route::group(['middleware' => ['auth']], function(){
 
 	Route::resource('bairros', 'BairroController');
 	Route::resource('pontos', 'PontoController');
-	Route::resource('etapas', 'EtapaController');
 	Route::resource('dispositivos', 'DispositivoController');
 	Route::resource('vendas', 'VendaController');
+	
+	Route::resource('etapas', 'EtapaController');
+	Route::get('etapas/{id}/ativar', 'EtapaController@ativar');
 
 });

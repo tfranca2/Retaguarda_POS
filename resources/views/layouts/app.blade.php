@@ -36,6 +36,7 @@
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/lightbox.css">
         <!-- <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/jquery-ui.css"> -->
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css">
+        <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script>
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css/toastr.min.css">
         <link rel="stylesheet" href="{{asset('assets/css/custom.css')}}">
         <script src="<?php echo url('/'); ?>/assets/js/modernizr-custom.js"></script>
