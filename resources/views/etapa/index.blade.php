@@ -68,14 +68,16 @@
 	$('.switch').click(function(){
 		var obj = $(this);
 
+		$('.switch').not( $(obj) ).find('input').prop('checked',false);
+		
 		if( $(obj).find('input').is(':checked') ){
 			$.ajax({
                 type: "GET",
                 url: "{{ url('/etapas') }}/"+$(obj).find('input').data('id')+"/ativar",
                 success: function(data){
-					$('.switch').not( $(obj) ).find('input').prop('checked',false);
 					$('.switch input[data-id='+data.id+']').prop('checked',true);
-					toastr.success(data.message);
+					if( data.message )
+						toastr.success(data.message);
 				},
 				complete: function(data) {
 					if( data.responseJSON.error ) {
