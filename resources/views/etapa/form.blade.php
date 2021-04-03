@@ -79,37 +79,37 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="">Valor Simples</label>
-								<input type="text" class="form-control money" id="valor_simples" name="valor_simples" value="{{(isset($etapa) and $etapa->valor_simples)?\Helper::formatDecimalToView($etapa->valor_simples):''}}">
+								<input type="text" class="form-control decimal" id="valor_simples" name="valor_simples" value="{{(isset($etapa) and $etapa->valor_simples)?\Helper::formatDecimalToView($etapa->valor_simples):''}}">
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="">Valor Comissão Simples</label>
-								<input type="text" class="form-control money" id="v_comissao_simples" name="v_comissao_simples" value="{{(isset($etapa) and $etapa->v_comissao_simples)?\Helper::formatDecimalToView($etapa->v_comissao_simples):''}}">
+								<input type="text" class="form-control decimal" id="v_comissao_simples" name="v_comissao_simples" value="{{(isset($etapa) and $etapa->v_comissao_simples)?\Helper::formatDecimalToView($etapa->v_comissao_simples):''}}">
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="">Valor Dupla</label>
-								<input type="text" class="form-control money" id="valor_duplo" name="valor_duplo" value="{{(isset($etapa) and $etapa->valor_duplo)?\Helper::formatDecimalToView($etapa->valor_duplo):''}}">
+								<input type="text" class="form-control decimal" id="valor_duplo" name="valor_duplo" value="{{(isset($etapa) and $etapa->valor_duplo)?\Helper::formatDecimalToView($etapa->valor_duplo):''}}">
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="">Valor Comissão Dupla</label>
-								<input type="text" class="form-control money" id="v_comissao_duplo" name="v_comissao_duplo" value="{{(isset($etapa) and $etapa->v_comissao_duplo)?\Helper::formatDecimalToView($etapa->v_comissao_duplo):''}}">
+								<input type="text" class="form-control decimal" id="v_comissao_duplo" name="v_comissao_duplo" value="{{(isset($etapa) and $etapa->v_comissao_duplo)?\Helper::formatDecimalToView($etapa->v_comissao_duplo):''}}">
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="">Valor Tripla</label>
-								<input type="text" class="form-control money" id="valor_triplo" name="valor_triplo" value="{{(isset($etapa) and $etapa->valor_triplo)?\Helper::formatDecimalToView($etapa->valor_triplo):''}}">
+								<input type="text" class="form-control decimal" id="valor_triplo" name="valor_triplo" value="{{(isset($etapa) and $etapa->valor_triplo)?\Helper::formatDecimalToView($etapa->valor_triplo):''}}">
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="">Valor Comissão Tripla</label>
-								<input type="text" class="form-control money" id="v_comissao_triplo" name="v_comissao_triplo" value="{{(isset($etapa) and $etapa->v_comissao_triplo)?\Helper::formatDecimalToView($etapa->v_comissao_triplo):''}}">
+								<input type="text" class="form-control decimal" id="v_comissao_triplo" name="v_comissao_triplo" value="{{(isset($etapa) and $etapa->v_comissao_triplo)?\Helper::formatDecimalToView($etapa->v_comissao_triplo):''}}">
 							</div>
 						</div>
 					</div><!-- /row -->
