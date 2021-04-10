@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Venda;
-use App\Dispositivo;
 use App\Etapa;
+use Validator;
+use App\Matriz;
+use App\Dispositivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -28,12 +30,65 @@ class VendaController extends Controller
     }
     
     public function store( Request $request ){
-        $venda = Venda::create( Input::except( 'id', '_method', '_token' ) );
-        return response()->json([ 
-            'message' => 'Criado com sucesso', 
-            'redirectURL' => url('/vendas'), 
-            'venda' => $venda 
-        ], 201 );
+
+        $validators = [
+            'chave' => 'required|max:255',
+            // 'nome' => 'required|max:255',
+            'cpf' => 'required_if:telefone,""',
+            'telefone' => 'required_if:cpf,""',
+        ];
+
+        $etapa = Etapa::where('ativa','1')->first();
+        if( in_array( $etapa->tipo, [ 4, 5 ] ) )
+            $validators['quantidade'] = 'required|integer|between:1,3';
+        
+        $validator = Validator::make($request->all(),$validators);
+        if( $validator->fails() )
+            return response()->json(['error'=>$validator->messages()],400);
+
+        // $dispositivo_id = Dispositivo::where('user_id',\Auth::user()->id)->where('mac',$request->chave)->first()->id;
+        $dispositivo_id = 1;
+
+        $qtd = 1;
+        if( $etapa->tipo == 2)
+            $qtd = 2;
+        if( $etapa->tipo == 3)
+            $qtd = 3;
+        if( $request->has('quantidade') )
+            $qtd = $request->quantidade;
+        
+        \DB::beginTransaction();
+        try {
+            $venda = array();
+
+            $campos = Input::except( 'id', '_method', '_token', 'quantidade' );
+            $campos['ip'] = $request->ip();
+            $campos['etapa_id'] = $etapa->id;
+            $campos['dispositivo_id'] = $dispositivo_id;
+
+            for( $i=0; $i<$qtd; $i++ ){ 
+                $campos['matriz_id'] = Matriz::whereBetween( 'id', [ 
+                                            $etapa->range_inicial, 
+                                            $etapa->range_final
+                                        ])
+                                        ->whereNotIn( 'id',
+                                            Venda::select('matriz_id')
+                                            ->whereNotNull('matriz_id')
+                                            ->where( 'etapa_id', $etapa->id )
+                                            ->distinct()
+                                            ->get()
+                                            ->pluck('matriz_id')
+                                            ->toArray()
+                                        )->first()->id;
+                $venda[] = Venda::create( $campos );
+            }
+
+            \DB::commit();
+            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas'),'venda'=>$venda],201);
+        } catch( \Exception $e ){
+            \DB::rollback();
+            return response()->json(['error'=>$e->getMessage()],404);
+        }
     }
     
     public function show( Request $request, $id ){
