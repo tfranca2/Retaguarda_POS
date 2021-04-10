@@ -21,7 +21,8 @@ class DispositivoController extends Controller
     }
 
     public function create( Request $request ){
-        $usuarios = User::get();
+        $idPerfilAdmin = \DB::table('permissions')->where('role','vendas-gerenciar')->pluck('perfil_id')->toArray();
+        $usuarios = User::whereNotIn('perfil_id',$idPerfilAdmin)->get();
         return view('dispositivo.form',[ 'usuarios' => $usuarios ]);
     }
     
@@ -48,7 +49,8 @@ class DispositivoController extends Controller
     }
     
     public function edit( Request $request, $id ){
-        $usuarios = User::get();
+        $idPerfilAdmin = \DB::table('permissions')->where('role','vendas-gerenciar')->pluck('perfil_id')->toArray();
+        $usuarios = User::whereNotIn('perfil_id',$idPerfilAdmin)->get();
         $dispositivo = Dispositivo::withTrashed()->findOrFail($id);
         return view('dispositivo.form',[ 'dispositivo' => $dispositivo, 'usuarios' => $usuarios ]);
     }
