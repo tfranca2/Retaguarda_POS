@@ -46,8 +46,14 @@ class VendaController extends Controller
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
 
+        // ******************************************* //
+        // *************    MUDAR    ***************** //
+        // ******************************************* //
         // $dispositivo_id = Dispositivo::where('user_id',\Auth::user()->id)->where('mac',$request->chave)->first()->id;
         $dispositivo_id = 1;
+        // ******************************************* //
+        // ******************************************* //
+        // ******************************************* //
 
         $qtd = 1;
         if( $etapa->tipo == 2)
@@ -67,8 +73,13 @@ class VendaController extends Controller
             $campos['dispositivo_id'] = $dispositivo_id;
 
             for( $i=0; $i<$qtd; $i++ ){ 
+                // calcula saldo do intervalo
+                $inicio = $etapa->range_inicial;
+                if( isset( $venda[($i-1)] ) )
+                    $inicio = $venda[($i-1)]->matriz_id + $etapa->intervalo;
+                // seleciona o id do titulo disponivel mais próximo
                 $campos['matriz_id'] = Matriz::whereBetween( 'id', [ 
-                                            $etapa->range_inicial, 
+                                            $inicio, 
                                             $etapa->range_final
                                         ])
                                         ->whereNotIn( 'id',
@@ -79,7 +90,10 @@ class VendaController extends Controller
                                             ->get()
                                             ->pluck('matriz_id')
                                             ->toArray()
-                                        )->first()->id;
+                                        )
+                                        ->first()
+                                        ->id;
+                // cadastra a venda
                 $venda[] = Venda::create( $campos );
             }
 

@@ -9,7 +9,7 @@ class Venda extends Model
 
     protected $table = 'vendas';
 
-	protected $fillable = [ 'dispositivo_id', 'etapa_id', 'matriz_id', 'nome', 'cpf', 'telefone', 'ip ' ];
+	protected $fillable = [ 'dispositivo_id', 'etapa_id', 'matriz_id', 'nome', 'cpf', 'telefone', 'ip' ];
 
 	// JOINS
     public function dispositivo(){
