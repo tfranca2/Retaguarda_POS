@@ -13,11 +13,11 @@ class Venda extends Model
 
 	// JOINS
     public function dispositivo(){
-        return $this->hasMany( 'App\Dispositivo', 'id', 'dispositivo_id' );
+        return $this->hasOne( 'App\Dispositivo', 'id', 'dispositivo_id' )->with('distribuidor');
     }
 
     public function etapa(){
-        return $this->hasMany( 'App\Etapa', 'id', 'etapa_id' );
+        return $this->hasOne( 'App\Etapa', 'id', 'etapa_id' );
     }
 
 }

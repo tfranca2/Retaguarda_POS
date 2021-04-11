@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Helper;
+use App\User;
 use App\Venda;
 use App\Etapa;
 use Validator;
@@ -14,14 +15,76 @@ use Illuminate\Support\Facades\Input;
 class VendaController extends Controller
 {
 
+    public function filter( Request $request ){
+
+        $vendas = new Venda();
+        $vendas = $vendas->newQuery();
+
+        if( $request->has('etapa_id') )
+            if( intval( $request->input('etapa_id') ) )
+                $vendas->where('etapa_id',$request->etapa_id);
+
+        if( $request->has('distribuidor_id') )
+            if( intval( $request->input('distribuidor_id') ) )
+                $vendas->whereHas('dispositivo', function ($query) use ($request) {
+                    $query->where('distribuidor_id',  Helper::onlyNumbers( $request->input('distribuidor_id') ) );
+                });
+
+        if( $request->has('dispositivo_id') )
+            if( intval( $request->input('dispositivo_id') ) )
+                $vendas->where('dispositivo_id',$request->dispositivo_id);
+
+        if( $request->has('inicio') )
+            if( $request->input('inicio') )
+                $vendas->where('created_at','>',$request->inicio.' 00:00:00');
+
+        if( $request->has('fim') )
+            if( $request->input('fim') )
+                $vendas->where('created_at','<',$request->fim.' 23:59:59');
+
+        return $vendas->orderBy('created_at','DESC')
+                    ->with('etapa')
+                    ->with('dispositivo');
+
+        // return Venda::orderBy('created_at','DESC')->paginate(10);
+
+    }
+
     public function getAll( Request $request ){
-        $vendas = Venda::orderBy('created_at','DESC')->paginate(10);
-        return response()->json( $vendas, 200 );
+        return response()->json( Self::filter( $request )->paginate(10), 200 );
     }
 
     public function index( Request $request ){
-        $vendas = Venda::orderBy('created_at','DESC')->paginate(10);
-        return view('venda.index',[ 'vendas' => $vendas ]);
+
+        if( !$request->has('etapa_id') )
+            $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
+
+        if( Helper::temPermissao('vendas-gerenciar') ) {
+            $idPerfilAdmin = \DB::table('permissions')->where('role','vendas-gerenciar')->pluck('perfil_id')->toArray();
+            $distribuidores = User::whereNotIn('perfil_id',$idPerfilAdmin)->orderBy('name','ASC')->get();
+        } else {
+            $distribuidores = User::where( 'id', \Auth::user()->id )->orderBy('name','ASC')->get();
+            $request->merge([ 'distribuidor_id' => \Auth::user()->id ]);
+        }
+
+        $vendas = Self::filter( $request );
+
+        $totalVendas = 0;
+        $totalComissao = 0;
+        foreach( $vendas->get() as $venda ){
+            $totalVendas += $venda->etapa->valor_simples;
+            $totalComissao += $venda->etapa->v_comissao_simples;
+        }
+        $totalVendas = Helper::formatDecimalToView( $totalVendas );
+        $totalComissao = Helper::formatDecimalToView( $totalComissao );
+
+        $etapas = Etapa::orderBy('id','DESC')->get();
+
+        $dispositivo = null;
+        if( $request->has('dispositivo_id') and intval($request->dispositivo_id) )
+            $dispositivo = Dispositivo::find($request->dispositivo_id);
+
+        return view('venda.index',[ 'vendas' => $vendas->paginate(10), 'etapas' => $etapas, 'distribuidores' => $distribuidores, 'dispositivo' => $dispositivo,  'totalVendas' => $totalVendas,  'totalComissao' => $totalComissao, ]);
     }
 
     public function create( Request $request ){

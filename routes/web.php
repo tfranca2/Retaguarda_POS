@@ -36,6 +36,8 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('menus', 'MenuController');
 
 	Route::resource('distribuidores', 'DistribuidorController');
+	Route::get('distribuidores/{id}/dispositivos', 'DistribuidorController@dispositivos');
+
 	Route::resource('matrizes', 'MatrizController');
 
 	Route::resource('cidades', 'CidadeController');
@@ -43,8 +45,11 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::get('/cidades/{id}/bairros', 'CidadeController@bairros');
 
 	Route::resource('bairros', 'BairroController');
+	
 	Route::resource('pontos', 'PontoController');
+
 	Route::resource('dispositivos', 'DispositivoController');
+
 	Route::resource('vendas', 'VendaController');
 	
 	Route::resource('etapas', 'EtapaController');
