@@ -77,7 +77,7 @@ class VendaController extends Controller
         
         \DB::beginTransaction();
         try {
-            $venda = array();
+            $vendas = array();
 
             $campos = Input::except( 'id', '_method', '_token', 'quantidade' );
             $campos['ip'] = $request->ip();
@@ -87,8 +87,8 @@ class VendaController extends Controller
             for( $i=0; $i<$qtd; $i++ ){ 
                 // calcula saldo do intervalo
                 $inicio = $etapa->range_inicial;
-                if( isset( $venda[($i-1)] ) )
-                    $inicio = $venda[($i-1)]->matriz_id + $etapa->intervalo;
+                if( isset( $vendas[($i-1)] ) )
+                    $inicio = $vendas[($i-1)]->matriz_id + $etapa->intervalo;
                 // seleciona o id do titulo disponivel mais próximo
                 $campos['matriz_id'] = Matriz::whereBetween( 'id', [ 
                                             $inicio, 
@@ -106,11 +106,16 @@ class VendaController extends Controller
                                         ->first()
                                         ->id;
                 // cadastra a venda
-                $venda[] = Venda::create( $campos );
+                $vendas[] = Venda::create( $campos );
+            }
+
+            foreach( $vendas as $venda ){
+                $matriz = Matriz::find($venda->matriz_id);
+                $venda->combinacoes = $matriz->combinacoes;
             }
 
             \DB::commit();
-            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas'),'venda'=>$venda],201);
+            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas'),'venda'=>$vendas],201);
         } catch( \Exception $e ){
             \DB::rollback();
             return response()->json(['error'=>$e->getMessage()],404);
