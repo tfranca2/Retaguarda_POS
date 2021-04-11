@@ -74,7 +74,10 @@
 					},
 					complete: function(data) {
 						if( data.responseJSON.error ) {
-							$(obj).find('input').prop('checked',false);
+							if( $(obj).find('input').is(':checked') )
+								$(obj).find('input').prop('checked',false);
+							else
+								$(obj).find('input').prop('checked',true);
 							toastr.error(data.responseJSON.error);
 						}
 					}

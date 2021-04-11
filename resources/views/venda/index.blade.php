@@ -100,7 +100,9 @@
 								<th>Valor</th>
 								<th>Comissão</th>
 								<th>Data</th>
+								@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 								<th>Ações</th>
+								@endif
 							</tr>
 						</thead>
 						<tbody>
@@ -112,6 +114,7 @@
 									<td>R$ {{ Helper::formatDecimalToView( $venda->etapa->valor_simples ) }}</td>
 									<td>R$ {{ Helper::formatDecimalToView( $venda->etapa->v_comissao_simples ) }}</td>
 									<td>{{ Helper::convertDate( $venda->created_at ) }}</td>
+									@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 									<td class="text-center">
 										@if( Helper::temPermissao('vendas-editar') )
 										<a href="{{ url('/vendas/'.$venda->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
@@ -123,6 +126,7 @@
 										</form>
 										@endif
 									</td>
+									@endif
 								</tr>
 							@empty
 								<tr><td colspan="100" class="text-center">Sem resultados para listar</td></tr>
