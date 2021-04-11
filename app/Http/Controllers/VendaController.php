@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Helper;
 use App\Venda;
 use App\Etapa;
 use Validator;
@@ -53,6 +54,18 @@ class VendaController extends Controller
         $dispositivo = Dispositivo::where('distribuidor_id',\Auth::user()->id)->where('mac',strtoupper($request->mac))->first();
         if( !$dispositivo )
             return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
+
+        if( $request->has('nome') )
+            if( ! Helper::validaNome($request->nome) )
+                return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
+
+        if( $request->has('cpf') )
+            if( ! Helper::validaCPF($request->cpf) )
+                return response()->json(['error'=>['cpf'=>['Informe um cpf válido.']]],400);
+
+        if( $request->has('telefone') )
+            if( ! Helper::validaCelular($request->telefone) )
+                return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
 
         $qtd = 1;
         if( $etapa->tipo == 2)

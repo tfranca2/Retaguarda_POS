@@ -126,4 +126,41 @@ class Helper
 		return $newdate;
 	}
 
+	public static function validaNome( $nome ){
+		if( preg_match( "/^[A-ZÀ-Ÿ][A-zÀ-ÿ']+\s([A-zÀ-ÿ']\s?)*[A-ZÀ-Ÿ][A-zÀ-ÿ']+$/", trim( $nome ) ) )
+			return true;
+		return false;
+	}
+
+	public static function validaCPF($cpf) {
+		$cpf = Self::onlyNumbers($cpf);
+		if( strlen($cpf) != 11 ) 
+			return false;
+		// Verifica se foi informada uma sequência de digitos repetidos. Ex: 111.111.111-11
+		if( preg_match( '/(\d)\1{10}/', $cpf ) ) 
+			return false;
+		// Faz o calculo para validar o CPF
+		for( $t = 9; $t < 11; $t++ ){
+			for( $d = 0, $c = 0; $c < $t; $c++ )
+				$d += $cpf[$c] * (($t + 1) - $c);
+			$d = ((10 * $d) % 11) % 10;
+			if( $cpf[$c] != $d )
+				return false;
+		}
+		return true;
+	}
+
+	public static function validaCelular($telefone){
+		//*/
+		$telefone = Self::onlyNumbers( $telefone );
+		if( strlen($telefone) < 10 or strlen($telefone) > 11 )
+			return false;
+		return true;
+		/*/
+		if( preg_match( '/[0-9]{2}[0-9]{3,4}[0-9]{4}/', Self::onlyNumbers( $telefone ) ) )
+			return true;
+		return false;
+		//*/
+	}
+
 }
