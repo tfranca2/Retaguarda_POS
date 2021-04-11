@@ -17,6 +17,13 @@ class VendaController extends Controller
 
     public function filter( Request $request ){
 
+        if( !$request->has('etapa_id') )
+            $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
+
+        if( !Helper::temPermissao('vendas-gerenciar') ) {
+            $request->merge([ 'distribuidor_id' => \Auth::user()->id ]);
+        }
+
         $vendas = new Venda();
         $vendas = $vendas->newQuery();
 
@@ -56,17 +63,6 @@ class VendaController extends Controller
 
     public function index( Request $request ){
 
-        if( !$request->has('etapa_id') )
-            $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
-
-        if( Helper::temPermissao('vendas-gerenciar') ) {
-            $idPerfilAdmin = \DB::table('permissions')->where('role','vendas-gerenciar')->pluck('perfil_id')->toArray();
-            $distribuidores = User::whereNotIn('perfil_id',$idPerfilAdmin)->orderBy('name','ASC')->get();
-        } else {
-            $distribuidores = User::where( 'id', \Auth::user()->id )->orderBy('name','ASC')->get();
-            $request->merge([ 'distribuidor_id' => \Auth::user()->id ]);
-        }
-
         $vendas = Self::filter( $request );
 
         $totalVendas = 0;
@@ -84,7 +80,64 @@ class VendaController extends Controller
         if( $request->has('dispositivo_id') and intval($request->dispositivo_id) )
             $dispositivo = Dispositivo::find($request->dispositivo_id);
 
+        if( Helper::temPermissao('vendas-gerenciar') ) {
+            $idPerfilAdmin = \DB::table('permissions')->where('role','vendas-gerenciar')->pluck('perfil_id')->toArray();
+            $distribuidores = User::whereNotIn('perfil_id',$idPerfilAdmin)->orderBy('name','ASC')->get();
+        } else {
+            $distribuidores = User::where( 'id', \Auth::user()->id )->orderBy('name','ASC')->get();
+        }
+
         return view('venda.index',[ 'vendas' => $vendas->paginate(10), 'etapas' => $etapas, 'distribuidores' => $distribuidores, 'dispositivo' => $dispositivo,  'totalVendas' => $totalVendas,  'totalComissao' => $totalComissao, ]);
+    }
+
+    public function csv( Request $request ){
+
+        $headers = array(
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; charset=UTF-8; filename=". date('YmdHis') ."_vendas.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        );
+
+        $vendas = Self::filter( $request )->get();
+
+        $callback = function() use ( $vendas ){
+
+            $totalVendas = 0;
+            $totalComissao = 0;
+
+            $file = fopen('php://output', 'w');
+            fputcsv($file, [ 
+                'Etapa', 
+                'Distribuidor', 
+                'Dispositivo', 
+                'Valor', 
+                utf8_decode( 'Comissão' ), 
+                'Data ', 
+            ], ';', '"', "\n");
+
+            foreach( $vendas as $venda ){
+
+                $totalVendas += $venda->etapa->valor_simples;
+                $totalComissao += $venda->etapa->v_comissao_simples;
+
+                fputcsv( $file, [ 
+                    utf8_decode( $venda->etapa->descricao ), 
+                    utf8_decode( $venda->dispositivo->distribuidor->name ), 
+                    utf8_decode( $venda->dispositivo->nome ), 
+                    Helper::formatDecimalToView( $venda->etapa->valor_simples ), 
+                    Helper::formatDecimalToView( $venda->etapa->v_comissao_simples ), 
+                    $venda->created_at, 
+                ], ';', '"', "\n" );
+            }
+
+            fputcsv($file, [ '', '', '', Helper::formatDecimalToView( $totalVendas ), Helper::formatDecimalToView( $totalComissao ), '' ], ';', '"', "\n");
+            fclose($file);
+        };
+
+        return \Response::stream( $callback, 200, $headers );
+
     }
 
     public function create( Request $request ){

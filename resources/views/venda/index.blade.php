@@ -7,14 +7,11 @@
 			<div class="panel-heading">
 				vendas
 				<div class="pull-right">
-
 					<span class="btn" style="color: #808080; cursor: default;"><label>Total: R$ {{ $totalVendas }}</label></span> |
 					<span class="btn" style="color: #808080; cursor: default;"><label>Total Comissão: R$ {{ $totalComissao }}</label></span>
-
-					<!-- <div class="btn-group">
-						<a href="#" id="exportarCsv" class="btn btn-success pull-right" title="Exportar .csv"><i class="fa fa-file-excel-o"></i> Exportar</a>
-					</div> -->
-
+					<div class="btn-group">
+						<a href="{{ url('/vendas/csv') .'?'. http_build_query( request()->input() ) }}" id="exportarCsv" class="btn btn-success pull-right" title="Exportar .csv"><i class="fa fa-file-excel-o"></i> Exportar</a>
+					</div>
 					<div class="btn-group">
 						<a href="#" id="toggleFilter" class="btn btn-link pull-right" title="Mostrar Filtros">Filtros <i class="fa fa-chevron-up"></i></a>
 					</div>
