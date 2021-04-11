@@ -154,7 +154,7 @@ class VendaController extends Controller
     public function store( Request $request ){
 
         $validators = [
-            'etapa_id' => 'required|integer',
+            // 'etapa_id' => 'required_if:mac,""|integer',
             'dispositivo_id' => 'required_if:mac,""|integer',
             'mac' => 'required_if:dispositivo_id,""|max:255',
             // 'nome' => 'required|max:255',
@@ -163,6 +163,11 @@ class VendaController extends Controller
         ];
 
         $etapa = Etapa::ativa();
+        // if( $request->has('etapa_id') )
+        //     $etapa = Etapa::find($request->etapa_id);
+        if( !$etapa )
+            return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
+
         if( in_array( $etapa->tipo, [ 4, 5 ] ) )
             $validators['quantidade'] = 'required|integer|between:1,3';
 

@@ -48,6 +48,7 @@ Route::group(['middleware' => ['auth']], function(){
 	
 	Route::resource('pontos', 'PontoController');
 
+	Route::get('dispositivos/{id}/toggleActive', 'DispositivoController@toggleActive');
 	Route::resource('dispositivos', 'DispositivoController');
 
 	Route::get('vendas/csv', 'VendaController@csv');
