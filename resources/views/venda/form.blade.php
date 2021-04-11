@@ -21,12 +21,13 @@
 					@else
 						<form action="{{ url('/vendas') }}" method="post" enctype="multipart/form-data" class="form-edit" data-parsley-validate> 
 					@endif
-					@csrf					
+					@csrf	
+					<input type="hidden" name="etapa_id" value="{{ $etapa_id }}" >				
 					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Dispositivo</label>
-								<select name="dispositivo_id" class="form-control select2">
+								<select name="dispositivo_id" class="form-control select2" data-parsley-required="true" required="" >
 									<option value=""></option>
 									@forelse( $dispositivos as $dispositivo )
 									<option value="{{$dispositivo->id}}" 
@@ -38,20 +39,43 @@
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
-							<div class="form-group">
-								<label for="">Etapa</label>
-								<select name="etapa_id" class="form-control select2">
-									<option value=""></option>
-									@forelse( $etapas as $etapa )
-									<option value="{{$etapa->id}}" 
-										@if( isset($venda) and $venda->etapa_id == $etapa->id ) selected="selected" @endif
-									>{{$etapa->descricao}}</option>
-									@empty
-									@endforelse
-								</select>
-							</div>
+							@if( $showQuantidade )
+							<label>Quantidade</label>
+							<input type="number" class="form-control" name="quantidade" min="1" max="{{ $showQuantidade }}" value="{{ (isset($venda)?$venda->quantidade:'1') }}" >
+							@else
+							<input type="hidden" name="quantidade" value="1">
+							@endif
 						</div>
 					</div>
+					<div class="row">
+						<div class="col-md-12 p-lr-o">
+							<br><hr><label>Cliente</label><br>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-4 p-lr-o">
+							<label>Nome Completo</label>
+							<input type="text" class="form-control" name="nome" value="{{ (isset($venda)?$venda->nome:'') }}" data-parsley-required="true"  required="" >
+						</div>
+						<div class="col-md-4 p-lr-o">
+							<label>CPF</label>
+							<input type="text" class="form-control" name="cpf" value="{{ (isset($venda)?Helper::formatCpfCnpj($venda->cpf):'') }}" data-parsley-cpf="true" data-parsley-required="true" required="" >
+						</div>
+						<div class="col-md-4 p-lr-o">
+							<label>Telefone</label>
+							<input type="text" class="form-control" name="telefone" value="{{ (isset($venda)?$venda->telefone:'') }}" data-parsley-required="true"  required="" >
+						</div>
+					</div>
+					@if( isset($venda) and isset($venda->combinacoes) and $venda->combinacoes )
+					<div class="row">
+						<div class="col-md-12 p-lr-o">
+							<br><hr><label>Título</label><br>
+						</div>
+						<div class="col-md-12 p-lr-o">
+							<textarea class="form-control disabled" disabled="">{{ (isset($venda)?$venda->combinacoes:'') }}</textarea>
+						</div>
+					</div>
+					@endif
 					<div class="row">
 						<div class="col-md-12 p-lr-o">
 							<div class="form-group">

@@ -15,31 +15,38 @@ class VendaController extends Controller
 {
 
     public function getAll( Request $request ){
-        $vendas = Venda::paginate(10);
+        $vendas = Venda::orderBy('created_at','DESC')->paginate(10);
         return response()->json( $vendas, 200 );
     }
 
     public function index( Request $request ){
-        $vendas = Venda::paginate(10);
+        $vendas = Venda::orderBy('created_at','DESC')->paginate(10);
         return view('venda.index',[ 'vendas' => $vendas ]);
     }
 
     public function create( Request $request ){
         $dispositivos = Dispositivo::get();
-        $etapas = Etapa::get();
-        return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapas' => $etapas ]);
+        $etapa = Etapa::ativa();
+        $showQuantidade = 0;
+        if( in_array( $etapa->tipo, [ 2, 4 ] ) )
+            $showQuantidade = 2;
+        if( in_array( $etapa->tipo, [ 3, 5 ] ) )
+            $showQuantidade = 3;
+        return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapa_id' => $etapa->id, 'showQuantidade' => $showQuantidade ]);
     }
     
     public function store( Request $request ){
 
         $validators = [
-            'mac' => 'required|max:255',
+            'etapa_id' => 'required|integer',
+            'dispositivo_id' => 'required_if:mac,""|integer',
+            'mac' => 'required_if:dispositivo_id,""|max:255',
             // 'nome' => 'required|max:255',
-            'cpf' => 'required_if:telefone,""',
-            'telefone' => 'required_if:cpf,""',
+            'cpf' => 'required_if:telefone,""|max:255',
+            'telefone' => 'required_if:cpf,""|max:255',
         ];
 
-        $etapa = Etapa::where('ativa','1')->first();
+        $etapa = Etapa::ativa();
         if( in_array( $etapa->tipo, [ 4, 5 ] ) )
             $validators['quantidade'] = 'required|integer|between:1,3';
 
@@ -50,8 +57,10 @@ class VendaController extends Controller
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
 
-        // $dispositivo = (object) array( 'id' => 1 );
-        $dispositivo = Dispositivo::where('distribuidor_id',\Auth::user()->id)->where('mac',strtoupper($request->mac))->first();
+        if( $request->has('dispositivo_id') )
+            $dispositivo = Dispositivo::find($request->dispositivo_id);
+        else
+            $dispositivo = Dispositivo::where('distribuidor_id',\Auth::user()->id)->where('mac',strtoupper($request->mac))->first();
         if( !$dispositivo )
             return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
 
@@ -132,15 +141,17 @@ class VendaController extends Controller
     
     public function edit( Request $request, $id ){
         $dispositivos = Dispositivo::get();
-        $etapas = Etapa::get();
         $venda = Venda::findOrFail($id);
-        return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapas' => $etapas ]);
+        $matriz = Matriz::find($venda->matriz_id);
+        $venda->combinacoes = $matriz->combinacoes;
+        $etapa = Etapa::find($venda->etapa_id);
+        return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa_id' => $etapa->id, 'showQuantidade' => 0 ]);
     }
     
     public function update( Request $request, $id ){
 
         $venda = Venda::find($id);
-        $inputs = Input::except( 'id', '_method', '_token' );
+        $inputs = Input::except( 'id', '_method', '_token', 'quantidade' );
         foreach( $inputs as $key => $value ){
             $venda->$key = $value;
         }
