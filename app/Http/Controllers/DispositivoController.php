@@ -32,6 +32,7 @@ class DispositivoController extends Controller
             $dispositivo['deleted_at'] = null;
         else 
             $dispositivo['deleted_at'] = date('Y-m-d H:i:s');
+        $dispositivo['mac'] = strtoupper($dispositivo['mac']);
         $dispositivo = Dispositivo::create( $dispositivo );
         return response()->json([ 
             'message' => 'Criado com sucesso', 
@@ -66,6 +67,7 @@ class DispositivoController extends Controller
             $dispositivo->deleted_at = null;
         else 
             $dispositivo->deleted_at = date('Y-m-d H:i:s');
+        $dispositivo->mac = strtoupper($dispositivo->mac);
         $dispositivo->save();
         return response()->json([ 
             'message' => 'Atualizado com sucesso', 

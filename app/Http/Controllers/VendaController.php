@@ -32,7 +32,7 @@ class VendaController extends Controller
     public function store( Request $request ){
 
         $validators = [
-            'chave' => 'required|max:255',
+            'mac' => 'required|max:255',
             // 'nome' => 'required|max:255',
             'cpf' => 'required_if:telefone,""',
             'telefone' => 'required_if:cpf,""',
@@ -41,19 +41,18 @@ class VendaController extends Controller
         $etapa = Etapa::where('ativa','1')->first();
         if( in_array( $etapa->tipo, [ 4, 5 ] ) )
             $validators['quantidade'] = 'required|integer|between:1,3';
+
+        if( $etapa->tipo == 4 ) // simples e dupla
+            $validators['quantidade'] = 'required|integer|between:1,2';
         
         $validator = Validator::make($request->all(),$validators);
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
 
-        // ******************************************* //
-        // *************    MUDAR    ***************** //
-        // ******************************************* //
-        // $dispositivo_id = Dispositivo::where('user_id',\Auth::user()->id)->where('mac',$request->chave)->first()->id;
-        $dispositivo_id = 1;
-        // ******************************************* //
-        // ******************************************* //
-        // ******************************************* //
+        // $dispositivo = (object) array( 'id' => 1 );
+        $dispositivo = Dispositivo::where('distribuidor_id',\Auth::user()->id)->where('mac',strtoupper($request->mac))->first();
+        if( !$dispositivo )
+            return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
 
         $qtd = 1;
         if( $etapa->tipo == 2)
@@ -70,7 +69,7 @@ class VendaController extends Controller
             $campos = Input::except( 'id', '_method', '_token', 'quantidade' );
             $campos['ip'] = $request->ip();
             $campos['etapa_id'] = $etapa->id;
-            $campos['dispositivo_id'] = $dispositivo_id;
+            $campos['dispositivo_id'] = $dispositivo->id;
 
             for( $i=0; $i<$qtd; $i++ ){ 
                 // calcula saldo do intervalo
