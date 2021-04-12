@@ -168,11 +168,11 @@ class VendaController extends Controller
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
 
-        if( in_array( $etapa->tipo, [ 4, 5 ] ) )
-            $validators['quantidade'] = 'required|integer|between:1,3';
-
         if( $etapa->tipo == 4 ) // simples e dupla
-            $validators['quantidade'] = 'required|integer|between:1,2';
+            $validators['quantidade'] = 'required|integer|in:1,2';
+
+        if( $etapa->tipo == 5 ) // simples e tripla
+            $validators['quantidade'] = 'required|integer|in:1,3';
         
         $validator = Validator::make($request->all(),$validators);
         if( $validator->fails() )
