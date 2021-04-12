@@ -66,13 +66,15 @@
 							<input type="text" class="form-control" name="telefone" value="{{ (isset($venda)?$venda->telefone:'') }}" data-parsley-required="true"  required="" >
 						</div>
 					</div>
-					@if( isset($venda) and isset($venda->combinacoes) and $venda->combinacoes )
+					@if( isset($venda) and isset($venda->matrizes) and $venda->matrizes )
+			
 					<div class="row">
 						<div class="col-md-12 p-lr-o">
-							<br><hr><label>Título</label><br>
+							<br><hr><label>Título(s)</label><br>
 						</div>
 						<div class="col-md-12 p-lr-o">
-							<textarea class="form-control disabled" disabled="">{{ (isset($venda)?$venda->combinacoes:'') }}</textarea>
+							<textarea class="form-control disabled" disabled="">@foreach( $venda->matrizes as $matriz )&bull; {{ $matriz->matriz->bilhete }}: {{ $matriz->matriz->combinacoes }}
+@endforeach</textarea>
 						</div>
 					</div>
 					@endif

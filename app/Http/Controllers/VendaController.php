@@ -8,6 +8,7 @@ use App\Venda;
 use App\Etapa;
 use Validator;
 use App\Matriz;
+use App\VendaMatriz;
 use App\Dispositivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
@@ -51,7 +52,8 @@ class VendaController extends Controller
 
         return $vendas->orderBy('created_at','DESC')
                     ->with('etapa')
-                    ->with('dispositivo');
+                    ->with('dispositivo')
+                    ->with('matrizes');
 
         // return Venda::orderBy('created_at','DESC')->paginate(10);
 
@@ -68,8 +70,16 @@ class VendaController extends Controller
         $totalVendas = 0;
         $totalComissao = 0;
         foreach( $vendas->get() as $venda ){
-            $totalVendas += $venda->etapa->valor_simples;
-            $totalComissao += $venda->etapa->v_comissao_simples;
+            if( count( $venda->matrizes ) == 2 ){
+                $totalVendas += $venda->etapa->valor_duplo;
+                $totalComissao += $venda->etapa->v_comissao_duplo;
+            } elseif( count( $venda->matrizes ) == 3 ){
+                $totalVendas += $venda->etapa->valor_triplo;
+                $totalComissao += $venda->etapa->v_comissao_triplo;
+            } else {
+                $totalVendas += $venda->etapa->valor_simples;
+                $totalComissao += $venda->etapa->v_comissao_simples;
+            }
         }
         $totalVendas = Helper::formatDecimalToView( $totalVendas );
         $totalComissao = Helper::formatDecimalToView( $totalComissao );
@@ -119,15 +129,29 @@ class VendaController extends Controller
 
             foreach( $vendas as $venda ){
 
-                $totalVendas += $venda->etapa->valor_simples;
-                $totalComissao += $venda->etapa->v_comissao_simples;
+                if( count( $venda->matrizes ) == 2 ){
+                    $totalVendas += $venda->etapa->valor_duplo;
+                    $totalComissao += $venda->etapa->v_comissao_duplo;
+                    $valor = $venda->etapa->valor_duplo;
+                    $comissao = $venda->etapa->v_comissao_duplo;
+                } elseif( count( $venda->matrizes ) == 3 ){
+                    $totalVendas += $venda->etapa->valor_triplo;
+                    $totalComissao += $venda->etapa->v_comissao_triplo;
+                    $valor = $venda->etapa->valor_triplo;
+                    $comissao = $venda->etapa->v_comissao_triplo;
+                } else {
+                    $totalVendas += $venda->etapa->valor_simples;
+                    $totalComissao += $venda->etapa->v_comissao_simples;
+                    $valor = $venda->etapa->valor_simples;
+                    $comissao = $venda->etapa->v_comissao_simples;
+                }
 
                 fputcsv( $file, [ 
                     utf8_decode( $venda->etapa->descricao ), 
                     utf8_decode( $venda->dispositivo->distribuidor->name ), 
                     utf8_decode( $venda->dispositivo->nome ), 
-                    Helper::formatDecimalToView( $venda->etapa->valor_simples ), 
-                    Helper::formatDecimalToView( $venda->etapa->v_comissao_simples ), 
+                    Helper::formatDecimalToView( $valor ), 
+                    Helper::formatDecimalToView( $comissao ), 
                     $venda->created_at, 
                 ], ';', '"', "\n" );
             }
@@ -207,27 +231,29 @@ class VendaController extends Controller
         
         \DB::beginTransaction();
         try {
-            $vendas = array();
 
-            $campos = Input::except( 'id', '_method', '_token', 'quantidade' );
-            $campos['ip'] = $request->ip();
-            $campos['etapa_id'] = $etapa->id;
-            $campos['dispositivo_id'] = $dispositivo->id;
+            $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
+            $venda['ip'] = $request->ip();
+            $venda['etapa_id'] = $etapa->id;
+            $venda['dispositivo_id'] = $dispositivo->id;
+            $venda = Venda::create( $venda );
 
+            $matriz_id = 0;
             for( $i=0; $i<$qtd; $i++ ){ 
                 // calcula saldo do intervalo
                 $inicio = $etapa->range_inicial;
-                if( isset( $vendas[($i-1)] ) )
-                    $inicio = $vendas[($i-1)]->matriz_id + $etapa->intervalo;
+                if( $matriz_id )
+                    $inicio = $matriz_id + $etapa->intervalo;
                 // seleciona o id do titulo disponivel mais próximo
-                $campos['matriz_id'] = Matriz::whereBetween( 'id', [ 
+                $matriz_id = Matriz::whereBetween( 'id', [ 
                                             $inicio, 
                                             $etapa->range_final
                                         ])
                                         ->whereNotIn( 'id',
-                                            Venda::select('matriz_id')
+                                            VendaMatriz::select('matriz_id')
                                             ->whereNotNull('matriz_id')
-                                            ->where( 'etapa_id', $etapa->id )
+                                            ->join('vendas','vendas.id','=','venda_id')
+                                            ->where('etapa_id', $etapa->id)
                                             ->distinct()
                                             ->get()
                                             ->pluck('matriz_id')
@@ -235,17 +261,17 @@ class VendaController extends Controller
                                         )
                                         ->first()
                                         ->id;
-                // cadastra a venda
-                $vendas[] = Venda::create( $campos );
+                $venda_matriz = VendaMatriz::create([ 
+                    'venda_id' => $venda->id, 
+                    'matriz_id' => $matriz_id 
+                ]);
+
             }
 
-            foreach( $vendas as $venda ){
-                $matriz = Matriz::find($venda->matriz_id);
-                $venda->combinacoes = $matriz->combinacoes;
-            }
+            $venda = Venda::with('matrizes')->find( $venda->id );
 
             \DB::commit();
-            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas'),'venda'=>$vendas],201);
+            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas'),'venda'=>$venda],201);
         } catch( \Exception $e ){
             \DB::rollback();
             return response()->json(['error'=>$e->getMessage()],404);
@@ -262,9 +288,7 @@ class VendaController extends Controller
     
     public function edit( Request $request, $id ){
         $dispositivos = Dispositivo::get();
-        $venda = Venda::findOrFail($id);
-        $matriz = Matriz::find($venda->matriz_id);
-        $venda->combinacoes = $matriz->combinacoes;
+        $venda = Venda::with('matrizes')->find($id);
         $etapa = Etapa::find($venda->etapa_id);
         return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa_id' => $etapa->id, 'showQuantidade' => 0 ]);
     }

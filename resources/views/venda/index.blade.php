@@ -107,12 +107,28 @@
 						</thead>
 						<tbody>
 							@forelse( $vendas as $venda )
+							@php
+								$valor = 0;
+								$comissao = 0;
+								if( count( $venda->matrizes ) == 2 ){
+					                $valor = $venda->etapa->valor_duplo;
+					                $comissao = $venda->etapa->v_comissao_duplo;
+					            } elseif( count( $venda->matrizes ) == 3 ){
+					                $valor = $venda->etapa->valor_triplo;
+					                $comissao = $venda->etapa->v_comissao_triplo;
+					            } else {
+					                $valor = $venda->etapa->valor_simples;
+					                $comissao = $venda->etapa->v_comissao_simples;
+					            }
+							@endphp
 								<tr>
 									<td>{{ $venda->etapa->descricao }}</td>
 									<td>{{ $venda->dispositivo->distribuidor->name }}</td>
 									<td>{{ $venda->dispositivo->nome }}</td>
-									<td>R$ {{ Helper::formatDecimalToView( $venda->etapa->valor_simples ) }}</td>
-									<td>R$ {{ Helper::formatDecimalToView( $venda->etapa->v_comissao_simples ) }}</td>
+									<td>
+										R$ {{ Helper::formatDecimalToView( $valor ) }}
+									</td>
+									<td>R$ {{ Helper::formatDecimalToView( $comissao ) }}</td>
 									<td>{{ Helper::convertDate( $venda->created_at ) }}</td>
 									@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 									<td class="text-center">
