@@ -28,7 +28,7 @@
 							@forelse( $vendas as $venda )
 								<tr>
 									<td>{{ $venda->dispositivo()->first()->nome }}</td>
-									<td>{{ $venda->etapa()->first()->descricao }}</td>
+									<td>Descrição</td>
 									<td class="text-center">
 										@if( Helper::temPermissao('vendas-editar') )
 										<a href="{{ url('/vendas/'.$venda->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
