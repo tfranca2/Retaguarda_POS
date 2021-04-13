@@ -5,7 +5,7 @@
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">
 			<div class="panel-heading">
-				{{ ((isset($venda))?'Editar':'Novo') }} venda
+				{{ ((isset($venda))?'Editar':'Nova') }} venda
 				<div class="pull-right">
 					<div class="btn-group">
 						@if( Helper::temPermissao('vendas-listar') )
@@ -22,7 +22,7 @@
 						<form action="{{ url('/vendas') }}" method="post" enctype="multipart/form-data" class="form-edit" data-parsley-validate> 
 					@endif
 					@csrf	
-					<input type="hidden" name="etapa_id" value="{{ $etapa_id }}" >				
+					<input type="hidden" name="etapa_id" value="{{ $etapa->id }}" >				
 					<div class="row">
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
@@ -39,17 +39,25 @@
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
-							@if( $showQuantidade )
-							<label>Quantidade</label>
-							<input type="number" class="form-control" name="quantidade" min="1" max="{{ $showQuantidade }}" value="{{ (isset($venda)?$venda->quantidade:'1') }}" >
-							@else
-							<input type="hidden" name="quantidade" value="1">
+							@if( !isset( $venda ) )
+							<label>Tipo</label>
+							<select name="quantidade" class="form-control select2" required="">
+								@if( in_array( $etapa->tipo, [ 1, 4, 5 ] ) )
+								<option value="1" {{ (( isset($venda) and $venda->quantidade == 1 )?'selected':'') }}>SIMPLES</option>
+								@endif
+								@if( in_array( $etapa->tipo, [ 2, 4 ] ) )
+								<option value="2" {{ (( isset($venda) and $venda->quantidade == 2 )?'selected':'') }}>DUPLA</option>
+								@endif
+								@if( in_array( $etapa->tipo, [ 3, 5 ] ) )
+								<option value="3" {{ (( isset($venda) and $venda->quantidade == 3 )?'selected':'') }}>TRIPLA</option>
+								@endif
+							</select>
 							@endif
 						</div>
 					</div>
 					<div class="row">
 						<div class="col-md-12 p-lr-o">
-							<br><hr><label>Cliente</label><br>
+							<hr><label>Cliente</label><br>
 						</div>
 					</div>
 					<div class="row">
@@ -70,10 +78,10 @@
 			
 					<div class="row">
 						<div class="col-md-12 p-lr-o">
-							<br><hr><label>Título(s)</label><br>
+							<hr><label>Título(s)</label><br>
 						</div>
 						<div class="col-md-12 p-lr-o">
-							<textarea class="form-control disabled" disabled="">@foreach( $venda->matrizes as $matriz )&bull; {{ $matriz->matriz->bilhete }}: {{ $matriz->matriz->combinacoes }}
+							<textarea class="form-control disabled" rows="3" disabled="">@foreach( $venda->matrizes as $matriz )&bull; {{ $matriz->matriz->bilhete }}: {{ $matriz->matriz->combinacoes }}
 @endforeach</textarea>
 						</div>
 					</div>

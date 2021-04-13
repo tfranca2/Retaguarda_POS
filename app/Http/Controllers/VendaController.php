@@ -167,12 +167,7 @@ class VendaController extends Controller
     public function create( Request $request ){
         $dispositivos = Dispositivo::get();
         $etapa = Etapa::ativa();
-        $showQuantidade = 0;
-        if( in_array( $etapa->tipo, [ 2, 4 ] ) )
-            $showQuantidade = 2;
-        if( in_array( $etapa->tipo, [ 3, 5 ] ) )
-            $showQuantidade = 3;
-        return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapa_id' => $etapa->id, 'showQuantidade' => $showQuantidade ]);
+        return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
     }
     
     public function store( Request $request ){
@@ -271,7 +266,7 @@ class VendaController extends Controller
             $venda = Venda::with('matrizes')->find( $venda->id );
 
             \DB::commit();
-            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas'),'venda'=>$venda],201);
+            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas').'/'.$venda->id.'/edit','venda'=>$venda],201);
         } catch( \Exception $e ){
             \DB::rollback();
             return response()->json(['error'=>$e->getMessage()],404);
@@ -290,7 +285,7 @@ class VendaController extends Controller
         $dispositivos = Dispositivo::get();
         $venda = Venda::with('matrizes')->find($id);
         $etapa = Etapa::find($venda->etapa_id);
-        return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa_id' => $etapa->id, 'showQuantidade' => 0 ]);
+        return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
     }
     
     public function update( Request $request, $id ){
