@@ -24,7 +24,7 @@
             <div class="panel short-states bg-1" style="background: {{ \Auth::user()->empresa()->menu_background }};">
                 <div class="pull-right state-icon"><i class="fa fa-money"></i></div>
                 <div class="panel-body">
-                    <h1>{{ $usuarios }}</h1>
+                    <h1>0</h1>
                     <strong class="text-uppercase">Usuários</strong>
                 </div>
             </div>
@@ -116,8 +116,8 @@
     </div>
     <div class="row">
         <div class="col-md-12 bg-0" style="padding-bottom: 15px; border-right: 5px solid darkgray;">
-            <label>Vendas por Etapa <i class="fa fa-bar-chart"></i></label><br>
-            <canvas id="vendasGraf"></canvas>
+            <label>Faturamento <i class="fa fa-bar-chart"></i></label><br>
+            <canvas id="faturamentoGraf"></canvas>
         </div>
     </div>
     @else
