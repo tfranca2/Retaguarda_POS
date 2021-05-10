@@ -242,7 +242,7 @@ class VendaController extends Controller
                 // seleciona o id do titulo disponivel mais próximo
                 $matriz_id = Matriz::whereBetween( 'id', [ 
                                             $inicio, 
-                                            $etapa->range_final
+                                            $etapa->range_final + ( $etapa->intervalo * $i )
                                         ])
                                         ->whereNotIn( 'id',
                                             VendaMatriz::select('matriz_id')
