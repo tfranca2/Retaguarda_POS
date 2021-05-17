@@ -235,6 +235,11 @@ class VendaController extends Controller
             $venda['ip'] = $request->ip();
             $venda['etapa_id'] = $etapa->id;
             $venda['dispositivo_id'] = $dispositivo->id;
+
+            $venda['ceder_resgate'] = 1;
+            if( $request->has('ceder_resgate') )
+                $venda['ceder_resgate'] = $request->ceder_resgate;
+
             $venda = Venda::create( $venda );
 
             $matriz_id = 0;
