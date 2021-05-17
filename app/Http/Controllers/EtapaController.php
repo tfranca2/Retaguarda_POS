@@ -119,7 +119,7 @@ class EtapaController extends Controller
             $idEtapaAtiva = $etapaAtiva->id;
 
         $etapa = Etapa::findOrFail($id);
-        $dataMaisRecente = Etapa::orderBy('data','DESC')->first()->data;
+        $dataMaisRecente = Etapa::whereRaw('data > NOW()')->orderBy('data')->first()->data;
 
         if( strtotime( $etapa->data ) < strtotime( $dataMaisRecente ) and $id != $idEtapaAtiva )
             return response()->json([ 'error' => 'Essa não é a etapa mais recente!', 'id' => $idEtapaAtiva ], 400 );

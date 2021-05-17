@@ -14,8 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         // Commands\EmailCron::class,
-        Commands\AgendamentoCron::class,
-        Commands\PagseguroCron::class,
+        Commands\EtapaCron::class,
     ];
 
     /**
@@ -27,17 +26,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
 
+        // ATIVA A PROXIMA ETAPA
+        $schedule->command('ativaetapa:cron')->dailyAt('00:00');
+                // ->appendOutputTo( storage_path('logs/ativaetapa-'.date('Y-m-d').'.log') );
+
         // VERIFICA A FILA E DISPARA OS EMAILS
         // $schedule->command('email:cron')->appendOutputTo( storage_path('logs/email-'.date('Y-m-d').'.log') );
 
-        // ALERTA O ADMIN DOS AGENDAMENTOS SEM PRESTADOR
-        $schedule->command('agendamento:cron');
-
-
-        // VERIFICA DIARIAMENTE OS PAGAMENTOS NA API DO PAGSEGURO
-        $schedule->command('pagseguro:cron')
-                ->dailyAt('00:00')
-                ->appendOutputTo( storage_path('logs/pagseguro.log') );
     }
 
     /**
