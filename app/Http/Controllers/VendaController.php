@@ -187,6 +187,10 @@ class VendaController extends Controller
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
 
+        // etapa passou do prazo
+        if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
+            return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
+
         if( $etapa->tipo == 4 ) // simples e dupla
             $validators['quantidade'] = 'required|integer|in:1,2';
 
