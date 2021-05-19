@@ -312,6 +312,20 @@ class VendaController extends Controller
         ], 200 );
     }
     
+    public function confirmar( Request $request, $id ){
+
+        $venda = Venda::find($id);
+        $venda->confirmada = 1;
+        $venda->save();
+
+        return response()->json([ 
+            'message' => 'Atualizado com sucesso', 
+            'redirectURL' => url('/vendas'), 
+            'venda' => $venda 
+        ], 200 );
+        
+    }
+    
     public function destroy( Request $request, $id ){
         $venda = Venda::findOrFail($id);
         $venda->delete();

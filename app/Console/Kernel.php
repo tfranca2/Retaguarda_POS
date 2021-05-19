@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         // Commands\EmailCron::class,
         Commands\EtapaCron::class,
+        Commands\ConfirmaVendaCron::class,
     ];
 
     /**
@@ -29,6 +30,9 @@ class Kernel extends ConsoleKernel
         // ATIVA A PROXIMA ETAPA
         $schedule->command('ativaetapa:cron')->dailyAt('00:00');
                 // ->appendOutputTo( storage_path('logs/ativaetapa-'.date('Y-m-d').'.log') );
+
+        // REMOVE VENDAS NAO CONFIRMADAS
+        $schedule->command('confirmavenda:cron');
 
         // VERIFICA A FILA E DISPARA OS EMAILS
         // $schedule->command('email:cron')->appendOutputTo( storage_path('logs/email-'.date('Y-m-d').'.log') );
