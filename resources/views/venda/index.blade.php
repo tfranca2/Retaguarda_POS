@@ -120,8 +120,8 @@
 							@endphp
 								<tr>
 									<td>{{ $venda->etapa->descricao }}</td>
-									<td>{{ $venda->dispositivo->distribuidor->name }}</td>
-									<td>{{ $venda->dispositivo->nome }}</td>
+									<td>{{ @$venda->dispositivo->distribuidor->name }}</td>
+									<td>{{ ( @$venda->dispositivo->nome )?:$venda->pdv }}</td>
 									<td>
 										R$ {{ Helper::formatDecimalToView( $valor ) }}
 									</td>
@@ -129,6 +129,13 @@
 									<td>{{ Helper::convertDate( $venda->created_at ) }}</td>
 									@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 									<td class="text-center">
+										@if( !$venda->confirmada )
+										@if( Helper::temPermissao('vendas-editar') )
+										<a href="{{ url('/vendas/'.$venda->id.'/confirmar') }}" class="btn btn-success" title="Confirmar"><i class="fa fa-check" aria-hidden="true"></i></a>
+										@else
+										<button class="btn btn-warning" title="Venda ainda não confirmada"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></button>
+										@endif
+										@endif
 										@if( Helper::temPermissao('vendas-editar') )
 										<a href="{{ url('/vendas/'.$venda->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
 										@endif

@@ -173,9 +173,8 @@ class VendaController extends Controller
     public function store( Request $request ){
 
         $validators = [
-            // 'etapa_id' => 'required_if:mac,""|integer',
-            'dispositivo_id' => 'required_if:mac,""|integer',
-            'mac' => 'required_if:dispositivo_id,""|max:255',
+            'dispositivo_id' => 'required_if:pdv,""|integer',
+            'pdv' => 'required_if:dispositivo_id,""|max:255',
             // 'nome' => 'required|max:255',
             'cpf' => 'required_if:telefone,""|max:255',
             'telefone' => 'required_if:cpf,""|max:255',
@@ -201,16 +200,16 @@ class VendaController extends Controller
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
 
-        if( $request->has('dispositivo_id') )
+        $dispositivo = null;
+        if( $request->has('dispositivo_id') ){
             $dispositivo = Dispositivo::find($request->dispositivo_id);
-        else
-            $dispositivo = Dispositivo::where('distribuidor_id',\Auth::user()->id)->where('mac',strtoupper($request->mac))->first();
-        if( !$dispositivo )
-            return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
+            if( !$dispositivo )
+                return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
+        }
 
-        if( $request->has('nome') )
-            if( ! Helper::validaNome($request->nome) )
-                return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
+        // if( $request->has('nome') )
+        //     if( ! Helper::validaNome($request->nome) )
+        //         return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
 
         if( $request->has('cpf') )
             if( ! Helper::validaCPF($request->cpf) )
@@ -234,7 +233,8 @@ class VendaController extends Controller
             $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
             $venda['ip'] = $request->ip();
             $venda['etapa_id'] = $etapa->id;
-            $venda['dispositivo_id'] = $dispositivo->id;
+            if( $dispositivo )
+                $venda['dispositivo_id'] = $dispositivo->id;
 
             $venda['ceder_resgate'] = 1;
             if( $request->has('ceder_resgate') )
@@ -314,7 +314,7 @@ class VendaController extends Controller
     
     public function confirmar( Request $request, $id ){
 
-        $venda = Venda::find($id);
+        $venda = Venda::findOrFail($id);
         $venda->confirmada = 1;
         $venda->save();
 
@@ -323,7 +323,7 @@ class VendaController extends Controller
             'redirectURL' => url('/vendas'), 
             'venda' => $venda 
         ], 200 );
-        
+
     }
     
     public function destroy( Request $request, $id ){

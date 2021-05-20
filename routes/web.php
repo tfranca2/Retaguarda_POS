@@ -52,6 +52,7 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('dispositivos', 'DispositivoController');
 
 	Route::get('vendas/csv', 'VendaController@csv');
+	Route::get('vendas/confirmar', 'VendaController@confirmar');
 	Route::resource('vendas', 'VendaController');
 	
 	Route::resource('etapas', 'EtapaController');
