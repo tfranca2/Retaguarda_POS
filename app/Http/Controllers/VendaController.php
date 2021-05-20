@@ -176,8 +176,8 @@ class VendaController extends Controller
             'dispositivo_id' => 'required_if:pdv,""|integer',
             'pdv' => 'required_if:dispositivo_id,""|max:255',
             // 'nome' => 'required|max:255',
-            'cpf' => 'required_if:telefone,""|max:255',
-            'telefone' => 'required_if:cpf,""|max:255',
+            'cpf' => 'required|max:255',
+            'telefone' => 'required|max:255',
         ];
 
         $etapa = Etapa::ativa();
