@@ -10,6 +10,7 @@ use Validator;
 use App\Matriz;
 use App\VendaMatriz;
 use App\Dispositivo;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -226,6 +227,35 @@ class VendaController extends Controller
             $qtd = 3;
         if( $request->has('quantidade') )
             $qtd = $request->quantidade;
+
+        // validar se bilhete consta como vendido
+        if( $request->has('bilhete') ){
+            $qtd = 0;
+
+            $bilhetes = $request->bilhete;
+            if( ! is_array( $request->bilhete ) )
+                $bilhetes = array( $request->bilhete );
+
+            $pesquisaBilhete = VendaMatriz::join('vendas','vendas.id','=','venda_id')
+                                ->where('etapa_id', $etapa->id)
+                                ->whereIn('matriz_id', $bilhetes)
+                                ->get();
+            $vendido = count( $pesquisaBilhete );
+
+            if( $vendido ){
+
+                $str_bilhete = array();
+                foreach( $pesquisaBilhete as $bilhete ){
+                    $str_bilhete[] = $bilhete->matriz_id;
+                }
+
+                $plural = ((count($str_bilhete)>1)?'s':'');
+                return response()->json(['error'=>['bilhete'=>[
+                    'Bilhete'. $plural .' [ '. implode(', ', $str_bilhete) .' ] vendido'. $plural .', selecione outro'. $plural .'.'
+                ]]],400);
+            }
+
+        }
         
         \DB::beginTransaction();
         try {
@@ -240,6 +270,7 @@ class VendaController extends Controller
             if( $request->has('ceder_resgate') )
                 $venda['ceder_resgate'] = $request->ceder_resgate;
 
+            $venda['key'] = Str::uuid();
             $venda = Venda::create( $venda );
 
             $matriz_id = 0;
@@ -265,17 +296,31 @@ class VendaController extends Controller
                                         )
                                         ->first()
                                         ->id;
-                $venda_matriz = VendaMatriz::create([ 
+                VendaMatriz::create([ 
                     'venda_id' => $venda->id, 
                     'matriz_id' => $matriz_id 
                 ]);
 
             }
 
+            if( $request->has('bilhete') ){
+                foreach( $request->bilhete as $matriz_id ){ 
+                    VendaMatriz::create([ 
+                        'venda_id' => $venda->id, 
+                        'matriz_id' => $matriz_id 
+                    ]);
+                }
+            }
+
             $venda = Venda::with('matrizes')->find( $venda->id );
 
             \DB::commit();
-            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas').'/'.$venda->id.'/edit','venda'=>$venda],201);
+            return response()->json([
+                'message'=>'Criado com sucesso',
+                'comprovanteURL' => url('/comprovante/'.$venda->key),
+                'venda'=>$venda,
+                'redirectURL'=>url('/vendas').'/'.$venda->id.'/edit',
+            ],201);
         } catch( \Exception $e ){
             \DB::rollback();
             return response()->json(['error'=>$e->getMessage()],404);
@@ -318,10 +363,11 @@ class VendaController extends Controller
         $venda->confirmada = 1;
         $venda->save();
 
-        return response()->json([ 
-            'message' => 'Atualizado com sucesso', 
-            'redirectURL' => url('/vendas'), 
-            'venda' => $venda 
+        return response()->json([
+            'message' => 'Confirmado com sucesso',
+            'comprovanteURL' => url('/comprovante/'.$venda->key),
+            'venda' => $venda,
+            'redirectURL' => url('/vendas'),
         ], 200 );
 
     }
@@ -330,6 +376,13 @@ class VendaController extends Controller
         $venda = Venda::findOrFail($id);
         $venda->delete();
         return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
+    }
+    
+    public function comprovante( Request $request, $key ){
+        $venda = Venda::with('etapa')->with('matrizes')->where('key',$key)->where('confirmada',1)->first();
+        if( $venda )
+            return view('venda.comprovante',[ 'venda' => $venda ]);
+        abort(404);
     }
     
 }

@@ -21,6 +21,8 @@ Auth::routes();
 
 Route::get('/logout', '\App\Http\Controllers\Auth\LoginController@logout');
 
+Route::get('/comprovante/{key}', 'VendaController@comprovante');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');

@@ -88,9 +88,9 @@
     <body>
 
     <center>
-        <br><br><br>
-        <a href="{{ url('/') }}"><img src="{{ url('/public/images/'.$empresa->main_logo ) }}" alt="{{ $empresa->nome }}" style="max-width: 300px; max-height: 170px;"></a>
-        <br><br><br>
+        <br>
+        <a href="{{ url('/') }}"><img src="{{ url('/public/images/'.$empresa->main_logo ) }}" alt="{{ $empresa->nome }}" style="max-width: 250px; max-height: 105px;"></a><br>
+        <br>
     </center>
 
     @yield('content')
