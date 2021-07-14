@@ -202,15 +202,15 @@ $(function() {
     /**
      * Initialize Nice Scroll with .niceScroll class
      */
-    $(".niceScroll").niceScroll({
-        zindex: "10",
-        cursorwidth: "8px",
-        cursoropacitymax: 0.3,
-        cursorcolor: "#000000",
-        cursordragontouch: true,
-        cursorborderradius: "10px",
-        cursorborder: "2px solid transparent"
-    });
+    // $(".niceScroll").niceScroll({
+    //     zindex: "10",
+    //     cursorwidth: "8px",
+    //     cursoropacitymax: 0.3,
+    //     cursorcolor: "#000000",
+    //     cursordragontouch: true,
+    //     cursorborderradius: "10px",
+    //     cursorborder: "2px solid transparent"
+    // });
     var $mailboxNavAside = $('.Mailbox-nav-aside'),
         $mailboxList = $('.Mailbox-list'),
         $mailAnchor = $('.Mail > a'),

@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Distribuidor;
-use App\Estado;
-use App\Cidade;
 use Session;
 use Validator;
+use App\Estado;
+use App\Cidade;
+use App\Dispositivo;
+use App\Distribuidor;
+use App\Helpers\Helper;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Hash;
-use App\Helpers\Helper;
 
 class DistribuidorController extends Controller
 {
@@ -167,6 +168,10 @@ class DistribuidorController extends Controller
         $distribuidor->delete();
 
         return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
+    }
+
+    public function dispositivos( Request $request, $id ){
+        return response()->json( Dispositivo::where('distribuidor_id',$id)->get() , 200 );
     }
 
 }

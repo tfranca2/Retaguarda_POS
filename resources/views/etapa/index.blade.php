@@ -22,6 +22,9 @@
 								<th>Nº Etapa</th>
 								<th>Descrição</th>
 								<th>Data</th>
+								@if( Helper::temPermissao('etapas-gerenciar') )
+								<th class="text-center">Ativar</th>
+								@endif
 								<th>Ações</th>
 							</tr>
 						</thead>
@@ -30,7 +33,12 @@
 								<tr>
 									<td>{{ $etapa->etapa}}</td>
 									<td>{{ $etapa->descricao }}</td>
-									<td>{{ $etapa->data }}</td>
+									<td>{{ Helper::convertDate($etapa->data) }}</td>
+									@if( Helper::temPermissao('etapas-gerenciar') )
+									<td class="text-center">
+										<label class="switch switch-success"><input type="checkbox" data-id="{{ $etapa->id }}" {{ (($etapa->ativa)?'checked="checked"':'') }} ><span class="slider round"></span></label>
+									</td>
+									@endif
 									<td class="text-center">
 										@if( Helper::temPermissao('etapas-editar') )
 										<a href="{{ url('/etapas/'.$etapa->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
@@ -54,4 +62,33 @@
 		</div>
 	</div>
 </div>
+@endsection
+@section('scripts')
+<script>
+	$('.switch').click(function(){
+		var obj = $(this);
+
+		$('.switch').not( $(obj) ).find('input').prop('checked',false);
+		
+		if( $(obj).find('input').is(':checked') ){
+			$.ajax({
+                type: "GET",
+                url: "{{ url('/etapas') }}/"+$(obj).find('input').data('id')+"/ativar",
+                success: function(data){
+					$('.switch input[data-id='+data.id+']').prop('checked',true);
+					if( data.message )
+						toastr.success(data.message);
+				},
+				complete: function(data) {
+					if( data.responseJSON.error ) {
+						$(obj).find('input').prop('checked',false);
+						toastr.error(data.responseJSON.error);
+						$('.switch input[data-id='+ data.responseJSON.id +']').prop('checked',true);
+					}
+				}
+			});
+		}
+
+	});
+</script>
 @endsection

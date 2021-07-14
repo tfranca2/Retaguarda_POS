@@ -5,7 +5,7 @@
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">
 			<div class="panel-heading">
-				{{ ((isset($etapa))?'Editar':'Novo') }} etapa
+				{{ ((isset($etapa))?'Editar':'Nova') }} etapa
 				<div class="pull-right">
 					<div class="btn-group">
 						@if( Helper::temPermissao('etapas-listar') )
@@ -26,19 +26,19 @@
 						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">Nº Etapa</label>
-								<input type="text" class="form-control" name="etapa" value="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:''}}">
+								<input type="number" min="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" class="form-control" name="etapa" value="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" required="">
 							</div>
 						</div>
 						<div class="col-md-6 p-lr-o">
 							<div class="form-group">
 								<label for="">Descrição</label>
-								<input type="text" class="form-control" name="descricao" value="{{(isset($etapa) and $etapa->descricao)?$etapa->descricao:''}}">
+								<input type="text" class="form-control" name="descricao" value="{{(isset($etapa) and $etapa->descricao)?$etapa->descricao:''}}" required="">
 							</div>
 						</div>
 						<div class="col-md-4 p-lr-o">
 							<div class="form-group">
 								<label for="">Data</label>
-								<input type="date" class="form-control" name="data" value="{{(isset($etapa) and $etapa->data)?$etapa->data:''}}">
+								<input type="date" class="form-control" name="data" value="{{(isset($etapa) and $etapa->data)?$etapa->data:''}}" required="">
 							</div>
 						</div>
 					</div><!-- /row -->
@@ -46,70 +46,70 @@
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Inicial</label>
-								<input type="text" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
+								<input type="number" min="0" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Final</label>
-								<input type="text" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
+								<input type="number" min="0" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Tipo</label>
-								<select name="tipo" id="tipo" class="form-control">
-									<option value="-1">Selecione</option>
-									<option value="1" @if( isset( $etapa ) and $etapa->tipo == 1 ) echo selected="selected"   @endif >Simples</option>
-									<option value="2" @if( isset( $etapa ) and $etapa->tipo == 2 ) echo selected="selected"   @endif >Dupla</option>
-									<option value="3" @if( isset( $etapa ) and $etapa->tipo == 3 ) echo selected="selected"   @endif >Tripla</option>
-									<option value="4" @if( isset( $etapa ) and $etapa->tipo == 4 ) echo selected="selected"   @endif >Simples e Dupla</option>
-									<option value="5" @if( isset( $etapa ) and $etapa->tipo == 5 ) echo selected="selected"   @endif >Simples e Tripla</option>
+								<select name="tipo" id="tipo" class="form-control" required="">
+									<option value="">Selecione</option>
+									<option value="1" @if( isset( $etapa ) and $etapa->tipo == 1 ) echo selected="selected" @endif >Simples</option>
+									<option value="2" @if( isset( $etapa ) and $etapa->tipo == 2 ) echo selected="selected" @endif >Dupla</option>
+									<option value="3" @if( isset( $etapa ) and $etapa->tipo == 3 ) echo selected="selected" @endif >Tripla</option>
+									<option value="4" @if( isset( $etapa ) and $etapa->tipo == 4 ) echo selected="selected" @endif >Simples e Dupla</option>
+									<option value="5" @if( isset( $etapa ) and $etapa->tipo == 5 ) echo selected="selected" @endif >Simples e Tripla</option>
 								</select>
 							</div>
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Intervalo</label>
-								<input type="text" class="form-control" id="intervalo" name="intervalo" value="{{(isset($etapa) and $etapa->intervalo)?$etapa->intervalo:''}}">
+								<input type="number" class="form-control" id="intervalo" name="intervalo" value="{{(isset($etapa) and $etapa->intervalo)?$etapa->intervalo:''}}">
 							</div>
 						</div>
 					</div><!-- /row -->
 					<div class="row">
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="">valor Simples</label>
-								<input type="text" class="form-control" id="valor_simples" name="valor_simples" value="{{(isset($etapa) and $etapa->valor_simples)?$etapa->valor_simples:''}}">
+								<label for="">Valor Simples</label>
+								<input type="text" class="form-control decimal" id="valor_simples" name="valor_simples" value="{{(isset($etapa) and $etapa->valor_simples)?\Helper::formatDecimalToView($etapa->valor_simples):''}}">
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="">valor Duplo</label>
-								<input type="text" class="form-control" id="valor_duplo" name="valor_duplo" value="{{(isset($etapa) and $etapa->valor_duplo)?$etapa->valor_duplo:''}}">
+								<label for="">Valor Comissão Simples</label>
+								<input type="text" class="form-control decimal" id="v_comissao_simples" name="v_comissao_simples" value="{{(isset($etapa) and $etapa->v_comissao_simples)?\Helper::formatDecimalToView($etapa->v_comissao_simples):''}}">
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="">valor Triplo</label>
-								<input type="text" class="form-control" id="valor_triplo" name="valor_triplo" value="{{(isset($etapa) and $etapa->valor_triplo)?$etapa->valor_triplo:''}}">
+								<label for="">Valor Dupla</label>
+								<input type="text" class="form-control decimal" id="valor_duplo" name="valor_duplo" value="{{(isset($etapa) and $etapa->valor_duplo)?\Helper::formatDecimalToView($etapa->valor_duplo):''}}">
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="">valor comissão Simpl.</label>
-								<input type="text" class="form-control" id="v_comissao_simples" name="v_comissao_simples" value="{{(isset($etapa) and $etapa->v_comissao_simples)?$etapa->v_comissao_simples:''}}">
+								<label for="">Valor Comissão Dupla</label>
+								<input type="text" class="form-control decimal" id="v_comissao_duplo" name="v_comissao_duplo" value="{{(isset($etapa) and $etapa->v_comissao_duplo)?\Helper::formatDecimalToView($etapa->v_comissao_duplo):''}}">
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="">valor comissão Dupla</label>
-								<input type="text" class="form-control" id="v_comissao_duplo" name="v_comissao_duplo" value="{{(isset($etapa) and $etapa->v_comissao_duplo)?$etapa->v_comissao_duplo:''}}">
+								<label for="">Valor Tripla</label>
+								<input type="text" class="form-control decimal" id="valor_triplo" name="valor_triplo" value="{{(isset($etapa) and $etapa->valor_triplo)?\Helper::formatDecimalToView($etapa->valor_triplo):''}}">
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-3">
 							<div class="form-group">
-								<label for="">valor comissão Tripla</label>
-								<input type="text" class="form-control" id="v_comissao_tripla" name="v_comissao_tripla" value="{{(isset($etapa) and $etapa->v_comissao_tripla)?$etapa->v_comissao_tripla:''}}">
+								<label for="">Valor Comissão Tripla</label>
+								<input type="text" class="form-control decimal" id="v_comissao_triplo" name="v_comissao_triplo" value="{{(isset($etapa) and $etapa->v_comissao_triplo)?\Helper::formatDecimalToView($etapa->v_comissao_triplo):''}}">
 							</div>
 						</div>
 					</div><!-- /row -->
@@ -125,77 +125,67 @@
 		</div>
 	</div>
 </div>
-<script>
-	window.onload = function(){
-		var tipo = document.getElementById("tipo");
-		selecionaStatos();
-		tipo.addEventListener('change',selecionaStatos);
-		function selecionaStatos(){
-			if(tipo.value =="1" ){
-				//desabilita também o input intervalo
-				document.getElementById("intervalo").disabled = true;
-				document.getElementById("valor_simples").disabled = false;
-				document.getElementById("v_comissao_simples").disabled = false;
+@endsection
+@section('scripts')
+<script type="text/javascript">
+	$(document).ready(function(){
 
-				document.getElementById("valor_duplo").disabled = true;
-				document.getElementById("v_comissao_duplo").disabled = true;
+		function limpa(){
 
-				document.getElementById("valor_duplo").value = "";
-				document.getElementById("v_comissao_duplo").value = "";
-				document.getElementById("intervalo").value = "";
+			$('#intervalo').removeAttr('required').parent().parent().hide();
+			$('#valor_simples').removeAttr('required').parent().parent().hide();
+			$('#valor_duplo').removeAttr('required').parent().parent().hide();
+			$('#valor_triplo').removeAttr('required').parent().parent().hide();
+			$('#v_comissao_simples').removeAttr('required').parent().parent().hide();
+			$('#v_comissao_triplo').removeAttr('required').parent().parent().hide();
+			$('#v_comissao_duplo').removeAttr('required').parent().parent().hide();
 
-
-				document.getElementById("valor_triplo").disabled = true;
-				document.getElementById("v_comissao_tripla").disabled = true;
-			}
-			//dupla
-			if(tipo.value =="2" ){
-				document.getElementById("intervalo").disabled = false; 
-				document.getElementById("valor_duplo").disabled = false;
-				document.getElementById("v_comissao_duplo").disabled = false;
-
-				document.getElementById("valor_simples").disabled = true;
-				document.getElementById("v_comissao_simples").disabled = true;
-
-				document.getElementById("valor_triplo").disabled = true;
-				document.getElementById("v_comissao_tripla").disabled = true;
-			}
-			//tripla
-			if(tipo.value =="3" ){
-				document.getElementById("intervalo").disabled = false; 
-				document.getElementById("valor_triplo").disabled = false;
-				document.getElementById("v_comissao_tripla").disabled = false;
-
-				document.getElementById("valor_simples").disabled = true;
-				document.getElementById("v_comissao_simples").disabled = true;
-
-				document.getElementById("valor_duplo").disabled = true;
-				document.getElementById("v_comissao_duplo").disabled = true;
-
-				document.getElementById("valor_duplo").value = "";
-				document.getElementById("v_comissao_duplo").value = "";
-			}
-			if(tipo.value == 4){
-				document.getElementById("valor_simples").disabled = false;
-				document.getElementById("v_comissao_simples").disabled = false;
-				document.getElementById("valor_duplo").disabled = false;
-				document.getElementById("v_comissao_duplo").disabled = false;
-
-				document.getElementById("valor_triplo").disabled = true;
-				document.getElementById("v_comissao_tripla").disabled = true;
-
-			}
-			if(tipo.value == 5){
-				document.getElementById("valor_simples").disabled = false;
-				document.getElementById("v_comissao_simples").disabled = false;
-				document.getElementById("valor_triplo").disabled = false;
-				document.getElementById("v_comissao_tripla").disabled = false;
-
-				document.getElementById("valor_duplo").disabled = true;
-				document.getElementById("v_comissao_duplo").disabled = true;
-				
-			}
 		}
-	}
+
+		$("#tipo").on('change',function(){
+
+			limpa();
+
+			var tipo = $("#tipo option:selected").val();
+			switch( tipo ){
+				case "1": // simples
+					$('#valor_simples').attr('required','true').parent().parent().show();
+					$('#v_comissao_simples').attr('required','true').parent().parent().show();
+				break;
+			
+				case "2": // dupla
+					$('#valor_duplo').attr('required','true').parent().parent().show();
+					$('#v_comissao_duplo').attr('required','true').parent().parent().show();
+					$('#intervalo').attr('required','true').parent().parent().show();
+				break;
+			
+				case "3": // tripla:
+					$('#valor_triplo').attr('required','true').parent().parent().show();
+					$('#v_comissao_triplo').attr('required','true').parent().parent().show();
+					$('#intervalo').attr('required','true').parent().parent().show();
+				break;
+
+				case "4": // simples e dupla
+					$('#valor_simples').attr('required','true').parent().parent().show();
+					$('#v_comissao_simples').attr('required','true').parent().parent().show();
+					$('#valor_duplo').attr('required','true').parent().parent().show();
+					$('#v_comissao_duplo').attr('required','true').parent().parent().show();
+					$('#intervalo').attr('required','true').parent().parent().show();
+				break;
+
+				case "5": // simples e tripla
+					$('#valor_simples').attr('required','true').parent().parent().show();
+					$('#v_comissao_simples').attr('required','true').parent().parent().show();
+					$('#valor_triplo').attr('required','true').parent().parent().show();
+					$('#v_comissao_triplo').attr('required','true').parent().parent().show();
+					$('#intervalo').attr('required','true').parent().parent().show();
+				break;
+			}
+		});
+
+		$("#tipo").change();
+
+	});
+</script>
 </script>
 @endsection

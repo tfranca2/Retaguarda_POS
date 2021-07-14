@@ -66,7 +66,7 @@
 									<option value=""></option>
 									@forelse( $usuarios as $usuario )
 									<option value="{{$usuario->id}}" 
-										@if( isset($dispositivo) and $dispositivo->usuario_id == $usuario->id ) selected="selected" @endif
+										@if( isset($dispositivo) and $dispositivo->distribuidor_id == $usuario->id ) selected="selected" @endif
 									>{{$usuario->name}}</option>
 									@empty
 									@endforelse
