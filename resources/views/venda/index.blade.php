@@ -124,8 +124,8 @@
 									<td>Descrição</td>
 =======
 									<td>{{ $venda->etapa->descricao }}</td>
-									<td>{{ $venda->dispositivo->distribuidor->name }}</td>
-									<td>{{ $venda->dispositivo->nome }}</td>
+									<td>{{ @$venda->dispositivo->distribuidor->name }}</td>
+									<td>{{ ( @$venda->dispositivo->nome )?:$venda->pdv }}</td>
 									<td>
 										R$ {{ Helper::formatDecimalToView( $valor ) }}
 									</td>
@@ -134,6 +134,13 @@
 									@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 >>>>>>> 838a5f9d9fe7a80b7400a15222daa4af92b826f1
 									<td class="text-center">
+										@if( !$venda->confirmada )
+										@if( Helper::temPermissao('vendas-editar') )
+										<a href="{{ url('/vendas/'.$venda->id.'/confirmar') }}" class="btn btn-success" title="Confirmar"><i class="fa fa-check" aria-hidden="true"></i></a>
+										@else
+										<button class="btn btn-warning" title="Venda ainda não confirmada"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></button>
+										@endif
+										@endif
 										@if( Helper::temPermissao('vendas-editar') )
 										<a href="{{ url('/vendas/'.$venda->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
 										@endif

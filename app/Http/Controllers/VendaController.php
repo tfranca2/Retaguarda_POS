@@ -10,6 +10,7 @@ use Validator;
 use App\Matriz;
 use App\VendaMatriz;
 use App\Dispositivo;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -173,12 +174,11 @@ class VendaController extends Controller
     public function store( Request $request ){
 
         $validators = [
-            // 'etapa_id' => 'required_if:mac,""|integer',
-            'dispositivo_id' => 'required_if:mac,""|integer',
-            'mac' => 'required_if:dispositivo_id,""|max:255',
+            'dispositivo_id' => 'required_if:pdv,""|integer',
+            'pdv' => 'required_if:dispositivo_id,""|max:255',
             // 'nome' => 'required|max:255',
-            'cpf' => 'required_if:telefone,""|max:255',
-            'telefone' => 'required_if:cpf,""|max:255',
+            'cpf' => 'required|max:255',
+            'telefone' => 'required|max:255',
         ];
 
         $etapa = Etapa::ativa();
@@ -186,6 +186,10 @@ class VendaController extends Controller
         //     $etapa = Etapa::find($request->etapa_id);
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
+
+        // etapa passou do prazo
+        if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
+            return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
 
         if( $etapa->tipo == 4 ) // simples e dupla
             $validators['quantidade'] = 'required|integer|in:1,2';
@@ -197,16 +201,16 @@ class VendaController extends Controller
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
 
-        if( $request->has('dispositivo_id') )
+        $dispositivo = null;
+        if( $request->has('dispositivo_id') ){
             $dispositivo = Dispositivo::find($request->dispositivo_id);
-        else
-            $dispositivo = Dispositivo::where('distribuidor_id',\Auth::user()->id)->where('mac',strtoupper($request->mac))->first();
-        if( !$dispositivo )
-            return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
+            if( !$dispositivo )
+                return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
+        }
 
-        if( $request->has('nome') )
-            if( ! Helper::validaNome($request->nome) )
-                return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
+        // if( $request->has('nome') )
+        //     if( ! Helper::validaNome($request->nome) )
+        //         return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
 
         if( $request->has('cpf') )
             if( ! Helper::validaCPF($request->cpf) )
@@ -223,6 +227,35 @@ class VendaController extends Controller
             $qtd = 3;
         if( $request->has('quantidade') )
             $qtd = $request->quantidade;
+
+        // validar se bilhete consta como vendido
+        if( $request->has('bilhete') ){
+            $qtd = 0;
+
+            $bilhetes = $request->bilhete;
+            if( ! is_array( $request->bilhete ) )
+                $bilhetes = array( $request->bilhete );
+
+            $pesquisaBilhete = VendaMatriz::join('vendas','vendas.id','=','venda_id')
+                                ->where('etapa_id', $etapa->id)
+                                ->whereIn('matriz_id', $bilhetes)
+                                ->get();
+            $vendido = count( $pesquisaBilhete );
+
+            if( $vendido ){
+
+                $str_bilhete = array();
+                foreach( $pesquisaBilhete as $bilhete ){
+                    $str_bilhete[] = $bilhete->matriz_id;
+                }
+
+                $plural = ((count($str_bilhete)>1)?'s':'');
+                return response()->json(['error'=>['bilhete'=>[
+                    'Bilhete'. $plural .' [ '. implode(', ', $str_bilhete) .' ] vendido'. $plural .', selecione outro'. $plural .'.'
+                ]]],400);
+            }
+
+        }
         
         \DB::beginTransaction();
         try {
@@ -230,7 +263,14 @@ class VendaController extends Controller
             $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
             $venda['ip'] = $request->ip();
             $venda['etapa_id'] = $etapa->id;
-            $venda['dispositivo_id'] = $dispositivo->id;
+            if( $dispositivo )
+                $venda['dispositivo_id'] = $dispositivo->id;
+
+            $venda['ceder_resgate'] = 1;
+            if( $request->has('ceder_resgate') )
+                $venda['ceder_resgate'] = $request->ceder_resgate;
+
+            $venda['key'] = Str::uuid();
             $venda = Venda::create( $venda );
 
             $matriz_id = 0;
@@ -242,7 +282,7 @@ class VendaController extends Controller
                 // seleciona o id do titulo disponivel mais próximo
                 $matriz_id = Matriz::whereBetween( 'id', [ 
                                             $inicio, 
-                                            $etapa->range_final
+                                            $etapa->range_final + ( $etapa->intervalo * $i )
                                         ])
                                         ->whereNotIn( 'id',
                                             VendaMatriz::select('matriz_id')
@@ -256,17 +296,31 @@ class VendaController extends Controller
                                         )
                                         ->first()
                                         ->id;
-                $venda_matriz = VendaMatriz::create([ 
+                VendaMatriz::create([ 
                     'venda_id' => $venda->id, 
                     'matriz_id' => $matriz_id 
                 ]);
 
             }
 
+            if( $request->has('bilhete') ){
+                foreach( $request->bilhete as $matriz_id ){ 
+                    VendaMatriz::create([ 
+                        'venda_id' => $venda->id, 
+                        'matriz_id' => $matriz_id 
+                    ]);
+                }
+            }
+
             $venda = Venda::with('matrizes')->find( $venda->id );
 
             \DB::commit();
-            return response()->json(['message'=>'Criado com sucesso','redirectURL'=>url('/vendas').'/'.$venda->id.'/edit','venda'=>$venda],201);
+            return response()->json([
+                'message'=>'Criado com sucesso',
+                'comprovanteURL' => url('/comprovante/'.$venda->key),
+                'venda'=>$venda,
+                'redirectURL'=>url('/vendas').'/'.$venda->id.'/edit',
+            ],201);
         } catch( \Exception $e ){
             \DB::rollback();
             return response()->json(['error'=>$e->getMessage()],404);
@@ -303,10 +357,32 @@ class VendaController extends Controller
         ], 200 );
     }
     
+    public function confirmar( Request $request, $id ){
+
+        $venda = Venda::findOrFail($id);
+        $venda->confirmada = 1;
+        $venda->save();
+
+        return response()->json([
+            'message' => 'Confirmado com sucesso',
+            'comprovanteURL' => url('/comprovante/'.$venda->key),
+            'venda' => $venda,
+            'redirectURL' => url('/vendas'),
+        ], 200 );
+
+    }
+    
     public function destroy( Request $request, $id ){
         $venda = Venda::findOrFail($id);
         $venda->delete();
         return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
+    }
+    
+    public function comprovante( Request $request, $key ){
+        $venda = Venda::with('etapa')->with('matrizes')->where('key',$key)->where('confirmada',1)->first();
+        if( $venda )
+            return view('venda.comprovante',[ 'venda' => $venda ]);
+        abort(404);
     }
     
 }

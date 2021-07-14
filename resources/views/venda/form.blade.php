@@ -74,6 +74,7 @@
 							<input type="text" class="form-control" name="telefone" value="{{ (isset($venda)?$venda->telefone:'') }}" data-parsley-required="true"  required="" >
 						</div>
 					</div>
+					<input type="hidden" name="confirmada" value="1">
 					@if( isset($venda) and isset($venda->matrizes) and $venda->matrizes )
 			
 					<div class="row">

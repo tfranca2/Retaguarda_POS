@@ -21,6 +21,8 @@ Auth::routes();
 
 Route::get('/logout', '\App\Http\Controllers\Auth\LoginController@logout');
 
+Route::get('/comprovante/{key}', 'VendaController@comprovante');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');
@@ -52,6 +54,7 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('dispositivos', 'DispositivoController');
 
 	Route::get('vendas/csv', 'VendaController@csv');
+	Route::get('vendas/confirmar', 'VendaController@confirmar');
 	Route::resource('vendas', 'VendaController');
 	
 	Route::resource('etapas', 'EtapaController');
