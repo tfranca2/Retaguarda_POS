@@ -119,10 +119,6 @@
 					            }
 							@endphp
 								<tr>
-<<<<<<< HEAD
-									<td>{{ $venda->dispositivo()->first()->nome }}</td>
-									<td>Descrição</td>
-=======
 									<td>{{ $venda->etapa->descricao }}</td>
 									<td>{{ @$venda->dispositivo->distribuidor->name }}</td>
 									<td>{{ ( @$venda->dispositivo->nome )?:$venda->pdv }}</td>
@@ -132,7 +128,6 @@
 									<td>R$ {{ Helper::formatDecimalToView( $comissao ) }}</td>
 									<td>{{ Helper::convertDate( $venda->created_at ) }}</td>
 									@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
->>>>>>> 838a5f9d9fe7a80b7400a15222daa4af92b826f1
 									<td class="text-center">
 										@if( !$venda->confirmada )
 										@if( Helper::temPermissao('vendas-editar') )

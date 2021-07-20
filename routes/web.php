@@ -11,10 +11,10 @@
 |
 */
 
-Route::get('/', function(){ 
+Route::get('/', function(){
 	if( Auth::check() )
         return redirect()->route('home');
-	return view('welcome'); 
+	return view('welcome');
 });
 
 Auth::routes();
@@ -47,7 +47,7 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::get('/cidades/{id}/bairros', 'CidadeController@bairros');
 
 	Route::resource('bairros', 'BairroController');
-	
+
 	Route::resource('pontos', 'PontoController');
 
 	Route::get('dispositivos/{id}/toggleActive', 'DispositivoController@toggleActive');
@@ -56,8 +56,9 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::get('vendas/csv', 'VendaController@csv');
 	Route::get('vendas/confirmar', 'VendaController@confirmar');
 	Route::resource('vendas', 'VendaController');
-	
+
 	Route::resource('etapas', 'EtapaController');
 	Route::get('etapas/{id}/ativar', 'EtapaController@ativar');
 
+    Route::resource('premiacao', 'PremiacaoController');
 });
