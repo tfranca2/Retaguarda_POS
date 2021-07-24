@@ -61,4 +61,5 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::get('etapas/{id}/ativar', 'EtapaController@ativar');
 
     Route::resource('premiacao', 'PremiacaoController');
+    Route::resource('premiacaoeletronica', 'PremiacaoEletronicaController');
 });

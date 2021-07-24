@@ -39,7 +39,7 @@ class PremiacaoController extends Controller
 
     public function update( Request $request, $id ){
 
-         $premiacao = Premiacao::find($id);
+        $premiacao = Premiacao::find($id);
         $inputs = Input::except( 'id', '_method', '_token' );
         foreach( $inputs as $key => $value ){
             $premiacao->$key = $value;
