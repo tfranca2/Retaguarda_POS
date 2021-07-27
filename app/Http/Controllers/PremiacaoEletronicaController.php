@@ -37,8 +37,42 @@ class PremiacaoEletronicaController extends Controller
             'premiacao' => $premiacao
         ], 201);
     }
-    public function edit( Request $request, $id ){
+
+    public function edit(Request $request, $id)
+    {
         $premiacao = premiacaoEletronica::findOrFail($id);
-        return view('premiacaoEletronica.form',[ 'premiacao' => $premiacao]);
+        return view('premiacaoEletronica.form', ['premiacao' => $premiacao]);
+    }
+
+    public function update(Request $request, $id)
+    {
+
+        $premiacao = premiacaoEletronica::find($id);
+        $inputs = Input::except('id', '_method', '_token');
+        foreach ($inputs as $key => $value) {
+            $premiacao->$key = $value;
+        }
+        $premiacao->save();
+        return response()->json([
+            'message' => 'Atualizado com sucesso',
+            'redirectURL' => url('/premiacaoEletronica'),
+            'premiacao' => $premiacao
+        ], 200);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $cidade = premiacaoEletronica::findOrFail($id);
+        $cidade->delete();
+        return response()->json(['message' => 'Deletado com sucesso'], 204);
+    }
+
+    public function show(Request $request, $id)
+    {
+        try {
+            return response()->json(premiacaoEletronica::findOrFail($id));
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
     }
 }
