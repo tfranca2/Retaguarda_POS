@@ -13,14 +13,16 @@ class PremiacaoEletronicaController extends Controller
 {
     public function index(Request $request)
     {
+        $etapaAtiva = Etapa::ativa();
         $premiacoes = premiacaoEletronica::orderBy('numero')->paginate(10);
-        return view('premiacaoEletronica.index', ['premiacoes' => $premiacoes]);
+        return view('premiacaoEletronica.index', ['premiacoes' => $premiacoes,'etapaAtiva' => $etapaAtiva]);
     }
 
     public function create(Request $request)
     {
+        $etapaAtiva = Etapa::ativa();
         $prox_etapa = DB::table('etapas')->latest()->first()->etapa;
-        return view('premiacaoEletronica.form', ['prox_etapa' => $prox_etapa]);
+        return view('premiacaoEletronica.form',[ 'prox_etapa' => $prox_etapa,'etapaAtiva' => $etapaAtiva]);
     }
 
     public function store(Request $request)

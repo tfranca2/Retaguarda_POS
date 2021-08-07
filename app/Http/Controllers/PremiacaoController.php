@@ -18,11 +18,13 @@ class PremiacaoController extends Controller
 
     public function index( Request $request ){
         $premiacoes = Premiacao::orderBy('seq')->paginate(10);
-        return view('premiacao.index',[ 'premiacoes' => $premiacoes ]);
+        $etapaAtiva = Etapa::ativa();
+        return view('premiacao.index',[ 'premiacoes' => $premiacoes,'etapaAtiva' => $etapaAtiva]);
     }
     public function create( Request $request ){
+        $etapaAtiva = Etapa::ativa();
         $prox_etapa = DB::table('etapas')->latest()->first()->etapa;
-        return view('premiacao.form',[ 'prox_etapa' => $prox_etapa ]);
+        return view('premiacao.form',[ 'prox_etapa' => $prox_etapa,'etapaAtiva' => $etapaAtiva]);
     }
     public function store( Request $request ){
         $premiacao = Premiacao::create( Input::except( 'id', '_method', '_token' ) );

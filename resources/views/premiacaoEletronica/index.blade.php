@@ -11,8 +11,6 @@
                         <div class="btn-group">
                             @if( Helper::temPermissao('cidades-incluir') )
                                 <a href="<?php echo url('/'); ?>/premiacaoeletronica/create" class="btn btn-info btn-xs"><span
-                                        class="fa fa-plus"></span> Novo</a>
-                                <a href="<?php echo url('/'); ?>/premiacaoeletronica/create" class="btn btn-info btn-xs"><span
                                         class="fa fa-plus"></span> Novo Rodada Especial</a>
                             @endif
                         </div>

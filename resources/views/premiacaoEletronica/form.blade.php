@@ -5,7 +5,7 @@
         <div class="col-md-12">
             <div class="panel panel-card recent-activites">
                 <div class="panel-heading">
-                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação Eletrônica
+                    {{ ((isset($premiacao))?'Editar':'Novo') }} Premiação Eletrônica da Etapa <?= $etapaAtiva->etapa?> <?= $etapaAtiva->descricao ?>
                     <div class="pull-right">
                         <div class="btn-group">
                             @if( Helper::temPermissao('cidades-listar') )
@@ -29,8 +29,8 @@
                                         <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
-                                                <input type="number" class="form-control" name="etapa_id"
-                                                       value="{{(isset($premiacao) and $premiacao->etapa_id	)?$premiacao->etapa_id:''}}">
+                                                <input type="number" class="form-control" disabled="disabled" name="etapa_id"
+                                                       value="{{(isset($etapaAtiva->etapa) and $etapaAtiva->etapa	)?$etapaAtiva->etapa:''}}">
                                             </div>
                                         </div>
                                         <div class="col-md-2 p-lr-o">
