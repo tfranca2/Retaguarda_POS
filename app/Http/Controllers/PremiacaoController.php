@@ -35,8 +35,9 @@ class PremiacaoController extends Controller
         ], 201 );
     }
     public function edit( Request $request, $id ){
+        $etapaAtiva = Etapa::ativa();
         $premiacao = Premiacao::findOrFail($id);
-        return view('premiacao.form',[ 'premiacao' => $premiacao]);
+        return view('premiacao.form',[ 'premiacao' => $premiacao,'etapaAtiva' => $etapaAtiva]);
     }
 
     public function update( Request $request, $id ){
@@ -52,5 +53,10 @@ class PremiacaoController extends Controller
             'redirectURL' => url('/premiacao'),
             'premiacao' => $premiacao
         ], 200 );
+    }
+    public function destroy( Request $request, $id ){
+        $premiacao = Premiacao::findOrFail($id);
+        $premiacao->delete();
+        return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
     }
 }

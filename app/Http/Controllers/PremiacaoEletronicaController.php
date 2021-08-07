@@ -42,8 +42,9 @@ class PremiacaoEletronicaController extends Controller
 
     public function edit(Request $request, $id)
     {
+        $etapaAtiva = Etapa::ativa();
         $premiacao = premiacaoEletronica::findOrFail($id);
-        return view('premiacaoEletronica.form', ['premiacao' => $premiacao]);
+        return view('premiacaoEletronica.form', ['premiacao' => $premiacao,'etapaAtiva' => $etapaAtiva]);
     }
 
     public function update(Request $request, $id)
@@ -64,8 +65,8 @@ class PremiacaoEletronicaController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $cidade = premiacaoEletronica::findOrFail($id);
-        $cidade->delete();
+        $premiacaoEletronica = premiacaoEletronica::findOrFail($id);
+        $premiacaoEletronica->delete();
         return response()->json(['message' => 'Deletado com sucesso'], 204);
     }
 

@@ -1,6 +1,7 @@
 <?php use App\Helpers;?>
 @extends('layouts.app')
 @section('content')
+
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-card recent-activites">
@@ -29,7 +30,7 @@
                                         <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
-                                                <input type="number" class="form-control" disabled="disabled" name="etapa_id"
+                                                <input type="number" class="form-control" readonly name="etapa_id"
                                                        value="{{(isset($etapaAtiva->etapa) and $etapaAtiva->etapa	)?$etapaAtiva->etapa:''}}">
                                             </div>
                                         </div>
