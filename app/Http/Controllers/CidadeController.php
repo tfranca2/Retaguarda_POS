@@ -31,8 +31,10 @@ class CidadeController extends Controller
                         ->orderBy('estados.nome')
                         ->orderBy('cidades.nome');
 
-            if( ! \Helper::temPermissao('cidades-gerenciar') ){
-                $cidades = $cidades->where('cidades.estado_id',\Auth::user()->estado_id);
+            if(\Auth::check()){
+                if( ! \Helper::temPermissao('cidades-gerenciar') ){
+                    $cidades = $cidades->where('cidades.estado_id',\Auth::user()->estado_id);
+                }
             }
 
             $cidades = $cidades->get();

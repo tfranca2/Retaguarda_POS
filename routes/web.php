@@ -28,6 +28,8 @@ Route::post('/correios', 'VendaController@correios');
 Route::post('/correios-salvar', 'VendaController@correiosSalvar');
 Route::post('/confirmarAtendimento', 'VendaController@correiosConfirmarAtendimento');
 
+Route::get('/search/cidades', 'CidadeController@get');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');
@@ -48,7 +50,6 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('matrizes', 'MatrizController');
 
 	Route::resource('cidades', 'CidadeController');
-	Route::get('/search/cidades', 'CidadeController@get');
 	Route::get('/cidades/{id}/bairros', 'CidadeController@bairros');
 
 	Route::resource('bairros', 'BairroController');

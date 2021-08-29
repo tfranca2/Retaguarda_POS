@@ -37,17 +37,23 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-md-4 p-lr-o">
+						<div class="col-md-6 p-lr-o">
 							<label>Nome Completo</label>
 							<input type="text" class="form-control" name="nome" value="{{ (isset($venda)?$venda->nome:'') }}" data-parsley-required="true"  required="" >
 						</div>
-						<div class="col-md-4 p-lr-o">
+						<div class="col-md-6 p-lr-o">
 							<label>CPF</label>
 							<input type="text" class="form-control" name="cpf" value="{{ (isset($venda)?Helper::formatCpfCnpj($venda->cpf):'') }}" data-parsley-cpf="true" data-parsley-required="true" required="" >
 						</div>
-						<div class="col-md-4 p-lr-o">
+						<div class="col-md-6 p-lr-o">
 							<label>Telefone</label>
 							<input type="text" class="form-control" name="telefone" value="{{ (isset($venda)?$venda->telefone:'') }}" data-parsley-required="true"  required="" >
+						</div>
+						<div class="col-md-6 p-lr-o">
+							<label>Cidade</label>
+							<select name="cidade_id" id="cidade_id" class="form-control select2CidadeAjax" data-parsley-required="true" required="">
+								<option value="">Selecione</option>
+							</select>
 						</div>
 					</div>
 					<input type="hidden" name="confirmada" value="1">

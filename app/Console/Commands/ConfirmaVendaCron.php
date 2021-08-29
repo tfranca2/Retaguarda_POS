@@ -68,7 +68,7 @@ class ConfirmaVendaCron extends Command
 
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_POST, TRUE);
-                curl_setopt($ch, CURLOPT_URL, 'https://apps.correios.com.br/ster/api/confirmarAtendimento');
+                curl_setopt($ch, CURLOPT_URL, env('URL_CORREIOS').'/ster/api/confirmarAtendimento');
                 curl_setopt($ch, CURLOPT_HEADER, FALSE);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
                 curl_setopt($ch, CURLOPT_HTTPHEADER,[ "Content-Type: application/json" ]);

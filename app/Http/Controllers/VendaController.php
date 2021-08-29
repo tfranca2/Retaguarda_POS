@@ -402,6 +402,8 @@ class VendaController extends Controller
             'nome' => 'required|max:255',
             'cpf' => 'required|max:255',
             'telefone' => 'required|max:255',
+            'telefone' => 'required|max:255',
+            'cidade_id' => 'required|integer|exists:cidades,id',
         ];
 
         $etapa = Etapa::ativa();
@@ -506,7 +508,12 @@ class VendaController extends Controller
 
             $matrizes = "";
             foreach( $venda->matrizes as $matriz ){
-                $matrizes .= $matriz->matriz->combinacoes ."+";
+                $chunk = explode( '-', $matriz->matriz->combinacoes );
+                foreach( $chunk as $k => $c ){
+                    $matrizes .= $c.' ';
+                    if( in_array( $k, [ 9, 19 ] ) )
+                        $matrizes .= '+';
+                }
             }
 
             // chamar a api correios para registrar atendimento
@@ -516,12 +523,12 @@ class VendaController extends Controller
                 'quantidade' => $qtd,
                 'numeroIdentificacaoCliente' => Helper::onlyNumbers($request->cpf),
                 'chaveCliente' => $venda->key,
-                'textoTicket' => "Seus numeros da sorte são: ++". $matrizes,
+                'textoTicket' => "Seus números da sorte são: ++". $matrizes,
             ];
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_URL, 'https://apps.correios.com.br/ster/api/v1/atendimentos/registra');
+            curl_setopt($ch, CURLOPT_URL, env('URL_CORREIOS').'/ster/api/v1/atendimentos/registra');
             curl_setopt($ch, CURLOPT_HEADER, FALSE);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
             curl_setopt($ch, CURLOPT_HTTPHEADER,[ "Content-Type: application/json" ]);
