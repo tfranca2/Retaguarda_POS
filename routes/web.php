@@ -62,4 +62,6 @@ Route::group(['middleware' => ['auth']], function(){
 
     Route::resource('premiacao', 'PremiacaoController');
     Route::resource('premiacaoeletronica', 'PremiacaoEletronicaController');
+
+    Route::resource('cliente', 'ClienteController');
 });
