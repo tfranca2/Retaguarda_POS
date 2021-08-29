@@ -23,6 +23,11 @@ Route::get('/logout', '\App\Http\Controllers\Auth\LoginController@logout');
 
 Route::get('/comprovante/{key}', 'VendaController@comprovante');
 
+Route::get('/correios', 'VendaController@correios');
+Route::post('/correios', 'VendaController@correios');
+Route::post('/correios-salvar', 'VendaController@correiosSalvar');
+Route::post('/confirmarAtendimento', 'VendaController@correiosConfirmarAtendimento');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');

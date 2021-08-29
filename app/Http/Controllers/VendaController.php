@@ -384,5 +384,199 @@ class VendaController extends Controller
             return view('venda.comprovante',[ 'venda' => $venda ]);
         abort(404);
     }
+
+    public function correios( Request $request){
+        $validators = [
+            'codigoCorreios' => 'required|string',
+        ];
+        $validator = Validator::make($request->all(),$validators);
+        if( $validator->fails() )
+            return response()->json(['error'=>$validator->messages()],400);
+
+        $etapa = Etapa::ativa();
+        return view('venda.correios',[ 'etapa' => $etapa, 'codigoCorreios' => $request->codigoCorreios ]);
+    }
+
+    public function correiosSalvar( Request $request){
+        $validators = [
+            'nome' => 'required|max:255',
+            'cpf' => 'required|max:255',
+            'telefone' => 'required|max:255',
+        ];
+
+        $etapa = Etapa::ativa();
+        // if( $request->has('etapa_id') )
+        //     $etapa = Etapa::find($request->etapa_id);
+        if( !$etapa )
+            return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
+
+        // etapa passou do prazo
+        if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
+            return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
+
+        if( $etapa->tipo == 4 ) // simples e dupla
+            $validators['quantidade'] = 'required|integer|in:1,2';
+
+        if( $etapa->tipo == 5 ) // simples e tripla
+            $validators['quantidade'] = 'required|integer|in:1,3';
+        
+        $validator = Validator::make($request->all(),$validators);
+        if( $validator->fails() )
+            return response()->json(['error'=>$validator->messages()],400);
+
+        $dispositivo = null;
+        if( $request->has('dispositivo_id') ){
+            $dispositivo = Dispositivo::find($request->dispositivo_id);
+            if( !$dispositivo )
+                return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
+        }
+
+        if( $request->has('nome') )
+            if( ! Helper::validaNome($request->nome) )
+                return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
+
+        if( $request->has('cpf') )
+            if( ! Helper::validaCPF($request->cpf) )
+                return response()->json(['error'=>['cpf'=>['Informe um cpf válido.']]],400);
+
+        if( $request->has('telefone') )
+            if( ! Helper::validaCelular($request->telefone) )
+                return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
+
+        $qtd = 1;
+        if( $etapa->tipo == 2)
+            $qtd = 2;
+        if( $etapa->tipo == 3)
+            $qtd = 3;
+        if( $request->has('quantidade') )
+            $qtd = $request->quantidade;
+        
+        \DB::beginTransaction();
+        try {
+
+            $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
+            $venda['ip'] = $request->ip();
+            $venda['etapa_id'] = $etapa->id;
+            $venda['ceder_resgate'] = 1;
+            $venda['pdv'] = 'correios';
+            $venda['key'] = Str::uuid();
+            $venda = Venda::create( $venda );
+
+            $matriz_id = 0;
+            for( $i=0; $i<$qtd; $i++ ){ 
+                // calcula saldo do intervalo
+                $inicio = $etapa->range_inicial;
+                if( $matriz_id )
+                    $inicio = $matriz_id + $etapa->intervalo;
+                // seleciona o id do titulo disponivel mais próximo
+                $matriz_id = Matriz::whereBetween( 'id', [ 
+                                            $inicio, 
+                                            $etapa->range_final + ( $etapa->intervalo * $i )
+                                        ])
+                                        ->whereNotIn( 'id',
+                                            VendaMatriz::select('matriz_id')
+                                            ->whereNotNull('matriz_id')
+                                            ->join('vendas','vendas.id','=','venda_id')
+                                            ->where('etapa_id', $etapa->id)
+                                            ->distinct()
+                                            ->get()
+                                            ->pluck('matriz_id')
+                                            ->toArray()
+                                        )
+                                        ->first()
+                                        ->id;
+                VendaMatriz::create([ 
+                    'venda_id' => $venda->id, 
+                    'matriz_id' => $matriz_id 
+                ]);
+
+            }
+
+            $venda = Venda::with('matrizes')->find( $venda->id );
+
+            $valor = 0;
+            if( count( $venda->matrizes ) == 2 )
+                $valor = $venda->etapa->valor_duplo;
+            elseif( count( $venda->matrizes ) == 3 )
+                $valor = $venda->etapa->valor_triplo;
+            else
+                $valor = $venda->etapa->valor_simples;
+
+            $valor = Helper::onlyNumbers($valor);
+
+            $matrizes = "";
+            foreach( $venda->matrizes as $matriz ){
+                $matrizes .= $matriz->matriz->combinacoes ."+";
+            }
+
+            // chamar a api correios para registrar atendimento
+            $data = [
+                'codigoCorreios' => $request->codigoCorreios,
+                'valorServico' => $valor,
+                'quantidade' => $qtd,
+                'numeroIdentificacaoCliente' => Helper::onlyNumbers($request->cpf),
+                'chaveCliente' => $venda->key,
+                'textoTicket' => "Seus numeros da sorte são: ++". $matrizes,
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_POST, TRUE);
+            curl_setopt($ch, CURLOPT_URL, 'https://apps.correios.com.br/ster/api/v1/atendimentos/registra');
+            curl_setopt($ch, CURLOPT_HEADER, FALSE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_HTTPHEADER,[ "Content-Type: application/json" ]);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            $response = curl_exec($ch);
+            $status_code = curl_getinfo($ch)['http_code'];
+            curl_close($ch);
+
+            $response = json_decode($response);
+            if ($status_code >= 300 || $status_code < 200 || !$response) {
+                throw new \Exception($response->mensagem);
+            }
+
+            $venda->protocolo = $response->protocolo;
+            $venda->save();
+
+            \DB::commit();
+            return response()->json([
+                'message'=>'Criado com sucesso',
+                'comprovanteURL' => url('/comprovante/'.$venda->key),
+                'venda'=>$venda,
+                'redirectURL'=>url('/vendas').'/'.$venda->id.'/edit',
+            ],201);
+        } catch( \Exception $e ){
+            \DB::rollback();
+            return response()->json(['error'=>$e->getMessage()],404);
+        }
+
+    }
+
+
+    public function correiosConfirmarAtendimento( Request $request){
+        $validators = [
+            'numeroProtocolo' => 'required|string',
+            'codigoConfirmacao' => 'required|string',
+        ];
+        $validator = Validator::make($request->all(),$validators);
+        if( $validator->fails() )
+            return response()->json(['error'=>$validator->messages()],400);
+
+        $venda = Venda::where('protocolo',$request->numeroProtocolo)->first();
+
+        if($request->codigoConfirmacao == '00'){
+            
+            $venda->confirmada = true;
+            $venda->save();
+
+            return response()->json([ 'message'=>'Venda confirmada' ],200);
+        } else {
+            
+            VendaMatriz::where('venda_id',$venda->id)->delete();
+            Venda::where('id',$venda->id)->delete();
+
+            return response()->json([ 'message'=>'Venda removida' ],204);
+        }
+    }
     
 }
