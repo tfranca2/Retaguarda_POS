@@ -461,7 +461,7 @@ class VendaController extends Controller
             $venda['etapa_id'] = $etapa->id;
             $venda['ceder_resgate'] = 1;
             $venda['pdv'] = 'correios';
-            $venda['key'] = Str::uuid();
+            $venda['key'] = Str::random(10).time();
             $venda = Venda::create( $venda );
 
             $matriz_id = 0;
@@ -576,7 +576,10 @@ class VendaController extends Controller
             $venda->confirmada = true;
             $venda->save();
 
-            return response()->json([ 'message'=>'Venda confirmada' ],200);
+            return response()->json([ 
+                'message' => 'Venda confirmada',
+                'codigo' => $venda->key,
+            ],200);
         } else {
             
             VendaMatriz::where('venda_id',$venda->id)->delete();
