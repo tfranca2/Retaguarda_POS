@@ -71,16 +71,22 @@ class ConfirmaVendaCron extends Command
                 curl_setopt($ch, CURLOPT_URL, env('URL_CORREIOS').'/ster/api/confirmarAtendimento');
                 curl_setopt($ch, CURLOPT_HEADER, FALSE);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-                curl_setopt($ch, CURLOPT_HTTPHEADER,[ "Content-Type: application/json" ]);
+                curl_setopt($ch, CURLOPT_HTTPHEADER,[ 
+                    "accept: application/json", 
+                    "Content-Type: application/json", 
+                    "Authorization: ". env('TOKEN_CORREIOS'),
+                ]);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
                 $response = curl_exec($ch);
                 $status_code = curl_getinfo($ch)['http_code'];
                 curl_close($ch);
 
                 $response = json_decode($response);
-                if ($status_code >= 300 || $status_code < 200 || !$response || $response->codigoConfirmacao == '99') {
-                    VendaMatriz::where('venda_id',$venda->id)->delete();
-                    Venda::where('id',$venda->id)->delete();
+                if ($status_code >= 300 || $status_code < 200 || !$response ) {
+                    if( $response and is_object($response) and isset($response->codigoConfirmacao) and $response->codigoConfirmacao == '99' ){
+                        VendaMatriz::where('venda_id',$venda->id)->delete();
+                        Venda::where('id',$venda->id)->delete();
+                    }
                 } else {
                     $venda->confirmada = true;
                     $venda->save();
