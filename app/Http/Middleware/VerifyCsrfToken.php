@@ -21,5 +21,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'servicos/checkout/callback',
         'correios',
+        'correios-salvar',
+        'confirmarAtendimento',
     ];
 }
