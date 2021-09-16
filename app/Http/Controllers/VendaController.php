@@ -556,10 +556,11 @@ class VendaController extends Controller
 
             \DB::commit();
             return response()->json([
-                'message'=>'Criado com sucesso',
+                'message' => 'Criado com sucesso',
                 'comprovanteURL' => url('/comprovante/'.$venda->key),
-                'venda'=>$venda,
-                'redirectURL'=>url('/vendas').'/'.$venda->id.'/edit',
+                'venda' => $venda,
+                // 'redirectURL' => url('/correios').'?codigoCorreios='.$request->codigoCorreios,
+                'redirectURL' => url('/comprovante/'.$venda->key),
             ],201);
         } catch( \Exception $e ){
             \DB::rollback();
