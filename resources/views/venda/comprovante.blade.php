@@ -83,7 +83,9 @@
 			@endforeach
 			</div>
 			<div class="text-center">
+			@if($venda->etapa->premiacaoEletronica->count())
 			<br>e mais <b>{{ $venda->etapa->premiacaoEletronica->count() }}</b> prêmios de <b>R$ {{ Helper::formatDecimalToView($venda->etapa->premiacaoEletronica[0]->liquido) }}</b>
+			@endif
 			</div>
 			<br><br>
 		</div>
