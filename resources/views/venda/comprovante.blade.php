@@ -70,6 +70,24 @@
 		@endforeach
 	</div>
 	</div>
+
+	<div class="row table-bordered">
+		<div class="col-md-12">
+			<div class="text-center">
+			<br>Sorteio {{ $venda->etapa->etapa }} ( {{ date('d/m/Y',strtotime($venda->etapa->data)) }} ) <br>
+			<span style="font-size: 18pt;">{{ $venda->etapa->descricao }}</span><br><br>
+			</div>
+			<div>
+			@foreach( $venda->etapa->premiacao as $premio )
+				{{ $premio->seq }}&ordm; Prêmio: <b>{{ $premio->descricao }}</b> - R$ {{ Helper::formatDecimalToView($premio->liquido) }}<br>
+			@endforeach
+			</div>
+			<div class="text-center">
+			<br>e mais <b>{{ $venda->etapa->premiacaoEletronica->count() }}</b> prêmios de <b>R$ {{ Helper::formatDecimalToView($venda->etapa->premiacaoEletronica[0]->liquido) }}</b>
+			</div>
+			<br><br>
+		</div>
+	</div>
 		<br>
 	</div>
 @endsection

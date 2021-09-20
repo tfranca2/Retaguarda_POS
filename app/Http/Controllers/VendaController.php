@@ -516,6 +516,16 @@ class VendaController extends Controller
                 }
             }
 
+            // impressão da premiação
+            $matrizes .= '+---------------------------------------------++'.
+                         'Sorteio '. $venda->etapa->etapa .' - '. $venda->etapa->descricao .
+                         ' ( '. date('d/m/Y', strtotime($venda->etapa->data)) .' ) ++';
+            foreach( $venda->etapa->premiacao as $premio ){
+                $matrizes .= $premio->seq .'º Prêmio: '. $premio->descricao 
+                          .' - R$ '. Helper::formatDecimalToView($premio->liquido) .' +';
+            }
+            $matrizes .= '+e mais '. $venda->etapa->premiacaoEletronica->count() .' prêmios de R$ '. Helper::formatDecimalToView($venda->etapa->premiacaoEletronica[0]->liquido) .'++';
+
             // chamar a api correios para registrar atendimento
             $data = [
                 'codigoCorreios' => $request->codigoCorreios,
@@ -557,9 +567,6 @@ class VendaController extends Controller
             \DB::commit();
             return response()->json([
                 'message' => 'Criado com sucesso',
-                'comprovanteURL' => url('/comprovante/'.$venda->key),
-                'venda' => $venda,
-                // 'redirectURL' => url('/correios').'?codigoCorreios='.$request->codigoCorreios,
                 'redirectURL' => url('/comprovante/'.$venda->key),
             ],201);
         } catch( \Exception $e ){
