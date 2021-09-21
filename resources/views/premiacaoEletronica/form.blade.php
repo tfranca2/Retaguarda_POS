@@ -1,15 +1,14 @@
 <?php use App\Helpers;?>
 @extends('layouts.app')
 @section('content')
-
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-card recent-activites">
                 <div class="panel-heading">
-                    {{ ((isset($premiacao))?'Editar':'Novo') }} Premiação Eletrônica da Etapa <?= $etapaAtiva->etapa?> <?= $etapaAtiva->descricao ?>
+                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação Eletrônica da Etapa {{ $etapa->etapa }} {{ $etapa->descricao }}
                     <div class="pull-right">
                         <div class="btn-group">
-                            @if( Helper::temPermissao('cidades-listar') )
+                            @if( Helper::temPermissao('premiacao_eletronica-listar') )
                                 <a href="<?php echo url('/premiacaoeletronica'); ?>" class="btn btn-info btn-xs"><span
                                         class="fa fa-list"></span> Lista prêmios Eletrônicos</a>
                             @endif
@@ -30,8 +29,7 @@
                                         <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
-                                                <input type="number" class="form-control" readonly name="etapa_id"
-                                                       value="{{(isset($etapaAtiva->etapa) and $etapaAtiva->etapa	)?$etapaAtiva->etapa:''}}">
+                                                <input type="text" class="form-control" readonly value="{{ $etapa->etapa }}">
                                             </div>
                                         </div>
                                         <div class="col-md-2 p-lr-o">
@@ -67,7 +65,8 @@
                                     <div class="row">
                                         <div class="col-md-12 p-lr-o">
                                             <div class="form-group">
-                                                <br><input type="submit" value="Salvar" class="btn btn-info pull-right">
+                                                @if( Helper::temPermissao('premiacao_eletronica-incluir') || Helper::temPermissao('premiacao_eletronica-editar') )
+                                                <br><input type="submit" value="Salvar" class="btn btn-info pull-right">@endif
                                             </div>
                                         </div>
                                     </div>

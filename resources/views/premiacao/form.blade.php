@@ -5,10 +5,10 @@
         <div class="col-md-12">
             <div class="panel panel-card recent-activites">
                 <div class="panel-heading">
-                    {{ ((isset($premiacao))?'Editar':'Novo') }} Premiação da Etapa <?= @$etapaAtiva->etapa?> <?= @$etapaAtiva->descricao ?>
+                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação da Etapa {{ $etapa->etapa }} {{ $etapa->descricao }}
                     <div class="pull-right">
                         <div class="btn-group">
-                            @if( Helper::temPermissao('cidades-listar') )
+                            @if( Helper::temPermissao('premiacao-listar') )
                                 <a href="<?php echo url('/premiacao'); ?>" class="btn btn-info btn-xs"><span
                                         class="fa fa-list"></span> Lista</a>
                             @endif
@@ -29,15 +29,13 @@
                                         <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
-                                                <input type="number" class="form-control" name="etapa_id" readonly
-                                                       value="{{(isset($premiacao->etapa_id) and $premiacao->etapa_id	)?$etapaAtiva->etapa:$etapaAtiva->etapa}}">
+                                                <input type="text" class="form-control" readonly value="{{ $etapa->etapa }}">
                                             </div>
                                         </div>
                                         <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Sequencia</label>
-                                                <input type="number" class="form-control" name="seq"
-                                                       value="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:''}}">
+                                                <input type="number" class="form-control" name="seq" min="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:$prox_seq}}" value="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:$prox_seq}}" >
                                             </div>
                                         </div>
                                         <div class="col-md-2 p-lr-o">
@@ -73,7 +71,8 @@
                                     <div class="row">
                                         <div class="col-md-12 p-lr-o">
                                             <div class="form-group">
-                                                <br><input type="submit" value="Salvar" class="btn btn-info pull-right">
+                                                @if( Helper::temPermissao('premiacao-incluir') || Helper::temPermissao('premiacao-editar') )
+                                                <br><input type="submit" value="Salvar" class="btn btn-info pull-right">@endif
                                             </div>
                                         </div>
                                     </div>

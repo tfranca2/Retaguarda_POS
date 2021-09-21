@@ -1,5 +1,7 @@
 <?php use App\Helpers; ?>
-
+@if( ! Helper::temPermissao('premiacao_eletronica-listar') )
+<script>window.location = "{{ url('/home') }}";</script>
+@endif
 @extends('layouts.app')
 @section('content')
     <div class="row">
@@ -9,7 +11,7 @@
                     Premiação
                     <div class="pull-right">
                         <div class="btn-group">
-                            @if( Helper::temPermissao('cidades-incluir') )
+                            @if( Helper::temPermissao('premiacao_eletronica-incluir') )
                                 <a href="<?php echo url('/'); ?>/premiacaoeletronica/create" class="btn btn-info btn-xs"><span
                                         class="fa fa-plus"></span> Novo Rodada Especial</a>
                             @endif
@@ -39,12 +41,12 @@
                                     <td>{{ $premiacao->descricao }}</td>
                                     <td>{{ $premiacao->bruto }}</td>
                                     <td class="text-center">
-                                        @if( Helper::temPermissao('cidades-editar') )
+                                        @if( Helper::temPermissao('premiacao_eletronica-editar') )
                                             <a href="{{ url('/premiacaoeletronica/'.$premiacao->id.'/edit') }}"
                                                class="btn btn-info" title="Editar"><i class="fa fa-pencil"
                                                                                       aria-hidden="true"></i></a>
                                         @endif
-                                        @if( Helper::temPermissao('cidades-excluir') )
+                                        @if( Helper::temPermissao('premiacao_eletronica-excluir') )
                                             <form action="{{url('/premiacaoeletronica/'.$premiacao->id)}}" method="POST"
                                                   style="display: inline-block;">
                                                 @method('DELETE') @csrf

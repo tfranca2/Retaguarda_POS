@@ -6,6 +6,7 @@ use App\Menu;
 $grupos = Helper::grupos();
 $menus = Menu::orderBy('label')->get()->pluck('label')->toArray();
 foreach ( $menus as $menu ){
+	$menu = str_replace(' ', '_', $menu);
 	$grupos[strtolower(Helper::sanitizeString($menu))] = ['listar','incluir','editar','excluir','gerenciar'];
 }
 
