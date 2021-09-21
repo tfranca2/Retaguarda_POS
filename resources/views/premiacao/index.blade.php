@@ -37,10 +37,7 @@
                             <tbody>
                             @forelse( $premiacoes as $premiacao )
                                 <tr>
-                                    @php
-                                        //$estado = $cidade->estado()->first();
-                                    @endphp
-                                    <td>{{ $premiacao->etapa_id }}</td>
+                                    <td>{{ $premiacao->etapa->etapa }}</td>
                                     <td>{{ $premiacao->seq }} º</td>
                                     <td>{{ $premiacao->descricao }}</td>
                                     <td>{{ $premiacao->bruto }}</td>
