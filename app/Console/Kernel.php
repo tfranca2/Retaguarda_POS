@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         // Commands\EmailCron::class,
         Commands\EtapaCron::class,
         Commands\ConfirmaVendaCron::class,
+        Commands\ConfirmaVendaCorreiosCron::class,
     ];
 
     /**
@@ -33,6 +34,7 @@ class Kernel extends ConsoleKernel
 
         // REMOVE VENDAS NAO CONFIRMADAS
         $schedule->command('confirmavenda:cron');
+        $schedule->command('confirmavendacorreios:cron')->dailyAt('00:00');
 
         // VERIFICA A FILA E DISPARA OS EMAILS
         // $schedule->command('email:cron')->appendOutputTo( storage_path('logs/email-'.date('Y-m-d').'.log') );
