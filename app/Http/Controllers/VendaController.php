@@ -6,6 +6,8 @@ use Helper;
 use App\User;
 use App\Venda;
 use App\Etapa;
+use App\Cidade;
+use App\Estado;
 use Validator;
 use App\Matriz;
 use App\VendaMatriz;
@@ -147,10 +149,18 @@ class VendaController extends Controller
                     $comissao = $venda->etapa->v_comissao_simples;
                 }
 
+
+                $dispositivo = '';
+                $distribuidor = $venda->pdv;
+                if( $venda->dispositivo ){
+                    $dispositivo = $venda->dispositivo->nome;
+                    $distribuidor = $venda->dispositivo->distribuidor->nome;
+                }
+
                 fputcsv( $file, [ 
                     utf8_decode( $venda->etapa->descricao ), 
-                    utf8_decode( $venda->dispositivo->distribuidor->name ), 
-                    utf8_decode( $venda->dispositivo->nome ), 
+                    utf8_decode( $distribuidor ), 
+                    utf8_decode( $dispositivo ), 
                     Helper::formatDecimalToView( $valor ), 
                     Helper::formatDecimalToView( $comissao ), 
                     $venda->created_at, 
@@ -158,6 +168,99 @@ class VendaController extends Controller
             }
 
             fputcsv($file, [ '', '', '', Helper::formatDecimalToView( $totalVendas ), Helper::formatDecimalToView( $totalComissao ), '' ], ';', '"', "\n");
+            fclose($file);
+        };
+
+        return \Response::stream( $callback, 200, $headers );
+
+    }
+
+    public function txt( Request $request ){
+
+        $etapa = Etapa::ativa();
+
+        $headers = array(
+            "Content-type" => "text/txt",
+            "Content-Disposition" => "attachment; charset=UTF-8; filename=". 'capital-correios' ."-vendas-edicao-". $etapa->etapa .".txt",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        );
+
+        $vendas = Venda::with('matrizes')->where('etapa_id', $etapa->id)->where('pdv','correios')->whereNotNull('protocolo')->where('confirmada',1)->get();
+
+        $callback = function() use ( $vendas, $etapa ){
+
+            $totalVendas = 0;
+            $totalComissao = 0;
+
+            $file = fopen('php://output', 'w');
+            fputcsv($file, [
+                'H', // cabeçalho fixo
+                'CAPE', // nome da operacao
+                date('d/m/Y', strtotime($etapa->data)), // data sorteio
+                date('d/m/Y'), // data geracao
+                '119', // numero do distribuidor
+            ], ';', '"', "\n");
+            foreach( $vendas as $venda ){
+
+                $valor = 0;
+                if( count( $venda->matrizes ) == 2 )
+                    $valor = $venda->etapa->valor_duplo;
+                elseif( count( $venda->matrizes ) == 3 )
+                    $valor = $venda->etapa->valor_triplo;
+                else
+                    $valor = $venda->etapa->valor_simples;
+
+                $valor = Helper::formatDecimalToDb($valor);
+
+                $cidade = Cidade::find($venda->cidade_id);
+                $estado = Estado::find($cidade->estado_id);
+
+                foreach( $venda->matrizes as $matriz ){
+                    fputcsv( $file, [ 
+                        'D3', // cabeçalho fixo
+                        $matriz->matriz->bilhete, // numero do titulo
+                        $valor, // valor de venda
+                        Helper::onlyNumbers($venda->cpf), // cpf
+                        strtoupper($venda->nome), // nome comprador
+                        '', // data nascimento
+                        '', // sexo
+                        '', // email
+                        substr(Helper::onlyNumbers($venda->telefone), 0, 2), // ddd
+                        substr(Helper::onlyNumbers($venda->telefone), 2), // telefone
+                        strtoupper($estado->uf), // uf
+                        '', // cep
+                        strtoupper($cidade->nome), // cidade
+                        '', // dados livres
+                        '', // dados livres
+                        '', // dados livres
+                        '', // dados livres
+                        '', // dados livres
+                        'V', // V - venda | C - cadastro
+                        '', // dados livres
+                        '', // dados livres
+                    ], ';', '"', "\n" );
+                }
+            }
+
+
+            $range_final = Venda::select(\DB::raw('MAX(bilhete) AS bilhete'))
+            ->join('venda_matriz','venda_id','=','vendas.id')
+            ->join('matrizes','matriz_id','=','matrizes.id')
+            ->where('etapa_id', $etapa->id)
+            ->where('pdv','correios')
+            ->whereNotNull('protocolo')
+            ->where('confirmada',1)
+            ->first();
+
+            fputcsv($file, [
+                'T', // cabeçalho fixo
+                $vendas->count(), // quantidade de linhas D3
+                $etapa->range_inicial, // inicial do range de vendas deste arquivo
+                $range_final->bilhete, // final do range
+            ], ';', '"', "\n");
+
             fclose($file);
         };
 
