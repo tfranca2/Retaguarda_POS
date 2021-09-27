@@ -192,7 +192,6 @@ class VendaController extends Controller
         $callback = function() use ( $vendas, $etapa ){
 
             $totalVendas = 0;
-            $totalComissao = 0;
 
             $file = fopen('php://output', 'w');
             fputcsv($file, [
@@ -218,6 +217,9 @@ class VendaController extends Controller
                 $estado = Estado::find($cidade->estado_id);
 
                 foreach( $venda->matrizes as $matriz ){
+
+                    $totalVendas++;
+
                     fputcsv( $file, [ 
                         'D3', // cabeçalho fixo
                         $matriz->matriz->bilhete, // numero do titulo
@@ -256,7 +258,7 @@ class VendaController extends Controller
 
             fputcsv($file, [
                 'T', // cabeçalho fixo
-                $vendas->count(), // quantidade de linhas D3
+                $totalVendas, // quantidade de linhas D3
                 $etapa->range_inicial, // inicial do range de vendas deste arquivo
                 $range_final->bilhete, // final do range
             ], ';', '"', "\n");
