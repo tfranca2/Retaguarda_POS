@@ -200,7 +200,7 @@ class VendaController extends Controller
                 date('d/m/Y', strtotime($etapa->data)), // data sorteio
                 date('d/m/Y'), // data geracao
                 '119', // numero do distribuidor
-            ], ';', '"', "\n");
+            ], ';', chr(0), "\n");
             foreach( $vendas as $venda ){
 
                 $valor = 0;
@@ -242,7 +242,7 @@ class VendaController extends Controller
                         'V', // V - venda | C - cadastro
                         '', // dados livres
                         '', // dados livres
-                    ], ';', '"', "\n" );
+                    ], ';', chr(0), "\n" );
                 }
             }
 
@@ -261,7 +261,7 @@ class VendaController extends Controller
                 $totalVendas, // quantidade de linhas D3
                 $etapa->range_inicial, // inicial do range de vendas deste arquivo
                 $range_final->bilhete, // final do range
-            ], ';', '"', "\n");
+            ], ';', chr(0), "\n");
 
             fclose($file);
         };
