@@ -225,7 +225,7 @@ class VendaController extends Controller
                         $matriz->matriz->bilhete, // numero do titulo
                         $valor, // valor de venda
                         Helper::onlyNumbers($venda->cpf), // cpf
-                        strtoupper($venda->nome), // nome comprador
+                        strtoupper(Helper::sanitizeString($venda->nome)), // nome comprador
                         '', // data nascimento
                         '', // sexo
                         '', // email
@@ -233,7 +233,7 @@ class VendaController extends Controller
                         substr(Helper::onlyNumbers($venda->telefone), 2), // telefone
                         strtoupper($estado->uf), // uf
                         '', // cep
-                        strtoupper($cidade->nome), // cidade
+                        strtoupper(Helper::sanitizeString($cidade->nome)), // cidade
                         '', // dados livres
                         '', // dados livres
                         '', // dados livres
