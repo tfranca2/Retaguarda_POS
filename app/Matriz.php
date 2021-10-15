@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Matriz extends Model
 {
-    // protected $table = 'matrizes';
-    protected $table = 'matriz_50_15';
+    protected $table = env('MATRIZ', 'matrizes');
 	protected $fillable = [ 'bilhete', 'combinacoes' ];
 }
