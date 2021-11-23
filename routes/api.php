@@ -48,6 +48,7 @@ Route::group(['middleware' => 'auth:api'], function( $router ){
 
 	// Route::get('etapa', 'etapaController@show');
 	// Route::get('vendas', 'VendaController@show');
+	Route::get('venda/{key}', 'VendaController@show');
 	Route::post('venda', 'VendaController@store');
 	Route::post('venda/{id}/confirmar', 'VendaController@confirmar');
 	// matrizes?

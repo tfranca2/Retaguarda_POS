@@ -432,9 +432,9 @@ class VendaController extends Controller
         }
     }
     
-    public function show( Request $request, $id ){
+    public function show( Request $request, $key ){
         try {
-            return response()->json( Venda::findOrFail($id) );
+            return response()->json( Venda::with('matrizes')->where('key', $key)->first() );
         } catch( \Exception $e ){
             return response()->json([ 'error' => $e->getMessage() ], 404 );
         }
