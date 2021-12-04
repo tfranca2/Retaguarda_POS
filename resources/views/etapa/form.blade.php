@@ -29,16 +29,22 @@
 								<input type="number" min="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" class="form-control" name="etapa" value="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" required="">
 							</div>
 						</div>
-						<div class="col-md-6 p-lr-o">
+						<div class="col-md-5 p-lr-o">
 							<div class="form-group">
 								<label for="">Descrição</label>
 								<input type="text" class="form-control" name="descricao" value="{{(isset($etapa) and $etapa->descricao)?$etapa->descricao:''}}" required="">
 							</div>
 						</div>
-						<div class="col-md-4 p-lr-o">
+						<div class="col-md-2 p-lr-o">
 							<div class="form-group">
 								<label for="">Data</label>
 								<input type="date" class="form-control" name="data" value="{{(isset($etapa) and $etapa->data)?$etapa->data:''}}" required="">
+							</div>
+						</div>
+						<div class="col-md-3 p-lr-o">
+							<div class="form-group">
+								<label for="">Código SUSEP</label>
+								<input type="text" class="form-control" name="codigo_susep" value="{{(isset($etapa) and $etapa->codigo_susep)?$etapa->codigo_susep:$old_codigo_susep}}" required="">
 							</div>
 						</div>
 					</div><!-- /row -->

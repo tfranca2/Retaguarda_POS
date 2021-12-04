@@ -23,7 +23,10 @@ class EtapaController extends Controller
 
     public function create( Request $request ){
         $prox_etapa = DB::table('etapas')->latest()->first()->etapa + 1;
-        return view('etapa.form',[ 'prox_etapa' => $prox_etapa ]);
+
+        @$old_codigo_susep = DB::table('etapas')->select('codigo_susep')->whereNotNull('codigo_susep')->groupBy('codigo_susep')->orderByRaw('COUNT(*) DESC')->first()->codigo_susep;
+        
+        return view('etapa.form',[ 'prox_etapa' => $prox_etapa, 'old_codigo_susep' => $old_codigo_susep ]);
     }
     
     public function store( Request $request ){
@@ -68,7 +71,8 @@ class EtapaController extends Controller
     
     public function edit( Request $request, $id ){
         $etapa = Etapa::findOrFail($id);
-        return view('etapa.form',[ 'etapa' => $etapa ]);
+        $old_codigo_susep = $etapa->codigo_susep;
+        return view('etapa.form',[ 'etapa' => $etapa, 'old_codigo_susep' => $old_codigo_susep ]);
     }
     
     public function update( Request $request, $id ){

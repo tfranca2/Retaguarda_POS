@@ -13,6 +13,8 @@ class Venda extends Model
 
 	protected $fillable = [ 'dispositivo_id', 'etapa_id', 'matriz_id', 'nome', 'cpf', 'telefone', 'ip', 'ceder_resgate', 'confirmada', 'pdv', 'key', 'protocolo', 'cidade_id' ];
 
+    protected $hidden = [ 'dispositivo_id', 'dispositivo_id', 'etapa_id', 'matriz_id', 'ip', 'ceder_resgate', 'pdv', 'cidade_id', 'updated_at', 'deleted_at'];
+
 	// JOINS
     public function dispositivo(){
         return $this->hasOne( 'App\Dispositivo', 'id', 'dispositivo_id' )->withTrashed()->with('distribuidor');

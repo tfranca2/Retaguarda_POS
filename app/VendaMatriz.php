@@ -11,6 +11,7 @@ class VendaMatriz extends Model
     
     protected $table = 'venda_matriz';
     protected $fillable = [ 'venda_id', 'matriz_id' ];
+    protected $hidden = [ 'id', 'venda_id', 'matriz_id', 'created_at', 'updated_at', 'deleted_at' ];
 
     // JOINS
     public function venda(){

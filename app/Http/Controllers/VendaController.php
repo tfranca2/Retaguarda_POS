@@ -59,7 +59,6 @@ class VendaController extends Controller
                     ->with('matrizes');
 
         // return Venda::orderBy('created_at','DESC')->paginate(10);
-
     }
 
     public function getAll( Request $request ){
@@ -172,7 +171,6 @@ class VendaController extends Controller
         };
 
         return \Response::stream( $callback, 200, $headers );
-
     }
 
     public function txt( Request $request ){
@@ -267,7 +265,6 @@ class VendaController extends Controller
         };
 
         return \Response::stream( $callback, 200, $headers );
-
     }
 
     public function create( Request $request ){
@@ -417,7 +414,10 @@ class VendaController extends Controller
                 }
             }
 
-            $venda = Venda::with('matrizes')->find( $venda->id );
+            $venda = Venda::with('etapa')->with('matrizes')->find( $venda->id );
+            $etapa = Etapa::find( $venda->etapa->id );
+            $venda->premiacao = $etapa->premiacao;
+            $venda->premiacaoEletronica = $etapa->premiacaoEletronica;
 
             \DB::commit();
             return response()->json([
@@ -434,9 +434,13 @@ class VendaController extends Controller
     
     public function show( Request $request, $key ){
         try {
-            return response()->json( Venda::with('matrizes')->where('key', $key)->first() );
+            $venda = Venda::with('etapa')->with('matrizes')->where('key', $key)->first();
+            $etapa = Etapa::find( $venda->etapa->id );
+            $venda->premiacao = $etapa->premiacao;
+            $venda->premiacaoEletronica = $etapa->premiacaoEletronica;
+            return response()->json( $venda );
         } catch( \Exception $e ){
-            return response()->json([ 'error' => $e->getMessage() ], 404 );
+            return response()->json([ 'error' => $e->getMessage() ], 404);
         }
     }
     
@@ -474,7 +478,6 @@ class VendaController extends Controller
             'venda' => $venda,
             'redirectURL' => url('/vendas'),
         ], 200 );
-
     }
     
     public function destroy( Request $request, $id ){
@@ -678,9 +681,7 @@ class VendaController extends Controller
             \DB::rollback();
             return response()->json(['error'=>$e->getMessage()],404);
         }
-
     }
-
 
     public function correiosConfirmarAtendimento( Request $request){
         $validators = [
