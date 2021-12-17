@@ -8,7 +8,7 @@ class Matriz extends Model
 {
     protected $table = 'matrizes';
 	protected $fillable = [ 'bilhete', 'combinacoes' ];
-	protected $hidden = [ 'id' ];
+	protected $hidden = [ 'id', 'created_at', 'updated_at' ];
 
 	function __construct(){
 	    $this->table = env('MATRIZ', 'matrizes');

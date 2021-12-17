@@ -17,8 +17,8 @@ class Etapa extends Model
     	$previousEtapa = \DB::table( with( new Etapa )->getTable() )->where('ativa', '0')->where('data', '<', $this->attributes['data'])->orderBy('data', 'DESC')->first();
     	
         return $this->attributes['elegibilidade'] = [ 
-        	'inicio' => Carbon::parse($previousEtapa->data)->addDay()->format('Y-m-d').' 00:00:00', 
-        	'final' => Carbon::parse($this->attributes['data'])->subDay()->format('Y-m-d').' 23:59:59' ] ;
+        	'inicio' => Carbon::parse($previousEtapa->data)->addDay()->format('d/m/Y'), 
+        	'final' => Carbon::parse($this->attributes['data'])->subDay()->format('d/m/Y') ] ;
     }
 
 	public static function ativa(){
