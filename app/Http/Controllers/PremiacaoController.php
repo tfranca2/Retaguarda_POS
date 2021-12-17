@@ -26,8 +26,11 @@ class PremiacaoController extends Controller
     }
 
     public function store( Request $request ){
-        $premiacao = Premiacao::create( Input::except( 'id', '_method', '_token' ) );
-        $premiacao->etapa_id = Etapa::ativa()->id;
+
+        $premiacao = Input::except( 'id', '_method', '_token' );
+        $premiacao['etapa_id'] = Etapa::ativa()->id;
+
+        $premiacao = Premiacao::create( $premiacao );
 
         return response()->json([
             'message' => 'Criado com sucesso',

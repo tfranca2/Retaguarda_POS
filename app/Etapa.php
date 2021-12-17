@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Etapa extends Model
@@ -10,6 +11,15 @@ class Etapa extends Model
     protected $table = 'etapas';
 	protected $fillable = [ 'etapa', 'descricao', 'data', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'codigo_susep' ];	
 	protected $hidden = [ 'id', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'created_at', 'updated_at', 'deleted_at' ];
+	protected $appends = ['elegibilidade'];
+	public function getElegibilidadeAttribute()
+    {
+    	$previousEtapa = \DB::table( with( new Etapa )->getTable() )->where('ativa', '0')->where('data', '<', $this->attributes['data'])->orderBy('data', 'DESC')->first();
+    	
+        return $this->attributes['elegibilidade'] = [ 
+        	'inicio' => Carbon::parse($previousEtapa->data)->addDay()->format('Y-m-d').' 00:00:00', 
+        	'final' => Carbon::parse($this->attributes['data'])->subDay()->format('Y-m-d').' 23:59:59' ] ;
+    }
 
 	public static function ativa(){
 		return \DB::table( with( new Etapa )->getTable() )->where('ativa', '1')->first();

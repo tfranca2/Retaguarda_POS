@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PremiacaoEletronica extends Model
 {
     protected $table = 'premiacoes_eletronica';
-    protected $fillable = [ 'numero', 'descricao','bruto','liquido','etapa_id' ];
+    protected $fillable = [ 'numero', 'descricao','bruto','liquido','etapa_id','observacao' ];
     protected $hidden = [ 'id', 'etapa_id', 'created_at', 'updated_at', 'deleted_at' ];
 
     public function etapa(){

@@ -26,20 +26,20 @@
                                     @endif
                                     @csrf
                                     <div class="row">
-                                        <div class="col-md-2 p-lr-o">
+                                        <div class="col-md-1 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
                                                 <input type="text" class="form-control" readonly value="{{ $etapa->etapa }}">
                                             </div>
                                         </div>
-                                        <div class="col-md-2 p-lr-o">
+                                        <div class="col-md-1 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Quant</label>
                                                 <input type="number" class="form-control" name="numero"
                                                        value="{{(isset($premiacao) and $premiacao->numero)?$premiacao->numero:''}}">
                                             </div>
                                         </div>
-                                        <div class="col-md-2 p-lr-o">
+                                        <div class="col-md-6 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Descrição</label>
                                                 <input type="text" class="form-control" name="descricao"
@@ -58,6 +58,13 @@
                                                 <label for="">Liquido</label>
                                                 <input type="text" class="form-control" name="liquido"
                                                        value="{{(isset($premiacao) and $premiacao->liquido)?$premiacao->liquido:''}}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 p-lr-o">
+                                            <div class="form-group">
+                                                <label for="">Observação</label>
+                                                <input type="text" class="form-control" name="observacao"
+                                                       value="{{(isset($premiacao) and $premiacao->observacao)?$premiacao->observacao:''}}">
                                             </div>
                                         </div>
                                     </div>

@@ -31,10 +31,10 @@ class PremiacaoEletronicaController extends Controller
     {
         $quantidadePremios = Input::get('numero');
         for ($i = 1; $i <= $quantidadePremios; $i++) {
-            $premiacao = PremiacaoEletronica::create(Input::except('id', '_method', '_token'));
-            $premiacao->numero = $i;
-            $premiacao->etapa_id = Etapa::ativa()->id;
-            $premiacao->save();
+            $premiacao = Input::except('id', '_method', '_token');
+            $premiacao['numero'] = $i;
+            $premiacao['etapa_id'] = Etapa::ativa()->id;
+            $premiacao = PremiacaoEletronica::create($premiacao);
         }
         
         return response()->json([
