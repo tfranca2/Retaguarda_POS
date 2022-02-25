@@ -185,7 +185,7 @@ class VendaController extends Controller
             "Expires" => "0"
         );
 
-        $vendas = Venda::with('matrizes')->where('etapa_id', $etapa->id)->where('pdv','correios')->whereNotNull('protocolo')->where('confirmada',1)->get();
+        $vendas = Venda::with('matrizes')->where('etapa_id', $etapa->id)->where('confirmada',1)->get();
 
         $callback = function() use ( $vendas, $etapa ){
 
