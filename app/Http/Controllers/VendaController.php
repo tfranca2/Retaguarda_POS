@@ -211,8 +211,15 @@ class VendaController extends Controller
 
                 $valor = Helper::formatDecimalToDb($valor);
 
+                $cidade_nome = '';
+                $uf = '';
                 $cidade = Cidade::find($venda->cidade_id);
-                $estado = Estado::find($cidade->estado_id);
+                if( $cidade ){
+                    $cidade_nome = strtoupper(Helper::sanitizeString($cidade->nome));
+                    $estado = Estado::find($cidade->estado_id);
+                    if( $estado )
+                        $uf = strtoupper($estado->uf);
+                }
 
                 foreach( $venda->matrizes as $matriz ){
 
@@ -229,9 +236,9 @@ class VendaController extends Controller
                         '', // email
                         substr(Helper::onlyNumbers($venda->telefone), 0, 2), // ddd
                         substr(Helper::onlyNumbers($venda->telefone), 2), // telefone
-                        strtoupper($estado->uf), // uf
+                        $uf, // uf
                         '', // cep
-                        strtoupper(Helper::sanitizeString($cidade->nome)), // cidade
+                        $cidade_nome, // cidade
                         '', // dados livres
                         '', // dados livres
                         '', // dados livres
