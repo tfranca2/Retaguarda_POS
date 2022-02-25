@@ -97,7 +97,7 @@ class Helper
 
     public static function sanitizeString($str){
         return preg_replace('{\W }', '', strtr(
-            utf8_decode(html_entity_decode($str)),
+            utf8_decode(html_entity_decode(trim($str))),
             utf8_decode('ÀÁÃÂÉÊÍÓÕÔÚÜÇÑàáãâéêíóõôúüçñ'),
             'AAAAEEIOOOUUCNaaaaeeiooouucn'));
     }

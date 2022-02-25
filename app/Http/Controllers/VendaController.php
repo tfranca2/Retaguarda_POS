@@ -178,7 +178,7 @@ class VendaController extends Controller
         $etapa = Etapa::ativa();
 
         $headers = array(
-            "Content-type" => "text/txt",
+            "Content-type" => "text/plain",
             "Content-Disposition" => "attachment; charset=UTF-8; filename=". 'capital-correios' ."-vendas-edicao-". $etapa->etapa .".txt",
             "Pragma" => "no-cache",
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
