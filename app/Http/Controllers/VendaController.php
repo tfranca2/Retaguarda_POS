@@ -202,7 +202,7 @@ class VendaController extends Controller
                 date('d/m/Y', strtotime($etapa->data)), // data sorteio
                 date('d/m/Y'), // data geracao
                 env('TXT_EXPORT_DISTRIBUIDOR'), // numero do distribuidor
-            ], ';', chr(0), "\n");
+            ], ';', chr(32), "\n");
             foreach( $vendas as $venda ){
 
                 $valor = 0;
@@ -225,7 +225,9 @@ class VendaController extends Controller
                         $uf = strtoupper($estado->uf);
                 }
 
-                foreach( $venda->matrizes as $matriz ){
+                // foreach( $venda->matrizes as $matriz ){
+                if( isset($venda->matrizes) and isset($venda->matrizes[0]) ){
+                    $matriz = $venda->matrizes[0];
 
                     $totalVendas++;
 
@@ -251,7 +253,7 @@ class VendaController extends Controller
                         'V', // V - venda | C - cadastro
                         '', // dados livres
                         '', // dados livres
-                    ], ';', chr(0), "\n" );
+                    ], ';', chr(32), "\n" );
                 }
             }
 
@@ -260,8 +262,6 @@ class VendaController extends Controller
             ->join('venda_matriz','venda_id','=','vendas.id')
             ->join('matrizes','matriz_id','=','matrizes.id')
             ->where('etapa_id', $etapa->id)
-            ->where('pdv','correios')
-            ->whereNotNull('protocolo')
             ->where('confirmada',1)
             ->first();
 
@@ -270,7 +270,7 @@ class VendaController extends Controller
                 $totalVendas, // quantidade de linhas D3
                 $etapa->range_inicial, // inicial do range de vendas deste arquivo
                 $range_final->bilhete, // final do range
-            ], ';', chr(0), "\n");
+            ], ';', chr(32), "\n");
 
             fclose($file);
         };
