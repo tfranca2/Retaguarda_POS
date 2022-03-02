@@ -194,6 +194,7 @@ class VendaController extends Controller
         $callback = function() use ( $vendas, $etapa ){
 
             $totalVendas = 0;
+            $range_final = 0;
 
             $file = fopen('php://output', 'w');
             fputcsv($file, [
@@ -230,6 +231,8 @@ class VendaController extends Controller
                     $matriz = $venda->matrizes[0];
 
                     $totalVendas++;
+                    if( $matriz->matriz->bilhete > $range_final )
+                        $range_final = $matriz->matriz->bilhete;
 
                     fputcsv( $file, [ 
                         'D3', // cabeçalho fixo
@@ -258,18 +261,18 @@ class VendaController extends Controller
             }
 
 
-            $range_final = Venda::select(\DB::raw('MAX(bilhete) AS bilhete'))
-            ->join('venda_matriz','venda_id','=','vendas.id')
-            ->join('matrizes','matriz_id','=','matrizes.id')
-            ->where('etapa_id', $etapa->id)
-            ->where('confirmada',1)
-            ->first();
+            // $range_final = Venda::select(\DB::raw('MAX(bilhete) AS bilhete'))
+            // ->join('venda_matriz','venda_id','=','vendas.id')
+            // ->join('matrizes','matriz_id','=','matrizes.id')
+            // ->where('etapa_id', $etapa->id)
+            // ->where('confirmada',1)
+            // ->first();
 
             fputcsv($file, [
                 'T', // cabeçalho fixo
                 $totalVendas, // quantidade de linhas D3
                 $etapa->range_inicial, // inicial do range de vendas deste arquivo
-                $range_final->bilhete, // final do range
+                $range_final, // final do range
             ], ';', chr(32), "\n");
 
             fclose($file);
