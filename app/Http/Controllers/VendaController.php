@@ -183,7 +183,7 @@ class VendaController extends Controller
 
         $headers = array(
             "Content-type" => "text/plain",
-            "Content-Disposition" => "attachment; charset=UTF-8; filename=". 'capital-correios' ."-vendas-edicao-". $etapa->etapa .".txt",
+            "Content-Disposition" => "attachment; charset=UTF-8; filename=". env('TXT_EXPORT_NAME') ."-edicao-". $etapa->etapa .".txt",
             "Pragma" => "no-cache",
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
             "Expires" => "0"
@@ -198,10 +198,10 @@ class VendaController extends Controller
             $file = fopen('php://output', 'w');
             fputcsv($file, [
                 'H', // cabeçalho fixo
-                'CAPE', // nome da operacao
+                env('TXT_EXPORT_OPERACAO'), // nome da operacao
                 date('d/m/Y', strtotime($etapa->data)), // data sorteio
                 date('d/m/Y'), // data geracao
-                '119', // numero do distribuidor
+                env('TXT_EXPORT_DISTRIBUIDOR'), // numero do distribuidor
             ], ';', chr(0), "\n");
             foreach( $vendas as $venda ){
 
