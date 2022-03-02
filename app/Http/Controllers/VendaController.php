@@ -175,7 +175,11 @@ class VendaController extends Controller
 
     public function txt( Request $request ){
 
-        $etapa = Etapa::ativa();
+        if( $request->has('etapa_id') ){
+            $etapa =  Etapa::find( $request->etapa_id );
+        } else {
+            $etapa = Etapa::ativa();
+        }
 
         $headers = array(
             "Content-type" => "text/plain",

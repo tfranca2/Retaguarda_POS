@@ -156,9 +156,9 @@
 				</div>
 				{{ $vendas->appends( request()->input() )->links() }}
 				<div class="pull-right">
-					<a href="{{ url('/vendas/csv') .'?'. http_build_query( request()->input() ) }}" id="exportarCsv" class="btn btn-success pull-right" title="Exportar .csv"><i class="fa fa-file-excel-o"></i> Exportar</a>
+					<a href="{{ url('/vendas/csv') .'?'. http_build_query( request()->input() ) }}" id="exportarCsv" class="btn btn-success pull-right" title="Exportar .csv"><i class="fa fa-file-excel-o"></i> Exportar .csv</a>
 					<span class="pull-right" style="display: block; width: 30px; height: 10px;"></span>
-					<a href="{{ url('/vendas/txt') }}" id="exportarTxtCorreios" class="btn btn-warning pull-right" title="Exportar .txt correios"><i class="fa fa-file-excel-o"></i> Exportar Correios</a>
+					<a href="{{ url('/vendas/txt') .'?'. http_build_query( request()->input() ) }}" id="exportarTxtCorreios" class="btn btn-warning pull-right" title="Exportar .txt"><i class="fa fa-file-text-o"></i> Exportar .txt</a>
 				</div>
 			</div>
 		</div>
