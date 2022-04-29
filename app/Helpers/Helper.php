@@ -163,4 +163,11 @@ class Helper
 		//*/
 	}
 
+	public static function validaCep($cep){
+		$cep = Self::onlyNumbers( $cep );
+		if( strlen($cep) != 8 )
+			return false;
+		return true;
+	}
+
 }

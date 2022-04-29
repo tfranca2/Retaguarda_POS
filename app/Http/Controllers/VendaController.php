@@ -324,17 +324,52 @@ class VendaController extends Controller
                 return response()->json(['error'=>['mac'=>['Dispositivo não localizado.']]],400);
         }
 
-        // if( $request->has('nome') )
+        $nome = null;
+        if( $request->has('nome') ){
         //     if( ! Helper::validaNome($request->nome) )
         //         return response()->json(['error'=>['nome'=>['Informe o nome completo.']]],400);
+            $nome = $request->nome;
+        }
 
-        if( $request->has('cpf') )
+        if( $request->has('cpf') ){
             if( ! Helper::validaCPF($request->cpf) )
                 return response()->json(['error'=>['cpf'=>['Informe um cpf válido.']]],400);
+            try {
+                if( env('CONSULTA_CPF', false) ){
+                    $pessoa = \DB::connection('mysql2')->select("SELECT nome FROM cadcpf WHERE CPF = '". Helper::onlyNumbers($request->cpf) ."'");
+                    if($pessoa){
+                        $nome = $pessoa[0]->nome;
+                    }
+                }
+            } catch( Exception $e ){
+
+            }
+        }
 
         if( $request->has('telefone') )
             if( ! Helper::validaCelular($request->telefone) )
                 return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
+
+        $cidade_id = env('CIDADE_ID_PADRAO', null);
+        if( $request->has('cep') ){
+            if( ! Helper::validaCep($request->cep) )
+                return response()->json(['error'=>['cep'=>['Informe um cep válido.']]],400);
+
+            $cep = Helper::onlyNumbers( $request->cep );
+            $validaCEP = json_decode( file_get_contents("https://viacep.com.br/ws/".$cep."/json/" ) );
+            if( ! isset($validaCEP->erro) ){
+                if( isset($validaCEP->localidade) and isset($validaCEP->uf) ){
+                    $estado = Estado::where('uf', $validaCEP->uf)->first();
+                    if( $estado ){
+                        $cidade = Cidade::where('estado_id', $estado->id)
+                                ->where('nome', $validaCEP->localidade)->first();
+                        if( $cidade )
+                            $cidade_id = $cidade->id;
+                    }
+                }
+            }
+
+        }
 
         $qtd = 1;
         if( $etapa->tipo == 1)
@@ -381,6 +416,8 @@ class VendaController extends Controller
         try {
 
             $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
+            $venda['nome'] = $nome;
+            $venda['cidade_id'] = $cidade_id;
             $venda['ip'] = $request->ip();
             $venda['etapa_id'] = $etapa->id;
             if( $dispositivo )
