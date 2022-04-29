@@ -246,7 +246,7 @@ class VendaController extends Controller
                         substr(Helper::onlyNumbers($venda->telefone), 0, 2), // ddd
                         substr(Helper::onlyNumbers($venda->telefone), 2), // telefone
                         $uf, // uf
-                        '', // cep
+                        Helper::onlyNumbers($venda->cep), // cep
                         $cidade_nome, // cidade
                         '', // dados livres
                         '', // dados livres
@@ -417,6 +417,7 @@ class VendaController extends Controller
 
             $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
             $venda['nome'] = $nome;
+            $venda['cep'] = $cep;
             $venda['cidade_id'] = $cidade_id;
             $venda['ip'] = $request->ip();
             $venda['etapa_id'] = $etapa->id;

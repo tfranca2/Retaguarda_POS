@@ -11,9 +11,9 @@ class Venda extends Model
     
     protected $table = 'vendas';
 
-	protected $fillable = [ 'dispositivo_id', 'etapa_id', 'matriz_id', 'nome', 'cpf', 'telefone', 'ip', 'ceder_resgate', 'confirmada', 'pdv', 'key', 'protocolo', 'cidade_id' ];
+	protected $fillable = [ 'dispositivo_id', 'etapa_id', 'matriz_id', 'nome', 'cpf', 'telefone', 'ip', 'ceder_resgate', 'confirmada', 'pdv', 'key', 'protocolo', 'cidade_id', 'cep' ];
 
-    protected $hidden = [ 'dispositivo_id', 'dispositivo_id', 'etapa_id', 'matriz_id', 'ip', 'ceder_resgate', 'pdv', 'cidade_id', 'updated_at', 'deleted_at'];
+    protected $hidden = [ 'dispositivo_id', 'etapa_id', 'matriz_id', 'ip', 'ceder_resgate', 'pdv', 'cidade_id', 'updated_at', 'deleted_at'];
 
 	// JOINS
     public function dispositivo(){
