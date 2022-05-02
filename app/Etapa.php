@@ -11,7 +11,7 @@ class Etapa extends Model
     protected $table = 'etapas';
 	protected $fillable = [ 'etapa', 'descricao', 'data', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'codigo_susep' ];	
 	protected $hidden = [ 'id', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'created_at', 'updated_at', 'deleted_at' ];
-	protected $appends = ['elegibilidade'];
+	protected $appends = ['valor', 'elegibilidade'];
 	public function getElegibilidadeAttribute()
     {
     	$previousEtapa = \DB::table( with( new Etapa )->getTable() )->where('ativa', '0')->where('data', '<', $this->attributes['data'])->orderBy('data', 'DESC')->first();
@@ -36,5 +36,17 @@ class Etapa extends Model
 
 	public function premiacaoEletronica(){
 		return $this->hasMany('App\PremiacaoEletronica', 'etapa_id', 'id')->orderBy('numero', 'ASC');
+	}
+
+	public function getvalorAttribute()
+	{
+		$valor = 0;
+		switch( $this->attributes['tipo'] ){
+			case '1': $valor = $this->attributes['valor_simples']; break;
+			case '2': $valor = $this->attributes['valor_duplo']; break;
+			case '3': $valor = $this->attributes['valor_triplo']; break;
+		}
+
+		return $this->attributes['valor'] = $valor;
 	}
 }
