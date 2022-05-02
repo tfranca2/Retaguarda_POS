@@ -351,6 +351,7 @@ class VendaController extends Controller
                 return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
 
         $cidade_id = env('CIDADE_ID_PADRAO', null);
+        $cep = null;
         if( $request->has('cep') ){
             if( ! Helper::validaCep($request->cep) )
                 return response()->json(['error'=>['cep'=>['Informe um cep válido.']]],400);
