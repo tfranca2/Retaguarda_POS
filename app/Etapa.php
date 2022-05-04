@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Helper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -47,6 +48,6 @@ class Etapa extends Model
 			case '3': $valor = $this->attributes['valor_triplo']; break;
 		}
 
-		return $this->attributes['valor'] = $valor;
+		return $this->attributes['valor'] = Helper::formatDecimalToDb($valor);
 	}
 }
