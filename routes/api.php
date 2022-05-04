@@ -46,7 +46,7 @@ Route::group(['middleware' => 'auth:api'], function( $router ){
 	Route::get('dispositivos', 'DispositivoController@getAll');
 	Route::get('dispositivo/{id}', 'DispositivoController@show');
 
-	// Route::get('etapa', 'etapaController@show');
+	Route::get('etapa', 'etapaController@show');
 	// Route::get('vendas', 'VendaController@show');
 	Route::get('venda/{key}', 'VendaController@show');
 	Route::post('venda', 'VendaController@store');

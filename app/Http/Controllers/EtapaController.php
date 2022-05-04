@@ -61,9 +61,14 @@ class EtapaController extends Controller
         ], 201 );
     }
     
-    public function show( Request $request, $id ){
+    public function show( Request $request ){
         try {
-            return response()->json( Etapa::findOrFail($id) );
+            $id = Etapa::ativa()->id;
+            if( $request->has('id') )
+                $id = $request->id;
+            
+            $etapa = Etapa::with('premiacao')->with('premiacaoEletronica')->findOrFail($id);
+            return response()->json($etapa);
         } catch( \Exception $e ){
             return response()->json([ 'error' => $e->getMessage() ], 404 );
         }
@@ -140,5 +145,5 @@ class EtapaController extends Controller
         return response()->json($resp,200);
 
     }
-    
+
 }
