@@ -642,21 +642,22 @@ class VendaController extends Controller
                     $inicio = $matriz_id + $etapa->intervalo;
                 // seleciona o id do titulo disponivel mais próximo
                 $matriz_id = Matriz::whereBetween( 'id', [ 
-                                            $inicio, 
-                                            $etapa->range_final + ( $etapa->intervalo * $i )
-                                        ])
-                                        ->whereNotIn( 'id',
-                                            VendaMatriz::select('matriz_id')
-                                            ->whereNotNull('matriz_id')
-                                            ->join('vendas','vendas.id','=','venda_id')
-                                            ->where('etapa_id', $etapa->id)
-                                            ->distinct()
-                                            ->get()
-                                            ->pluck('matriz_id')
-                                            ->toArray()
-                                        )
-                                        ->first()
-                                        ->id;
+                                $inicio, 
+                                $etapa->range_final + ( $etapa->intervalo * $i )
+                            ])
+                            ->whereNotIn( 'id', function($query) use ($etapa) {
+                                $query->select('matriz_id')
+                                ->distinct()
+                                ->from( with( new VendaMatriz )->getTable() )
+                                ->join( 'vendas', 'vendas.id', '=', 'venda_id' )
+                                ->whereNotNull( 'matriz_id' )
+                                ->where( 'etapa_id', $etapa->id )
+                                ->get()
+                                ->pluck( 'matriz_id' )
+                                ->toArray();
+                            })
+                            ->first()
+                            ->id;
                 VendaMatriz::create([ 
                     'venda_id' => $venda->id, 
                     'matriz_id' => $matriz_id 
