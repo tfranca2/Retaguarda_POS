@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Helper;
+use Session;
 use App\User;
 use App\Venda;
 use App\Etapa;
@@ -15,6 +16,7 @@ use App\Dispositivo;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Redirect;
 
 class VendaController extends Controller
 {
@@ -66,6 +68,11 @@ class VendaController extends Controller
     }
 
     public function index( Request $request ){
+
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
 
         $vendas = Self::filter( $request );
 
@@ -226,17 +233,17 @@ class VendaController extends Controller
                         $uf = strtoupper($estado->uf);
                 }
 
-                // foreach( $venda->matrizes as $matriz ){
                 if( isset($venda->matrizes) and isset($venda->matrizes[0]) ){
-                    $matriz = $venda->matrizes[0];
+
+                    $bilhete = $venda->matrizes[0]->matriz()->first()->bilhete;
 
                     $totalVendas++;
-                    if( $matriz->matriz->bilhete > $range_final )
-                        $range_final = $matriz->matriz->bilhete;
+                    if( $bilhete > $range_final )
+                        $range_final = $bilhete;
 
                     fputcsv( $file, [ 
                         'D3', // cabeçalho fixo
-                        $matriz->matriz->bilhete, // numero do titulo
+                        $bilhete, // numero do titulo
                         $valor, // valor de venda
                         Helper::onlyNumbers($venda->cpf), // cpf
                         strtoupper(Helper::sanitizeString($venda->nome)), // nome comprador
@@ -259,14 +266,6 @@ class VendaController extends Controller
                     ], ';', chr(32), "\n" );
                 }
             }
-
-
-            // $range_final = Venda::select(\DB::raw('MAX(bilhete) AS bilhete'))
-            // ->join('venda_matriz','venda_id','=','vendas.id')
-            // ->join('matrizes','matriz_id','=','matrizes.id')
-            // ->where('etapa_id', $etapa->id)
-            // ->where('confirmada',1)
-            // ->first();
 
             fputcsv($file, [
                 'T', // cabeçalho fixo
