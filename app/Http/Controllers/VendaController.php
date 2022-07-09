@@ -235,6 +235,29 @@ class VendaController extends Controller
 
                 if( isset($venda->matrizes) and isset($venda->matrizes[0]) ){
 
+                    $nome_do_comprador = $venda->nome;
+                    if( !$nome_do_comprador ){
+                        try {
+                            if( env('CONSULTA_CPF', false) or true ){
+                                $pessoa = \DB::connection('mysql2')->select("SELECT nome FROM cadcpf WHERE CPF = '". Helper::onlyNumbers($venda->cpf) ."'");
+                                if($pessoa){
+                                    $nome_do_comprador = $pessoa[0]->nome;
+                                    
+                                    $venda->nome = $nome_do_comprador;
+                                    $venda->save();
+
+                                }
+                            }
+                        } catch( Exception $e ){
+
+                        }
+
+                        if( !$nome_do_comprador ){
+                            $nome_do_comprador = 'Cliente não identificado';
+                        }
+                    }
+                    $nome_do_comprador = strtoupper(Helper::sanitizeString($nome_do_comprador));
+
                     $bilhete = $venda->matrizes[0]->matriz()->first()->bilhete;
 
                     $totalVendas++;
@@ -246,7 +269,7 @@ class VendaController extends Controller
                         $bilhete, // numero do titulo
                         $valor, // valor de venda
                         Helper::onlyNumbers($venda->cpf), // cpf
-                        strtoupper(Helper::sanitizeString($venda->nome)), // nome comprador
+                        $nome_do_comprador, // nome comprador
                         '', // data nascimento
                         '', // sexo
                         '', // email
@@ -343,6 +366,9 @@ class VendaController extends Controller
             } catch( Exception $e ){
 
             }
+
+            if( !$nome )
+                $nome = 'Cliente não identificado';
         }
 
         if( $request->has('telefone') )
