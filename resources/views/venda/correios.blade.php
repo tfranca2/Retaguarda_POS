@@ -64,7 +64,7 @@
 							<hr><label>Título(s)</label><br>
 						</div>
 						<div class="col-md-12 p-lr-o">
-							<textarea class="form-control disabled" rows="3" disabled="">@foreach( $venda->matrizes as $matriz )&bull; {{ $matriz->matriz->bilhete }}: {{ $matriz->matriz->combinacoes }}
+							<textarea class="form-control disabled" rows="3" disabled="">@foreach( $venda->matrizes as $matriz )&bull; {{ $matriz['matriz']['bilhete'] }}: {{ $matriz['matriz']['combinacoes'] }}
 @endforeach</textarea>
 						</div>
 					</div>

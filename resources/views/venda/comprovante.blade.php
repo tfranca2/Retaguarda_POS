@@ -56,16 +56,19 @@
 	<div class="col-md-3"><b>Bilhete<?php echo ((count( $venda->matrizes )>1)?'s':''); ?>:</b></div>
 	<div class="col-md-9">
 		@foreach( $venda->matrizes as $matriz )
-		<b>{{ $matriz->matriz->bilhete }}</b>:
+		<b>{{ $matriz['matriz']['bilhete'] }}</b>:
 		<div class="text-center" style="padding-bottom: 5px;">
 		@php
-		$chunk = explode( '-', $matriz->matriz->combinacoes );
+		$chunk = explode( '-', $matriz['matriz']['combinacoes'] );
 		foreach( $chunk as $k => $c ){
 			echo $c.' ';
 			if( in_array( $k, [ 9, 19 ] ) )
 				echo '<br>';
 		}
 		@endphp
+		@if(isset($matriz['matriz']['extra']))
+		<b>Chance Extra</b>: {{ $matriz['matriz']['extra'] }}
+		@endif
 		</div>
 		@endforeach
 	</div>

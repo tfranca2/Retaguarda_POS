@@ -10,7 +10,7 @@ class MenuController extends Controller
 {
     
     public function getAll( Request $request ){
-        $menus = Menu::orderBy('label')->paginate(10);
+        $menus = Menu::orderBy('label')->get();
         return response()->json( $menus, 200 );
     }
 
@@ -18,7 +18,7 @@ class MenuController extends Controller
         $menus =  Menu::orderByRaw(' CASE WHEN parent IS NULL THEN (id-1) ELSE parent END ASC ')
                     ->orderByRaw(' CASE WHEN ordem IS NULL THEN 9999999999 ELSE ordem END ASC ')
                     ->orderBy('label')
-                    ->paginate(10);
+                    ->get();
         return view('menu.index',[ 'menus' => $menus ]);
     }
 

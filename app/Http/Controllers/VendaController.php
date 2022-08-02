@@ -57,8 +57,7 @@ class VendaController extends Controller
 
         return $vendas->orderBy('created_at','DESC')
                     ->with('etapa')
-                    ->with('dispositivo')
-                    ->with('matrizes');
+                    ->with('dispositivo');
 
         // return Venda::orderBy('created_at','DESC')->paginate(10);
     }
@@ -79,6 +78,9 @@ class VendaController extends Controller
         $totalVendas = 0;
         $totalComissao = 0;
         foreach( $vendas->get() as $venda ){
+
+            $venda->matrizes = $venda->matrizes();
+
             if( count( $venda->matrizes ) == 2 ){
                 $totalVendas += $venda->etapa->valor_duplo;
                 $totalComissao += $venda->etapa->v_comissao_duplo;
@@ -138,6 +140,8 @@ class VendaController extends Controller
 
             foreach( $vendas as $venda ){
 
+                $venda->matrizes = $venda->matrizes();
+
                 if( count( $venda->matrizes ) == 2 ){
                     $totalVendas += $venda->etapa->valor_duplo;
                     $totalComissao += $venda->etapa->v_comissao_duplo;
@@ -196,7 +200,7 @@ class VendaController extends Controller
             "Expires" => "0"
         );
 
-        $vendas = Venda::with('matrizes')->where('etapa_id', $etapa->id)->where('confirmada',1)->get();
+        $vendas = Venda::where('etapa_id', $etapa->id)->where('confirmada',1)->get();
 
         $callback = function() use ( $vendas, $etapa ){
 
@@ -212,6 +216,8 @@ class VendaController extends Controller
                 env('TXT_EXPORT_DISTRIBUIDOR'), // numero do distribuidor
             ], ';', chr(32), "\n");
             foreach( $vendas as $venda ){
+
+                $venda->matrizes = $venda->matrizes();
 
                 $valor = 0;
                 if( count( $venda->matrizes ) == 2 )
@@ -243,8 +249,9 @@ class VendaController extends Controller
                                 if($pessoa){
                                     $nome_do_comprador = $pessoa[0]->nome;
                                     
-                                    $venda->nome = $nome_do_comprador;
-                                    $venda->save();
+                                    $vnd = Venda::find( $venda->id );
+                                    $vnd->nome = $nome_do_comprador;
+                                    $vnd->save();
 
                                 }
                             }
@@ -258,7 +265,7 @@ class VendaController extends Controller
                     }
                     $nome_do_comprador = strtoupper(Helper::sanitizeString($nome_do_comprador));
 
-                    $bilhete = $venda->matrizes[0]->matriz()->first()->bilhete;
+                    $bilhete = $venda->matrizes[0]['matriz']['bilhete'];
 
                     $totalVendas++;
                     if( $bilhete > $range_final )
@@ -455,6 +462,7 @@ class VendaController extends Controller
                 $venda['ceder_resgate'] = $request->ceder_resgate;
 
             $venda['key'] = Str::uuid();
+            $venda['matriz'] = env('MATRIZ', 'matrizes');
             $venda = Venda::create( $venda );
 
             $matriz_id = 0;
@@ -497,7 +505,8 @@ class VendaController extends Controller
                 }
             }
 
-            $venda = Venda::with('etapa')->with('matrizes')->find( $venda->id );
+            $venda = Venda::with('etapa')->find( $venda->id );
+            $venda->matrizes = $venda->matrizes();
             $etapa = Etapa::find( $venda->etapa->id );
             $venda->premiacao = $etapa->premiacao;
             $venda->premiacaoEletronica = $etapa->premiacaoEletronica;
@@ -517,7 +526,8 @@ class VendaController extends Controller
     
     public function show( Request $request, $key ){
         try {
-            $venda = Venda::with('etapa')->with('matrizes')->where('key', $key)->first();
+            $venda = Venda::with('etapa')->where('key', $key)->first();
+            $venda->matrizes = $venda->matrizes();
             $etapa = Etapa::find( $venda->etapa->id );
             $venda->premiacao = $etapa->premiacao;
             $venda->premiacaoEletronica = $etapa->premiacaoEletronica;
@@ -529,7 +539,8 @@ class VendaController extends Controller
     
     public function edit( Request $request, $id ){
         $dispositivos = Dispositivo::get();
-        $venda = Venda::with('matrizes')->find($id);
+        $venda = Venda::find($id);
+        $venda->matrizes = $venda->matrizes();
         $etapa = Etapa::find($venda->etapa_id);
         return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
     }
@@ -570,9 +581,11 @@ class VendaController extends Controller
     }
     
     public function comprovante( Request $request, $key ){
-        $venda = Venda::with('etapa')->with('matrizes')->where('key',$key)->where('confirmada',1)->first();
-        if( $venda )
+        $venda = Venda::with('etapa')->where('key',$key)->where('confirmada',1)->first();
+        if( $venda ){
+            $venda->matrizes = $venda->matrizes();
             return view('venda.comprovante',[ 'venda' => $venda ]);
+        }
         abort(404);
     }
 
@@ -690,7 +703,8 @@ class VendaController extends Controller
 
             }
 
-            $venda = Venda::with('matrizes')->find( $venda->id );
+            $venda = Venda::find( $venda->id );
+            $venda->matrizes = $venda->matrizes();
 
             $valor = 0;
             if( count( $venda->matrizes ) == 2 )

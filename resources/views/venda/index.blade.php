@@ -105,6 +105,9 @@
 						<tbody>
 							@forelse( $vendas as $venda )
 							@php
+
+								$venda->matrizes = $venda->matrizes();
+
 								$valor = 0;
 								$comissao = 0;
 								if( count( $venda->matrizes ) == 2 ){
