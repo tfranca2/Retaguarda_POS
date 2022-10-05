@@ -545,7 +545,7 @@ class VendaController extends Controller
         return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
     }
     
-    public function update( Request $request, $id ){
+    public function update( Request $request, $id, $tothecheckout = false ){
 
         $venda = Venda::find($id);
         $inputs = Input::except( 'id', '_method', '_token', 'quantidade' );
@@ -553,6 +553,10 @@ class VendaController extends Controller
             $venda->$key = $value;
         }
         $venda->save();
+
+        if( $tothecheckout )
+            return response()->json([ 'redirectURL' => url('/checkout/'.$venda->key) ], 200 );
+
         return response()->json([ 
             'message' => 'Atualizado com sucesso', 
             'redirectURL' => url('/vendas'), 
@@ -822,6 +826,16 @@ class VendaController extends Controller
     
     public function prevenda( Request $request ){
 
+        return response()->json([
+            'valor' => '10,00',
+            'key' => "b3f9cf49-3056-4bd1-a79c-ed4cbfd305b4",
+            'cartelas' => [
+                [ "bilhete" => 255, "combinacoes" => "04-07-12-14-17-18-24-26-29-30-31-34-37-41-42-43-48-53-58-59" ],
+                [ "bilhete" => 400255, "combinacoes" => "02-11-17-19-20-26-29-31-33-38-39-40-41-47-48-50-51-52-53-55" ],
+                [ "bilhete" => 800255, "combinacoes" => "05-07-08-09-14-19-25-30-33-35-41-43-46-48-50-52-55-56-57-59" ],
+            ],
+        ],201);
+
         $etapa = Etapa::ativa();
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
@@ -907,7 +921,7 @@ class VendaController extends Controller
 
             \DB::commit();
             return response()->json([
-                'valor' => $valor,
+                'valor' => Helper::formatDecimalToView( $valor ),
                 'key' => $venda->key,
                 'cartelas' => $cartelas,
             ],201);
@@ -917,12 +931,10 @@ class VendaController extends Controller
         }
     }
 
-    public function prevendaconfirma( Request $request, $key ){
-        $venda = Venda::where( 'key', $key )->first();
-        if( !$venda )
-            return response()->json(['error'=>'venda não localizada'],404);
+    public function prevendaconfirma( Request $request ){
 
         $validators = [
+            'key' => 'required|max:36|exists:vendas,key',
             'cpf' => 'required|max:14',
             'telefone' => 'required|max:16',
             'email' => 'required|email|max:100',
@@ -933,6 +945,8 @@ class VendaController extends Controller
         $validator = Validator::make($request->all(),$validators);
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
+
+        $venda = Venda::where( 'key', $request->key )->first();
 
         $nome = null;
         if( $request->has('nome') ){
@@ -955,34 +969,97 @@ class VendaController extends Controller
 
             if( !$nome )
                 $nome = 'Cliente não identificado';
+
+            $request->merge([ 'cpf' => Helper::onlyNumbers($request->cpf) ]);
         }
 
-        $request->merge('nome', $nome);
+        $request->merge([ 'nome' => $nome ]);
 
-        if( $request->has('telefone') )
+        if( $request->has('telefone') ){
             if( ! Helper::validaCelular($request->telefone) )
                 return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
 
-        $cidade_id = env('CIDADE_ID_PADRAO', null);
-        $cep = null;
-        $validaCEP = json_decode( file_get_contents("https://viacep.com.br/ws/". $request->uf ."/". $request->cidade ."/centro/json/" ) );
-        if( ! isset($validaCEP->erro) ){
-            if( isset($validaCEP->localidade) and isset($validaCEP->uf) and isset($validaCEP->cep) ){
-                $cep = Helper::onlyNumbers( $validaCEP->cep );
-                $estado = Estado::where('uf', $validaCEP->uf)->first();
-                if( $estado ){
-                    $cidade = Cidade::where('estado_id', $estado->id)
-                            ->where('nome', $validaCEP->localidade)->first();
-                    if( $cidade )
-                        $cidade_id = $cidade->id;
-                }
-            }
+            $request->merge([ 'telefone' => Helper::onlyNumbers($request->telefone) ]);
         }
 
-        $request->merge('cep', $cep);
-        $request->merge('cidade_id', $cidade_id);
+        $cidade_id = env('CIDADE_ID_PADRAO', null);
+        $cep = null;
+        try{
+            $estado = Estado::where('uf', $request->uf)->first();
+            if( $estado ){
+                $cidade = Cidade::where('estado_id', $estado->id)
+                        ->where('nome', $request->localidade)->first();
+                if( $cidade )
+                    $cidade_id = $cidade->id;
+            }
+            $validaCEP = json_decode( file_get_contents("https://viacep.com.br/ws/". $request->uf ."/". $request->cidade ."/centro/json/" ) );
+            if( !isset($validaCEP->erro) ){
+                if( isset($validaCEP->cep) ){
+                    $cep = Helper::onlyNumbers( $validaCEP->cep );
+                }
+            }
+        } catch( \Exception $e ){}
 
-        return Self::update( $request, $venda->id );
+        $request->merge([ 'cep' => $cep ]);
+        $request->merge([ 'cidade_id' => $cidade_id ]);
+
+        $request->request->remove('cidade');
+        $request->request->remove('uf');
+
+        return Self::update( $request, $venda->id, true );
+    }
+
+    public function checkout( Request $request, $key ){
+        $etapa = Etapa::ativa();
+        $venda = Venda::where( 'key', $key )->first();
+        if( !$venda )
+            return response()->json(['error'=>'Chave não localizada'],400);
+
+        $venda->matrizes = $venda->matrizes();
+
+        $valor = 0;
+        if( count( $venda->matrizes ) == 2 ){
+            $valor = $etapa->valor_duplo;
+        } elseif( count( $venda->matrizes ) == 3 ){
+            $valor = $etapa->valor_triplo;
+        } else {
+            $valor = $etapa->valor_simples;
+        }
+
+        $cidade_nome = '';
+        $uf = '';
+        $cidade = Cidade::find($venda->cidade_id);
+        if( $cidade ){
+            $cidade_nome = strtoupper(Helper::sanitizeString($cidade->nome));
+            $estado = Estado::find($cidade->estado_id);
+            if( $estado )
+                $uf = strtoupper($estado->uf);
+        }
+
+        return view('venda.checkout',[ 
+            'cliente' => (object) [
+                'id' => 0,
+                'nome' => $venda->nome,
+                'cpf' => $venda->cpf,
+                'email' => $venda->email,
+                'telefone' => $venda->telefone,
+                'cep' => $venda->cep,
+                'estado' => $uf,
+                'cidade' => $cidade_nome,
+                'data_nascimento' => '',
+                'endereco' => '',
+                'numero' => '',
+                'complemento' => '',
+                'bairro' => '',
+            ],
+            'valor' => $valor, 
+            'pedido_id' => $venda->id, 
+            'sessionID' => '', 
+        ]);
+    }
+
+    public function checkoutpagar( Request $request ){
+        
     }
 
 }

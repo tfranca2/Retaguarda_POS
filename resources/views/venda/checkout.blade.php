@@ -72,7 +72,7 @@
     </head>
     <body style="background: #fff; max-width: 100%; overflow-x: hidden;">
 
-@if( $erros )
+@if( isset($erros) and $erros )
 <!-- Modal -->
 <div class="modal fade" id="myModal" role="dialog">
     <div class="modal-dialog">
@@ -118,11 +118,7 @@
 		    <br>
 	        <form id="check" action="{{ url('/servicos/checkout') }}" method="post" class="" enctype="multipart/form-data" data-parsley-validate >
 				@csrf
-				<?php
-					$v = $valor;
-					if( $gorjeta )
-						$v += Helper::formatDecimalToDb( $gorjeta );
-				?>
+				<?php $v = $valor;?>
 	        <input type="hidden" name="valor" value="<?php echo $v; ?>" />
 	        <input type="hidden" name="pedido_id" value="{{ $pedido_id }}" />
 	        <input type="hidden" name="cliente_id" value="{{ $cliente->id }}" />
@@ -173,23 +169,7 @@
 	                    </div>
 	                </div>
 	            </div>
-				<div class="col-md-12">
-	                <div class="form-group">
-	                    <label class="col-sm-4 control-label">Gorjeta: </label>
-	                    <div class="col-sm-6">
-	                        <input type="text" id="gorjeta" name="gorjeta" value="{{ ($gorjeta)?Helper::formatDecimalToView( $gorjeta ):'' }}" maxlength="8" class="form-control decimal" placeholder="0,00">
-	                    </div>
-	                </div>
-	            </div>
 	            @endif
-				<div class="col-md-12">
-	                <div class="form-group">
-	                    <label class="col-sm-4 control-label">Total: </label>
-	                    <div class="col-sm-6">
-	                        <input disabled="disabled" type="text" id="total" value="{{ Helper::formatDecimalToView( $valor + Helper::formatDecimalToDb( $gorjeta ) ) }}" class="form-control">
-	                    </div>
-	                </div>
-	            </div>
                 
                 <input type="hidden" id="parcelamento" name="parcelamento" value="1" />
                 <input type="hidden" id="parcelaValor" name="parcelaValor" value="{{ $valor }}" />
@@ -311,7 +291,7 @@
 		            <div class="form-group">
 		                <label class="col-sm-4 control-label">Estado: </label>
 		                <div class="col-sm-6">
-		                	<input type="text" id="uf" name="uf" value="{{ $cliente->estado }}" class="form-control">
+		                	<input type="text" id="estado" name="uf" value="{{ $cliente->estado }}" class="form-control">
 		                </div>
 		            </div>
 		        </div>
@@ -319,20 +299,20 @@
 		            <div class="form-group">
 		                <label class="col-sm-4 control-label">Cidade: </label>
 		                <div class="col-sm-6">
-		                	<input type="text" id="cidadenome" name="cidade" value="{{ $cliente->cidade }}" class="form-control" >
+		                	<input type="text" id="cidade" name="cidade" value="{{ $cliente->cidade }}" class="form-control" >
 		                </div>
 		            </div>
 		        </div>
 
-				<div class="col-md-12">
+				<div class="col-md-12 text-center">
 					<br>
-					<input type="checkbox" checked="checked" required="required" data-validation="required" name="termodeuso" value="1" > Estou ciente e aceito os <a href="https://prosecurity.com.br/termo-de-uso-helpty" style="color: <?php echo $empresa->menu_background?>;"><b>termos de uso</b></a> do aplicativo.
+					<input type="checkbox" checked="checked" required="required" data-validation="required" name="termodeuso" value="1" > Estou ciente e aceito os <a href="#" style="color: <?php echo $empresa->menu_background?>;"><b>termos de uso</b></a>.
 					<br><br>
 		        </div>
 
 				<div class="col-md-12">
 				    <div class="form-group">
-				        <div class="col-sm-4 col-md-offset-4">
+				        <div class="col-sm-4 col-sm-offset-4">
 				        	<br><button type="submit" disabled="disabled" class="btn btn-primary btn-lg btn-block disabled" style="color: <?php echo $empresa->menu_color?>;background: <?php echo $empresa->menu_background?>; border-color: <?php echo $empresa->menu_background?>;">PAGAR</button>
 				        </div>
 				    </div>
@@ -456,14 +436,6 @@
 					});
 			    }
 			});
-		});
-
-		$('#gorjeta').keyup(function(e){
-			gorjeta = $('#gorjeta').val().replaceAll('.','').replace(',','.');
-			if( !gorjeta ) gorjeta = 0;
-			total = parseFloat( $('input[name=parcelaValor]').val() ) + parseFloat(gorjeta);
-			$('#total').val( total.toFixed(2) );
-			$('input[name=valor]').val( total.toFixed(2) );
 		});
 
 		$('form#check').submit(function(){

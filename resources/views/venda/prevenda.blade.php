@@ -8,37 +8,17 @@
 <div class="container">
 	<div class="row">
 		<div class="col-md-12 text-center">
-			<b><i class="fa fa-shopping-cart"></i> TOTAL: R$ <span class="preco">10,00</span></b><br>
-			cartela <span class="index_cartela">1</span><br><br>
+			<b><i class="fa fa-shopping-cart"></i> TOTAL: R$ <span class="preco"></span></b><br>
+			cartela <span class="index_cartela"></span> / <span class="count_cartela"></span><br><br>
 		</div>
 		<div class="col-md-12 text-center">
-			<div class="destaque"><b>Número do título: <span class="numero_cartela">1231231</span></b></div>
+			<div class="destaque"><b>Número do título: <span class="numero_cartela"></span></b></div>
 			<div class="destaque-sub">Números para participações</div>
 		</div>
 		<div class="col-md-12">
 			<div class="prev"><i class="fa fa-chevron-left"></i></div>
 			<div class="next"><i class="fa fa-chevron-right"></i></div>
 			<div class="round-case">
-				<div class="round">01</div>
-				<div class="round">02</div>
-				<div class="round">03</div>
-				<div class="round">04</div>
-				<div class="round">05</div>
-				<div class="round">06</div>
-				<div class="round">07</div>
-				<div class="round">08</div>
-				<div class="round">09</div>
-				<div class="round">10</div>
-				<div class="round">11</div>
-				<div class="round">12</div>
-				<div class="round">13</div>
-				<div class="round">14</div>
-				<div class="round">15</div>
-				<div class="round">16</div>
-				<div class="round">17</div>
-				<div class="round">18</div>
-				<div class="round">19</div>
-				<div class="round">20</div>
 			</div>
 		</div>
 		<div class="col-md-12 text-center">
@@ -47,11 +27,12 @@
 	</div>
 	<div class="col-md-12 text-center">
 		<h2><b>DADOS OBRIGATÓRIOS PARA <span class="text-danger">RECEBER O PRÊMIO</span></b></h2>
-		<small>Cartela <b class="numero_cartela">1231231</b> - R$ <span class="preco">10,00</span></small><br>
+		<small>Cartela <b class="numero_cartela"></b> - R$ <span class="preco"></span></small><br>
 	</div>
 
 	<div class="col-md-12">
-		<form action="">
+		<form class="form-edit" method="post" action="{{ url('/prevenda') }}">
+			@csrf
 			<div class="row">
 				<div class="col-md-6">
 					<label for="">CPF</label>
@@ -141,6 +122,7 @@
 	}
 	.prev:hover, .next:hover {
 		opacity: 1;
+		transition: opacity .15s linear;
 	}
 	.prev > i, .next > i {
 		margin: auto;
@@ -154,8 +136,35 @@
 	}
 </style>
 <script>
+	var cartelas = [];
+	function preencheCase(i){
+		i = parseInt(i) - 1;
+		if( i < 0 )
+			i = cartelas.length - 1;
+		if( i >= cartelas.length )
+			i = 0;
+		$('.index_cartela').html( i + 1 );
+		$('.numero_cartela').html(cartelas[i].bilhete);
+		$('.round-case').empty();
+		separador = cartelas[i].combinacoes.match(/[^\d]/g)[1];
+		bolas = cartelas[i].combinacoes.split(separador);
+		$(bolas).each(function(i,bola){
+			$('.round-case').append('<div class="round">'+bola+'</div>');
+		});
+	}
 	$(document).ready(function(){
-		
+		$('#gerar').click(function(){
+			$.get( base_url+"/prevenda", function(prevenda){
+				$('.preco').html(prevenda.valor);
+				$('#key').val(prevenda.key);
+				cartelas = prevenda.cartelas;
+				$('.count_cartela').html( cartelas.length )
+				preencheCase(1);
+			});
+		});
+		$('#gerar').click();
+		$('.next').click(function(){ preencheCase( parseInt( $('.index_cartela').html() ) + 1 ); });
+		$('.prev').click(function(){ preencheCase( parseInt( $('.index_cartela').html() ) - 1 ); });
 	});
 </script>
 @endsection

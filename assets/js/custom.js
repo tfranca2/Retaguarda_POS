@@ -122,7 +122,8 @@ $('.form-edit').on('submit',function(e){
         processData: false,
         contentType: false,
         success: function( data ){
-            toastr.success( data.message );
+            if( data.message )
+                toastr.success( data.message );
             if( data.redirectURL )
                 window.location.href = data.redirectURL;
         },

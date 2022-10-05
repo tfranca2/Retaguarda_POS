@@ -32,7 +32,9 @@ Route::get('/search/cidades', 'CidadeController@get');
 
 Route::get('/cartela', 'VendaController@cartela');
 Route::get('/prevenda', 'VendaController@prevenda');
-Route::post('/prevenda/{key}', 'VendaController@prevendaconfirma');
+Route::post('/prevenda', 'VendaController@prevendaconfirma');
+Route::get('/checkout/{key}', 'VendaController@checkout');
+Route::post('/checkout', 'VendaController@checkoutpagar');
 
 Route::group(['middleware' => ['auth']], function(){
 
