@@ -22,6 +22,10 @@ class VendaMatriz extends Model
         return $this->hasOne( 'App\Matriz', 'id', 'matriz_id' );
     }
     
+    public function matrizes(){
+        return $this->hasOne( 'App\Matriz', 'id', 'matriz_id' );
+    }
+    
     public function matriz_50_15(){
         return $this->hasOne( 'App\Matriz5015', 'id', 'matriz_id' );
     }

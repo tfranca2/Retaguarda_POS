@@ -1,8 +1,4 @@
-<?php 
-
-    $empresa = \DB::table('empresa')->first();
-
-?>
+<?php $empresa = \DB::table('empresa')->first(); ?>
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -16,7 +12,9 @@
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
         <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="<?php echo url('/'); ?>/css/app.css">
+        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css/custom.css">
 
         <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;600&display=swap" rel="stylesheet"> 
         
@@ -103,5 +101,23 @@
     </div>
     @endif
 
+    <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css"/>
+    <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css"/>
+    <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css//select2.min.css"/>
+    <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css/toastr.min.css">
+    <script src="<?php echo url('/'); ?>/assets/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/sweetalert.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/parsley.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/parsley.pt-br.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/jquery.mask.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/toastr.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/select2.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/i18n/pt-BR.js"></script>
+    <script>var base_url = "{{ url('/') }}";</script>
+    <script src="{{asset('assets/js/custom.js')}}"></script>
+    
+    @yield('scripts')
+    
     </body>
 </html>

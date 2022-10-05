@@ -670,6 +670,7 @@ class VendaController extends Controller
             $venda['ceder_resgate'] = 1;
             $venda['pdv'] = 'correios';
             $venda['key'] = Str::random(10).time();
+            $venda['matriz'] = env('MATRIZ', 'matrizes');
             $venda = Venda::create( $venda );
 
             $matriz_id = 0;
@@ -814,4 +815,174 @@ class VendaController extends Controller
         }
     }
     
+    public function cartela( Request $request ){
+        $estados = Estado::all();
+        return view('venda.prevenda', [ 'estados' => $estados ]);
+    }
+    
+    public function prevenda( Request $request ){
+
+        $etapa = Etapa::ativa();
+        if( !$etapa )
+            return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
+
+        // etapa passou do prazo
+        if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
+            return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
+
+        $qtd = 1;
+        if( $etapa->tipo == 1)
+            $qtd = 1;
+        elseif( $etapa->tipo == 2)
+            $qtd = 2;
+        elseif( $etapa->tipo == 3)
+            $qtd = 3;
+        elseif( $etapa->tipo == 4 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2 ] ) )
+            $qtd = $request->quantidade;
+        elseif( $etapa->tipo == 5 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2, 3 ] ) )
+            $qtd = $request->quantidade;
+        
+        \DB::beginTransaction();
+        try {
+
+            $venda = Input::except( 'id', '_method', '_token', 'quantidade' );
+            $venda['ip'] = $request->ip();
+            $venda['etapa_id'] = $etapa->id;
+            $venda['ceder_resgate'] = 1;
+            $venda['key'] = Str::uuid();
+            $venda['matriz'] = env('MATRIZ', 'matrizes');
+            $venda = Venda::create( $venda );
+
+            $matriz_id = 0;
+            for( $i=0; $i<$qtd; $i++ ){ 
+                // calcula saldo do intervalo
+                $inicio = $etapa->range_inicial;
+                if( $matriz_id )
+                    $inicio = $matriz_id + $etapa->intervalo;
+                // seleciona o id do titulo disponivel mais próximo
+                $matriz_id = Matriz::whereBetween( 'id', [ 
+                                $inicio, 
+                                $etapa->range_final + ( $etapa->intervalo * $i )
+                            ])->whereNotIn( 'id', function($query) use ($etapa) {
+                                $query->select('matriz_id')
+                                ->distinct()
+                                ->from( with( new VendaMatriz )->getTable() )
+                                ->join( 'vendas', 'vendas.id', '=', 'venda_id' )
+                                ->whereNotNull( 'matriz_id' )
+                                ->where( 'etapa_id', $etapa->id )
+                                ->get()
+                                ->pluck( 'matriz_id' )
+                                ->toArray();
+                            })
+                            ->first()
+                            ->id;
+
+                VendaMatriz::create([ 
+                    'venda_id' => $venda->id, 
+                    'matriz_id' => $matriz_id 
+                ]);
+
+            }
+
+            $venda = Venda::with('etapa')->find( $venda->id );
+            $venda->matrizes = $venda->matrizes();
+
+            $valor = 0;
+            if( count( $venda->matrizes ) == 2 ){
+                $valor = $etapa->valor_duplo;
+            } elseif( count( $venda->matrizes ) == 3 ){
+                $valor = $etapa->valor_triplo;
+            } else {
+                $valor = $etapa->valor_simples;
+            }
+
+
+            $cartelas = [];
+            foreach( $venda->matrizes as $matriz ){
+                $cartelas[] = [ 
+                    'bilhete' => $matriz['matriz']['bilhete'],
+                    'combinacoes' => $matriz['matriz']['combinacoes'],
+                ];
+            }
+
+            \DB::commit();
+            return response()->json([
+                'valor' => $valor,
+                'key' => $venda->key,
+                'cartelas' => $cartelas,
+            ],201);
+        } catch( \Exception $e ){
+            \DB::rollback();
+            return response()->json(['error'=>$e->getMessage()],404);
+        }
+    }
+
+    public function prevendaconfirma( Request $request, $key ){
+        $venda = Venda::where( 'key', $key )->first();
+        if( !$venda )
+            return response()->json(['error'=>'venda não localizada'],404);
+
+        $validators = [
+            'cpf' => 'required|max:14',
+            'telefone' => 'required|max:16',
+            'email' => 'required|email|max:100',
+            'cidade' => 'required|max:50',
+            'uf' => 'required|string|max:2|exists:estados,uf',
+        ];
+
+        $validator = Validator::make($request->all(),$validators);
+        if( $validator->fails() )
+            return response()->json(['error'=>$validator->messages()],400);
+
+        $nome = null;
+        if( $request->has('nome') ){
+            $nome = $request->nome;
+        }
+
+        if( $request->has('cpf') ){
+            if( ! Helper::validaCPF($request->cpf) )
+                return response()->json(['error'=>['cpf'=>['Informe um cpf válido.']]],400);
+            try {
+                if( env('CONSULTA_CPF', false) ){
+                    $pessoa = \DB::connection('mysql2')->select("SELECT nome FROM cadcpf WHERE CPF = '". Helper::onlyNumbers($request->cpf) ."'");
+                    if($pessoa){
+                        $nome = $pessoa[0]->nome;
+                    }
+                }
+            } catch( Exception $e ){
+
+            }
+
+            if( !$nome )
+                $nome = 'Cliente não identificado';
+        }
+
+        $request->merge('nome', $nome);
+
+        if( $request->has('telefone') )
+            if( ! Helper::validaCelular($request->telefone) )
+                return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
+
+        $cidade_id = env('CIDADE_ID_PADRAO', null);
+        $cep = null;
+        $validaCEP = json_decode( file_get_contents("https://viacep.com.br/ws/". $request->uf ."/". $request->cidade ."/centro/json/" ) );
+        if( ! isset($validaCEP->erro) ){
+            if( isset($validaCEP->localidade) and isset($validaCEP->uf) and isset($validaCEP->cep) ){
+                $cep = Helper::onlyNumbers( $validaCEP->cep );
+                $estado = Estado::where('uf', $validaCEP->uf)->first();
+                if( $estado ){
+                    $cidade = Cidade::where('estado_id', $estado->id)
+                            ->where('nome', $validaCEP->localidade)->first();
+                    if( $cidade )
+                        $cidade_id = $cidade->id;
+                }
+            }
+        }
+
+        $request->merge('cep', $cep);
+        $request->merge('cidade_id', $cidade_id);
+
+        return Self::update( $request, $venda->id );
+    }
+
 }

@@ -30,6 +30,10 @@ Route::post('/confirmarAtendimento', 'VendaController@correiosConfirmarAtendimen
 
 Route::get('/search/cidades', 'CidadeController@get');
 
+Route::get('/cartela', 'VendaController@cartela');
+Route::get('/prevenda', 'VendaController@prevenda');
+Route::post('/prevenda/{key}', 'VendaController@prevendaconfirma');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');
