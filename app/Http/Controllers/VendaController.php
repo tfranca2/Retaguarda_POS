@@ -7,12 +7,15 @@ use Session;
 use App\User;
 use App\Venda;
 use App\Etapa;
+use Validator;
 use App\Cidade;
 use App\Estado;
-use Validator;
 use App\Matriz;
+use App\Helpers\Pix;
 use App\VendaMatriz;
 use App\Dispositivo;
+use Mpdf\QrCode\QrCode;
+use Mpdf\QrCode\Output;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
@@ -585,7 +588,7 @@ class VendaController extends Controller
     }
     
     public function comprovante( Request $request, $key ){
-        $venda = Venda::with('etapa')->where('key',$key)->where('confirmada',1)->first();
+        $venda = Venda::with('etapa')->where('key',$key)->first();
         if( $venda ){
             $venda->matrizes = $venda->matrizes();
             return view('venda.comprovante',[ 'venda' => $venda ]);
@@ -1010,10 +1013,17 @@ class VendaController extends Controller
     }
 
     public function checkout( Request $request, $key ){
+       
+        $sessionID = '';
+        $erros = null;
+
         $etapa = Etapa::ativa();
         $venda = Venda::where( 'key', $key )->first();
         if( !$venda )
-            return response()->json(['error'=>'Chave não localizada'],400);
+            $erros[] = 'Chave não localizada';
+
+        if( isset($venda->pagamento) )
+            return redirect('comprovante/'.$venda->key);
 
         $venda->matrizes = $venda->matrizes();
 
@@ -1036,7 +1046,7 @@ class VendaController extends Controller
                 $uf = strtoupper($estado->uf);
         }
 
-        return view('venda.checkout',[ 
+        return view('venda.checkout',[
             'cliente' => (object) [
                 'id' => 0,
                 'nome' => $venda->nome,
@@ -1046,20 +1056,149 @@ class VendaController extends Controller
                 'cep' => $venda->cep,
                 'estado' => $uf,
                 'cidade' => $cidade_nome,
-                'data_nascimento' => '',
-                'endereco' => '',
-                'numero' => '',
-                'complemento' => '',
-                'bairro' => '',
             ],
-            'valor' => $valor, 
-            'pedido_id' => $venda->id, 
-            'sessionID' => '', 
+            'valor' => $valor,
+            'pedido_id' => $venda->id,
+            'erros' => $erros,
         ]);
     }
 
     public function checkoutpagar( Request $request ){
-        
+
+        $venda = Venda::find($request->pedido_id);
+        $matrizes = $venda->matrizes();
+
+        $data = [
+            "reference_id" => $request->pedido_id,
+            "description" => "Compra de Título: ".$matrizes[0]['matriz']['bilhete'],
+            "amount" => [
+                "value" => Helper::onlyNumbers($request->valor),
+                "currency" => "BRL"
+            ],
+            "payment_method" => [
+                "type" => "CREDIT_CARD",
+                "installments" => 1,
+                "capture" => true,
+                "soft_descriptor" => env('APP_NAME'),    
+                "card" => [
+                    "number" => Helper::onlyNumbers($request->cartao),
+                    "exp_month" => $request->mes,
+                    "exp_year" => $request->ano,
+                    "security_code" => $request->cvv,
+                    "holder" => [
+                        "name" => $request->nome
+                    ]
+                ]
+            ],
+        ];
+        if( !env('PAGSEGURO_COMPRADOR_EMAIL') )
+            $data['notification_urls'] = [ url('/callback') ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_URL, 'https://sandbox.api.pagseguro.com/charges');
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: ".env('PAGSEGURO_TOKEN'),
+            "Content-Type: application/json",
+            "x-idempotency-key;",
+        ));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        $response = json_decode(curl_exec($ch));
+        $status_code = curl_getinfo($ch)['http_code'];
+        curl_close($ch);
+        $erros = [];
+
+        if( isset( $response->status ) and in_array($response->status, [ 'AUTHORIZED', 'PAID' ]) ){
+
+            if( !$venda->nome )
+                $venda->nome = $request->nome;
+            if( !$venda->cpf )
+                $venda->cpf = Helper::onlyNumbers($request->cpf);
+            if( !$venda->email )
+                $venda->email = $request->email;
+            if( !$venda->telefone )
+                $venda->telefone = Helper::onlyNumbers($request->telefone);
+
+            $venda->confirmada = 1;
+            $venda->save();
+
+            $venda->pagamento()->create([
+                'venda_id' => $venda->id,
+                'transaction_code' => $response->id,
+                'status' => $response->status,
+                'valor_bruto' => $request->valor,
+            ]);
+
+            return redirect('comprovante/'.$venda->key);
+        } else {
+            $erros[] = 'Venda não Autorizada. Verifique seu cartão de crédito!';
+        }
+
+        if( isset($response->error_messages) ){
+            foreach( $response->error_messages as $error ){
+                $erros[] = $error->code .': '. $error->description .' ( '. $error->parameter_name .' )';
+            }
+        }
+
+
+        return view('venda.checkout',[
+            'cliente' => (object) [
+                'id' => 0,
+                'nome' => $venda->nome,
+                'cpf' => $venda->cpf,
+                'email' => $venda->email,
+                'telefone' => $venda->telefone,
+            ],
+            'valor' => $request->valor,
+            'pedido_id' => $venda->id,
+            'erros' => $erros,
+        ]);
+
+        // // CONSULTAR STATUS DA VENDA
+        // GET 'https://sandbox.api.pagseguro.com/charges/{{ transaction_code }}'
+        // // CANCELAR / ESTORNAR VENDA ( PIX < 90 dias CRÉDITO < 350 dias )
+        // POST 'https://sandbox.api.pagseguro.com/charges/{{ transaction_code }}/cancel'
+        //     { "amount": { "value": 500 } } // OPCIONAL
+
+    }
+
+    public function pix( Request $request, $key ){
+
+        $etapa = Etapa::ativa();
+        $venda = Venda::where( 'key', $key )->first();
+        if( !$venda ){
+            
+        }
+
+        // if( isset($venda->pagamento) )
+        //     return redirect('comprovante/'.$venda->key);
+
+        $venda->matrizes = $venda->matrizes();
+
+        $valor = 0;
+        if( count( $venda->matrizes ) == 2 ){
+            $valor = $etapa->valor_duplo;
+        } elseif( count( $venda->matrizes ) == 3 ){
+            $valor = $etapa->valor_triplo;
+        } else {
+            $valor = $etapa->valor_simples;
+        }
+
+        $pix = (new Pix)->setPixKey( env('PIX_KEY') )
+                                  ->setDescription("Compra de Título: ".$venda->matrizes[0]['matriz']['bilhete'])
+                                  ->setMerchantName( env('PIX_MERCHANT_NAME') )
+                                  ->setMerchantCity( env('PIX_MERCHANT_CITY') )
+                                  ->setAmount( $valor )
+                                  ->setTxid( $venda->key )
+                                  ->getPayload();
+        $qrcode = (new Output\Png)->output( new QrCode($pix),250);
+
+        return view('venda.pix',[ 
+            'qrcode' => $qrcode,
+            'pix' => $pix,
+        ]);
     }
 
 }

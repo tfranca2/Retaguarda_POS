@@ -1,114 +1,9 @@
-<?php use App\Helpers; ?>
-@guest
-    @php
-        $empresa = \DB::table('empresa')->first();
-    @endphp
-@else
-    @php
-        $empresa = \Auth::user()->empresa();
-    @endphp
-@endguest
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $empresa->nome }}</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <!-- <link rel="shortcut icon" type="image/png" href="<?php echo url('/'); ?>/assets/imgs/favicon.png" /> -->
-        <link rel="shortcut icon" type="image/png" href="{{ url('/public/images/'. $empresa->favicon ) }}" />
-
-        <!-- inject:css -->
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/bootstrap/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/font-awesome/css/font-awesome.min.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/simple-line-icons/css/simple-line-icons.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/weather-icons/css/weather-icons.min.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/themify-icons/css/themify-icons.css">
-        <!-- endinject -->
-
-        <!--Data Table-->
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables/media/css/jquery.dataTables.css" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-tabletools/css/dataTables.tableTools.css" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-colvis/css/dataTables.colVis.css" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-responsive/css/responsive.dataTables.scss" rel="stylesheet">
-        <link href="<?php echo url('/'); ?>/assets/bower_components/datatables-scroller/css/scroller.dataTables.scss" rel="stylesheet">
-        <!-- <link href="<?php echo url('/'); ?>/assets/bower_components/jqBootstrapValidation.js" rel="stylesheet"> -->
-
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css">
-
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/main.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/lightbox.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/dist/css/jquery-ui.css">
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.css">
-
-        <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css/toastr.min.css">
-        
-        <link rel="stylesheet" href="{{asset('assets/css/custom.css')}}">
-
-        <script src="<?php echo url('/'); ?>/assets/js/modernizr-custom.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/jquery-3.3.1.min.js"></script>
-        <!-- <script
-        src="https://code.jquery.com/jquery-3.2.1.min.js"
-        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-        crossorigin="anonymous"></script> -->
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
-
-        <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;600&display=swap" rel="stylesheet"> 
-        
-        <style>
-
-            * {
-                font-family: 'Exo', sans-serif;
-            }
-
-            .lb-data .lb-close {
-              background: url('{{ url('/').'/assets/imgs/close.png' }}') no-repeat center;
-            }
-            #aside {
-                background: #e2262e;
-                color: #fff;
-            }
-        </style>
-    </head>
-    <body style="background: #fff; max-width: 100%; overflow-x: hidden;">
-
-@if( isset($erros) and $erros )
-<!-- Modal -->
-<div class="modal fade" id="myModal" role="dialog">
-    <div class="modal-dialog">
-
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title"><i class="fa fa-exclamation-circle"></i>&nbsp;Erros Ocorreram na Transação</h4>
-        </div>
-        <div class="modal-body">
-        	<ul>
-	        	@foreach( $erros as $erro )
-	        	<li>{{ $erro }}</li>
-	        	@endforeach
-        	</ul>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-        </div>
-      </div>
-
-    </div>
-</div>
-<!-- Button trigger modal -->
-<button type="button" style="display: none;" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">Launch demo modal</button>
-<script>
-	$('#myModal').on('shown.bs.modal', function () {
-	  $('#myInput').trigger('focus')
-	})
-	$(window).on('load',function(){
-        $('#myModal').modal('show');
-    });
-</script>
-@endif
-
+<?php 
+	use App\Helpers; 
+	$empresa = \DB::table('empresa')->first();
+?>
+@extends('layouts.public')
+@section('content')
 	<div class="row" style="margin: 0px;">
 	    <div class="col-md-12">
 	    	<div class="panel panel-card recent-activites" style="margin-bottom: 0px;padding-bottom: 20px;">
@@ -116,10 +11,9 @@
 	<div class="row">
 	    <div class="col-md-12">
 		    <br>
-	        <form id="check" action="{{ url('/servicos/checkout') }}" method="post" class="" enctype="multipart/form-data" data-parsley-validate >
+	        <form id="check" action="{{ url('/checkout') }}" method="post" class="" enctype="multipart/form-data" data-parsley-validate >
 				@csrf
-				<?php $v = $valor;?>
-	        <input type="hidden" name="valor" value="<?php echo $v; ?>" />
+	        <input type="hidden" name="valor" value="{{ $valor }}" />
 	        <input type="hidden" name="pedido_id" value="{{ $pedido_id }}" />
 	        <input type="hidden" name="cliente_id" value="{{ $cliente->id }}" />
 	        <div class="form-horizontal">
@@ -129,9 +23,9 @@
 		        </div>
 				<div class="col-md-12">
 	                <div class="form-group">
-	                    <label class="col-sm-4 control-label">Número do Cartão: </label>
+	                    <label class="col-sm-4 control-label">Número do Cartão de Crédito: </label>
 	                    <div class="col-sm-6">
-	                        <input data-validation="required" data-validation-error-msg="Número do cartão inválido." id="cartao" name="cartao" data-masked="" data-inputmask="'mask': '9999 9999 9999 9999'"  type="text" class="form-control" placeholder="Número do Cartão" required>
+	                        <input data-validation="required" data-validation-error-msg="Número do cartão inválido." id="cartao" name="cartao" data-masked="" data-inputmask="'mask': '9999 9999 9999 9999'"  type="text" class="form-control" placeholder="Número do Cartão de Crédito" required>
 	                    </div>
 	                    <div class="col-sm-1">
 	                    	<div id="cardimg"></div>
@@ -141,14 +35,15 @@
 				<div class="col-md-12">
 	                <div class="form-group">
 	                    <label class="col-sm-4 control-label" style="display: block;">Vencimento: </label>
-	                    <div class="col-sm-6">
-	                    <div style="width: 35%; display: inline-block;">
-							<input data-validation="required" data-validation-error-msg="Mês inválido." id="mes"  name="mes" title="Mês" data-masked="" data-inputmask="'mask': '99'" type="text" class="form-control" placeholder="Mês" required>
-						</div>
-						<div style="width: 7%; display: inline-block; padding-top: 3px; font-size: 14pt; text-align: center;">/</div>
-						<div style="width: 55%; display: inline-block;">
-							<input data-validation="required" data-validation-error-msg="Ano inválido." id="ano" name="ano" title="Ano" data-masked="" data-inputmask="'mask': '9999'"  type="text" class="form-control" placeholder="Ano" required>
-						</div>
+	                    <div class="col-sm-6" style="padding: 0;">
+	                    	<div class="col-xs-4">
+													<input data-validation="required" data-validation-error-msg="Mês inválido." id="mes"  name="mes" title="Mês" data-masked="" data-inputmask="'mask': '99'" type="text" class="form-control" placeholder="Mês" min="01" max="12" required>
+	                    	</div>
+	                    	<div class="col-xs-1" style="padding: 0;"><span class="btn">/</span></div>
+	                    	<div class="col-xs-7">
+													<input data-validation="required" data-validation-error-msg="Ano inválido." id="ano" name="ano" title="Ano" data-masked="" data-inputmask="'mask': '9999'"  type="text" class="form-control" placeholder="Ano" min="{{ date('Y') }}" required>
+	                    	</div>
+
 	                    </div>
 	                </div>
 	            </div>
@@ -170,53 +65,20 @@
 	                </div>
 	            </div>
 	            @endif
-                
-                <input type="hidden" id="parcelamento" name="parcelamento" value="1" />
-                <input type="hidden" id="parcelaValor" name="parcelaValor" value="{{ $valor }}" />
-                <input type="hidden" id="plano" name="plano" value="0" />
-                <center style="display: none;"><a href="#" id="parc" class="btn btn-info">PARCELAS</a></center>
-				
-				<input type="hidden" id="identificador" name="identificador" value="" />
-				<input type="hidden" id="tokencartao" name="tokencartao" value="" />
-
-				<div class="col-md-12" <?php echo ((env('PAGSEGURO_COMPRADOR_EMAIL'))?'':'style="display: none;"'); ?> >
-					<div class="form-group" >
-						<label class="col-sm-4 control-label">Sender Hash: </label>
-						<div class="col-sm-6">
-							<input type="text" class="form-control" disabled="disabled" id="identificadorcp" value="" >
-						</div>
-					</div>
-				</div>
-				<div class="col-md-12" <?php echo ((env('PAGSEGURO_COMPRADOR_EMAIL'))?'':'style="display: none;"'); ?> >
-					<div class="form-group" >
-						<label class="col-sm-4 control-label">Token Cartão: </label>
-						<div class="col-sm-6">
-							<input type="text" class="form-control" disabled="disabled" id="tokencartaocp" value="" >
-						</div>
-					</div>
-				</div>
 
 		        <div class="col-md-12">
 		        	<br>
-		            <h4>Confirme seus dados</h4>
+		            <h4>Dados do Titular do Cartão de Crédito</h4>
 		            <hr>
 		        </div>
 	            <div class="col-md-12">
 	                <div class="form-group">
-	                    <label class="col-sm-4 control-label">Nome do Titular do Cartão: </label>
+	                    <label class="col-sm-4 control-label">Nome: </label>
 	                    <div class="col-sm-6">
 	                        <input data-validation="required" data-validation-error-msg="Nome não válido." name="nome" value="{{ $cliente->nome }}" type="text" class="form-control" required>
 	                    </div>
 	                </div>
 	            </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Data de Nascimento: </label>
-		                <div class="col-sm-6">
-		                    <input name="data_nascimento" type="date" value="{{ $cliente->data_nascimento }}" class="form-control" required>
-		                </div>
-		            </div>
-		        </div>
 		        <div class="col-md-12">
 		            <div class="form-group">
 		                <label class="col-sm-4 control-label">CPF: </label>
@@ -242,78 +104,17 @@
 	                 </div>
 	            </div>
 
-		        <div class="col-md-12">
-		        	<br>
-		            <h4>Endereço</h4>
-		            <hr>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">CEP: </label>
-		                <div class="col-sm-6">
-		                    <input id="cep" required data-validation="required" data-validation-error-msg="Insira um CEP." value="{{ $cliente->cep }}" name="cep" type="text" data-masked="" data-inputmask="'mask': '99999-999'" class="form-control">
-		                </div>
-		            </div>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Endereço: </label>
-		                <div class="col-sm-6">
-		                    <input id="endereco" required data-validation="required" data-validation-error-msg="Insira um endereço." value="{{ $cliente->endereco }}" name="endereco" type="text" class="form-control">
-		                </div>
-		            </div>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Número: </label>
-		                <div class="col-sm-6">
-		                    <input id="numero" required data-validation="required" data-validation-error-msg="Insira um número." value="{{ $cliente->numero }}" name="numero" type="text" class="form-control" required="required">
-		                </div>
-		            </div>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Complemento: </label>
-		                <div class="col-sm-6">
-		                    <input id="complemento" value="{{ $cliente->complemento }}" name="complemento" type="text" class="form-control">
-		                </div>
-		            </div>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Bairro: </label>
-		                <div class="col-sm-6">
-		                    <input id="bairro" required data-validation="required" data-validation-error-msg="Insira um Bairro válido." value="{{ $cliente->bairro }}" name="bairro" type="text" class="form-control">
-		                </div>
-		            </div>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Estado: </label>
-		                <div class="col-sm-6">
-		                	<input type="text" id="estado" name="uf" value="{{ $cliente->estado }}" class="form-control">
-		                </div>
-		            </div>
-		        </div>
-		        <div class="col-md-12">
-		            <div class="form-group">
-		                <label class="col-sm-4 control-label">Cidade: </label>
-		                <div class="col-sm-6">
-		                	<input type="text" id="cidade" name="cidade" value="{{ $cliente->cidade }}" class="form-control" >
-		                </div>
-		            </div>
-		        </div>
-
-				<div class="col-md-12 text-center">
+				<div class="col-md-6 col-sm-offset-3 text-center">
 					<br>
-					<input type="checkbox" checked="checked" required="required" data-validation="required" name="termodeuso" value="1" > Estou ciente e aceito os <a href="#" style="color: <?php echo $empresa->menu_background?>;"><b>termos de uso</b></a>.
-					<br><br>
-		        </div>
+					<div class="form-group">
+						<label for="termodeuso" style="font-weight: normal;"><input type="checkbox" required="required" data-validation="required" id="termodeuso" name="termodeuso" value="1" > Estou ciente e aceito os <a href="{{ env('LINK_TERMO_DE_USO','#') }}" target="_blank" style="color: <?php echo $empresa->menu_background?>;"><b>termos de uso</b></a>.</label>
+					</div>
+		    </div>
 
 				<div class="col-md-12">
 				    <div class="form-group">
 				        <div class="col-sm-4 col-sm-offset-4">
-				        	<br><button type="submit" disabled="disabled" class="btn btn-primary btn-lg btn-block disabled" style="color: <?php echo $empresa->menu_color?>;background: <?php echo $empresa->menu_background?>; border-color: <?php echo $empresa->menu_background?>;">PAGAR</button>
+				        	<button type="submit" class="btn btn-primary btn-lg btn-block" style="color: <?php echo $empresa->menu_color?>;background: <?php echo $empresa->menu_background?>; border-color: <?php echo $empresa->menu_background?>;">PAGAR</button>
 				        </div>
 				    </div>
 				</div>
@@ -326,6 +127,8 @@
 </div>
 
 </div>
+@endsection
+@section('scripts')
 <style>
 	#cardimg {
 		background-repeat: no-repeat;
@@ -393,56 +196,24 @@
 		});
 	});
 </script>
-<script type="text/javascript" src="https://stc.<?php echo ((env('PAGSEGURO_COMPRADOR_EMAIL'))?'sandbox.':''); ?>pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js"></script>
+@if( isset($erros) and $erros )
+<script>
+	const ul = document.createElement('ul');
+	@foreach( $erros as $key => $erro )
+	const li{{ $key }} = document.createElement('li');
+	li{{ $key }}.innerHTML = '{{ $erro }}';
+	ul.appendChild(li{{ $key }});
+	@endforeach
+	swal({
+		icon: 'error',
+		title: 'Erros Ocorreram na Transação',
+		content: ul,
+	});
+</script>
+@endif
 <script type="text/javascript">
 	$(document).ready(function(){
-		PagSeguroDirectPayment.setSessionId('<?php echo $sessionID; ?>');
-
-		$('#parcelamento').change(function(){
-			$('#parcelaValor').val( $('#parcelamento option:selected').data('valor') );
-		});
-
-		$('#cvv').keyup(function(e){
-			if( $(this).val().length == 3 )
-				$('#parc').click();				
-		});
-
-		$('#parc').click(function(e){
-			e.preventDefault();
-			numb = $('#cartao').val().match(/\d/g);
-			numb = numb.join("");
-			// CARREGA DADOS DA BANDEIRA DO CARTAO
-			PagSeguroDirectPayment.getBrand({
-			    cardBin: numb,
-			    success: function(response) { 
-			    	bandeira = response.brand.name;
-					// CARREGA O TOKEN DO CARTAO
-					PagSeguroDirectPayment.createCardToken({
-						cardNumber: numb,
-					    brand: bandeira,
-					    cvv: $('#cvv').val(),
-					    expirationMonth: $('#mes').val(),
-					    expirationYear: $('#ano').val(),
-					    success: function(response) {
-							identificador = PagSeguroDirectPayment.getSenderHash();
-							$('#identificador').val( identificador );
-							$('#identificadorcp').val( identificador );
-					    	tokencartao = response.card.token;
-					    	$('#tokencartao').val(tokencartao);
-					    	$('#tokencartaocp').val(tokencartao);
-					    	$('button[type="submit"]').removeAttr('disabled');
-					    	$('button[type="submit"]').removeClass('disabled');
-					    }
-					});
-			    }
-			});
-		});
-
-		$('form#check').submit(function(){
-		    $(this).find('button[type=submit]').prop('disabled','disabled');
-		    $(this).find('button[type=submit]').addClass('disabled');
-		});
-
+		$('[data-masked]').inputmask();
 	});
 
 	function numberToReal(numero) {
@@ -451,85 +222,4 @@
 	    return numero.join(',');
 	}
 </script>
-
- <script src="{{asset('assets/bower_components/jquery/dist/jquery.min.js')}}"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
-        <!-- inject:js -->
-        <script src="<?php echo url('/'); ?>/assets/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/jquery.nicescroll/dist/jquery.nicescroll.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/autosize/dist/autosize.min.js"></script>
-        <!-- endinject -->
-
-        <!--Data Table-->
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-tabletools/js/dataTables.tableTools.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-colvis/js/dataTables.colVis.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-responsive/js/dataTables.responsive.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/datatables-scroller/js/dataTables.scroller.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/init-datatables.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/dist/js/main.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/dist/js/lightbox.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/validator.js"></script>
-        <!-- <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script> -->
-        <!-- <script src="<?php echo url('/'); ?>/assets/js/init-switchery.js"></script> -->
-        <script src="<?php echo url('/'); ?>/assets/bower_components/input-mask/jquery.inputmask.bundle.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/bower_components/bootstrap-filestyle/bootstrap-filestyle.js"></script>
-        <link rel="stylesheet" href="{{asset('assets/bower_components/fullcalendar/dist/fullcalendar.min.css')}}">
-        <link rel="stylesheet" href="{{asset('assets/bower_components/fullcalendar/dist/fullcalendar.print.min.css')}}" media="print">
-
-        <script src="<?php echo url('/'); ?>/assets/dist/js/custom.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/dist/js/ajax.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/Chart.js"></script>
-        <!-- <script src="<?php echo url('/'); ?>/assets/js/init-chartjs.js"></script> -->
-
-
-        <script src="{{asset('assets/bower_components/jquery/dist/jquery.min.js')}}"></script>
-        <script src="{{asset('assets/bower_components/bootstrap/dist/js/bootstrap.min.js')}}"></script>
-        <!-- endinject -->
-        <script src="{{asset('assets/js/validator.js')}}"></script>
-        <script src="{{asset('assets/dist/js/site.js')}}"></script>
-
-
-        <script type="text/javascript" src="{{asset('assets/bower_components/datetimepicker/bootstrap-datetimepicker.js')}}"></script>
-        <script type="text/javascript" src="{{asset('assets/bower_components/datetimepicker/bootstrap-datetimepicker.pt-BR.js')}}"></script>
-
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
-        <script src="{{asset('assets/bower_components/jquery-ui/jquery-ui.min.js')}}"></script>
-        <script src="{{asset('assets/bower_components/autosize/dist/autosize.min.js')}}"></script>
-        <script src="{{asset('assets/bower_components/fullcalendar/dist/fullcalendar.js')}}"></script>
-        <script type="text/javascript" src="{{asset('assets/bower_components/fullcalendar/dist/locale/pt-br.js')}}"></script>
-         <!-- <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script> -->
-        <!-- <script src="{{asset('assets/js/init-calendar.js')}}"></script> -->
-        <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script> -->
-         <!-- <script type="text/javascript" src="{{asset('assets/js/custom-advanced-form.js')}}"></script> -->
-
-         <!-- <script src="<?php echo url('/'); ?>/assets/dist/js/custom.js"></script> -->
-         <script src="<?php echo url('/'); ?>/assets/dist/js/ajax.js"></script>
-
-        <script src="{{asset('assets/js/init-calendar.js')}}"></script>
-
-        <!-- <script src="{{asset('assets/js/init-datepicker.js')}}"></script> -->
-
-        <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9.7.0/dist/sweetalert2.all.min.js"></script> -->
-        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/parsley.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/parsley.pt-br.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/jquery.mask.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/toastr.min.js"></script>
-        <script src="<?php echo url('/'); ?>/assets/js/tagsinput.js"></script>
-        <link href="<?php echo url('/'); ?>/assets/css/tagsinput.css" rel="stylesheet" />
-
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
-
-        <script>
-            var base_url = "{{ url('/') }}";
-            var google_maps_api_key = "{{ $empresa->google_maps_api_key }}";
-        </script>
-
-        <script src="{{asset('assets/js/custom.js')}}"></script>
-
-    </body>
-</html>
+@endsection

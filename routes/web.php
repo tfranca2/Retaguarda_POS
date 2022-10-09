@@ -35,6 +35,7 @@ Route::get('/prevenda', 'VendaController@prevenda');
 Route::post('/prevenda', 'VendaController@prevendaconfirma');
 Route::get('/checkout/{key}', 'VendaController@checkout');
 Route::post('/checkout', 'VendaController@checkoutpagar');
+Route::get('/checkout/{key}/pix', 'VendaController@pix');
 
 Route::group(['middleware' => ['auth']], function(){
 

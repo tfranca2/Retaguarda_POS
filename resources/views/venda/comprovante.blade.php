@@ -3,10 +3,10 @@
 @section('content')
 	<div class="col-md-12 text-center">
 		<h2>Comprovante de venda</h2>
+		@if(!$venda->confirmada)<h2 class="text-danger" style="font-weight: bold;">( AGUARDANDO CONFIRMAÇÃO )</h2>@endif
 	</div>
 
-	<div class="col-md-3"></div>
-	<div class="col-md-6">
+	<div class="col-md-6 offset-md-3">
 	@if(isset($venda->nome))
 	<div class="row table-bordered">
 	<div class="col-md-3"><b>Nome:</b></div>
@@ -24,7 +24,7 @@
 	@if(isset($venda->telefone))
 	<div class="row table-bordered">
 	<div class="col-md-3"><b>Telefone:</b></div>
-	<div class="col-md-9">{{$venda->telefone}}</div>
+	<div class="col-md-9">{{ Helper::formatTelefone($venda->telefone) }}</div>
 	</div>
 	@endif
 
@@ -49,7 +49,7 @@
         else
             $valor = $venda->etapa->valor_simples;
 	@endphp
-	<div class="col-md-9">R$ {{ Helper::formatDecimalToView( $valor ) }}</div>
+	<div class="col-md-9">@if(!$venda->confirmada)<s>@endif R$ {{ Helper::formatDecimalToView( $valor ) }} @if(!$venda->confirmada)</s>@endif</div>
 	</div>
 
 	<div class="row table-bordered">
@@ -59,15 +59,19 @@
 		<b>{{ $matriz['matriz']['bilhete'] }}</b>:
 		<div class="text-center" style="padding-bottom: 5px;">
 		@php
+		if(!$venda->confirmada)
+			echo '<s>';
 		$chunk = explode( '-', $matriz['matriz']['combinacoes'] );
 		foreach( $chunk as $k => $c ){
 			echo $c.' ';
 			if( in_array( $k, [ 9, 19 ] ) )
 				echo '<br>';
 		}
+		if(!$venda->confirmada)
+			echo '</s>';
 		@endphp
 		@if(isset($matriz['matriz']['extra']))
-		<b>Chance Extra</b>: {{ $matriz['matriz']['extra'] }}
+		<b>Chance Extra</b>: @if(!$venda->confirmada)<s>@endif{{ $matriz['matriz']['extra'] }}@if(!$venda->confirmada)</s>@endif
 		@endif
 		</div>
 		@endforeach
@@ -93,6 +97,8 @@
 			<br><br>
 		</div>
 	</div>
+		<br>
+		<center>Acesso: {{ date("d/m/Y \à\s H:i") }}</center>
 		<br>
 	</div>
 @endsection

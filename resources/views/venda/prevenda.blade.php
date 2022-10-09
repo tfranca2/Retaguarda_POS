@@ -15,10 +15,14 @@
 			<div class="destaque"><b>Número do título: <span class="numero_cartela"></span></b></div>
 			<div class="destaque-sub">Números para participações</div>
 		</div>
-		<div class="col-md-12">
+
+
+		<div class="col-md-12" style="position: relative;">
+			<div class="loading"><img src="{{ asset('assets/imgs/loading.gif') }}"></div>
 			<div class="prev"><i class="fa fa-chevron-left"></i></div>
 			<div class="next"><i class="fa fa-chevron-right"></i></div>
 			<div class="round-case">
+				@foreach( range(1,20) as $i )<div class="round"><br></div>@endforeach
 			</div>
 		</div>
 		<div class="col-md-12 text-center">
@@ -77,9 +81,10 @@
 		</form>
 	</div>
 </div>
+<div id="countdown" class="progress"><div class="progress-bar"></div></div>
 <br>
 @endsection
-@section('scripts')
+@section('css')
 <style>
 	.destaque, .round, .prev, .next {
 		background: {{ $empresa->menu_background }}; 
@@ -102,7 +107,7 @@
 		height: 35px;
 		padding: 5px 5px;
 		border-radius: 100%;
-		margin-bottom: 10px;
+		margin: 4px 2px;
 		display: inline-block;
 		text-align: center;
 		font-weight: bold;
@@ -120,7 +125,7 @@
 		cursor: pointer;
 		opacity: 0.3;
 	}
-	.prev:hover, .next:hover {
+	.prev:hover, .next:hover, .prev:active, .next:active, .prev:focus, .next:focus {
 		opacity: 1;
 		transition: opacity .15s linear;
 	}
@@ -134,7 +139,44 @@
 	.next {
 		float: right;
 	}
+
+	.loading img {
+		width: 50px;
+	}
+	.loading {
+		position: absolute;
+		top: calc( 63% - 50px );
+		left: calc( 53% - 50px );
+	}
+
+	.progress{
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+		margin: 0;
+		height: 5px;
+		background: unset;
+		box-shadow: unset;
+	}
+	.progress-bar {
+		width: 100%;
+	}
+	.swal-button-container {
+		width: 100%;
+	}
+	.swal-button {
+		margin: auto;
+		display: block;
+	}
+	.swal-button:not([disabled]){ 
+		background: #38c172;
+	}
+	.swal-button:not([disabled]):hover {
+		background: #2fa360;
+	}
 </style>
+@endsection
+@section('scripts')
 <script>
 	var cartelas = [];
 	function preencheCase(i){
@@ -144,7 +186,7 @@
 		if( i >= cartelas.length )
 			i = 0;
 		$('.index_cartela').html( i + 1 );
-		$('.numero_cartela').html(cartelas[i].bilhete);
+		$('.numero_cartela').html( cartelas[i].bilhete );
 		$('.round-case').empty();
 		separador = cartelas[i].combinacoes.match(/[^\d]/g)[1];
 		bolas = cartelas[i].combinacoes.split(separador);
@@ -152,19 +194,87 @@
 			$('.round-case').append('<div class="round">'+bola+'</div>');
 		});
 	}
+	function limparDadosCartela(){
+		$('.round-case .round').html('<br>');
+		$('.index_cartela').html('');
+		$('.count_cartela').html('');
+		$('.numero_cartela').html('');
+		$('.preco').html('');
+		$('#key').val('');
+		$('#gerar').attr('disabled', true);
+		$('#finalizar').attr('disabled',true);
+	}
+
+	var timeouts = [];
+	function countdown( element, minutes, callback ){
+		element.find('div').removeClass('bg-danger');
+		for (var i=0; i<timeouts.length; i++) {
+			clearTimeout(timeouts[i]);
+		}
+		timeouts = [];
+
+		seconds = 60*minutes;
+
+		function progress( timeleft, timetotal, element, callback ){
+		    var progressBarWidth = timeleft * element.width() / timetotal;
+		    element.find('div').animate({ width: progressBarWidth }, 500, function(){
+		    	if( timeleft == 0 )
+		    	 	timeouts.push(setTimeout(function(){ callback(); }, 500));
+		    });
+
+		    percent = (timeleft/timetotal)*100;
+		    if( percent <= 10 )
+		    	element.find('div').addClass('bg-danger');
+
+		    if( timeleft > 0 )
+		        timeouts.push(setTimeout(function(){ progress(timeleft - 1, timetotal, element, callback); }, 1000));
+		}
+
+		progress(seconds, seconds, element, callback);
+	}
+
 	$(document).ready(function(){
-		$('#gerar').click(function(){
+		$('#gerar').click(function(e){
+			e.preventDefault();
+
+			limparDadosCartela();
+			$('.loading').show();
+			
+
 			$.get( base_url+"/prevenda", function(prevenda){
 				$('.preco').html(prevenda.valor);
 				$('#key').val(prevenda.key);
 				cartelas = prevenda.cartelas;
 				$('.count_cartela').html( cartelas.length )
 				preencheCase(1);
+
+				countdown( $('#countdown'), 10, function(){
+					limparDadosCartela();
+					swal({
+						icon: 'warning',
+						title: 'Seu tempo acabou',
+						text: 'Gere uma nova cartela',
+						button: "Gerar Novas Cartelas",
+						closeOnClickOutside: false,
+						closeOnEsc: false,
+						closeModal: true,
+					}).then((value) => {
+						$('#gerar').click();
+					});
+				});
+
+			}).always(function() {
+				$('.loading').hide();
+				$('#gerar').removeAttr('disabled');
+				$('#finalizar').removeAttr('disabled');
 			});
+
+
 		});
 		$('#gerar').click();
 		$('.next').click(function(){ preencheCase( parseInt( $('.index_cartela').html() ) + 1 ); });
 		$('.prev').click(function(){ preencheCase( parseInt( $('.index_cartela').html() ) - 1 ); });
+
 	});
 </script>
 @endsection

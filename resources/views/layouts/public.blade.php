@@ -82,12 +82,13 @@
                 position: initial;
             }
         </style>
+        @yield('css')
     </head>
     <body>
 
     <center>
         <br>
-        <a href="{{ url('/') }}"><img src="{{ url('/public/images/'.$empresa->main_logo ) }}" alt="{{ $empresa->nome }}" style="max-width: 250px; max-height: 105px;"></a><br>
+        <a href="{{ env('WEB_URL', url('/') ) }}"><img src="{{ url('/public/images/'.$empresa->main_logo ) }}" alt="{{ $empresa->nome }}" style="max-width: 250px; max-height: 105px;"></a><br>
         <br>
     </center>
 
@@ -106,11 +107,13 @@
     <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css//select2.min.css"/>
     <link rel="stylesheet" href="<?php echo url('/'); ?>/assets/css/toastr.min.css">
     <script src="<?php echo url('/'); ?>/assets/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/bower_components/switchery/dist/switchery.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/sweetalert.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/parsley.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/parsley.pt-br.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/jquery.mask.min.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/bower_components/input-mask/jquery.inputmask.bundle.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/toastr.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/select2.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/i18n/pt-BR.js"></script>
