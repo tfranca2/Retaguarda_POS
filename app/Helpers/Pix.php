@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-class Pix
-{
+class Pix {
+
 	const ID_PAYLOAD_FORMAT_INDICATOR = '00';
 	const ID_POINT_OF_INITIATION_METHOD = '01';
 	const ID_MERCHANT_ACCOUNT_INFORMATION = '26';
@@ -46,17 +46,17 @@ class Pix
 	}
 
 	public function setDescription($description){
-		$this->description = $description;
+		$this->description = mb_strtoupper($description, mb_internal_encoding());
 		return $this;
 	}
 
 	public function setMerchantName($merchantName){
-		$this->merchantName = $merchantName;
+		$this->merchantName = mb_strtoupper($merchantName, mb_internal_encoding());
 		return $this;
 	}
 
 	public function setMerchantCity($merchantCity){
-		$this->merchantCity = $merchantCity;
+		$this->merchantCity = mb_strtoupper($merchantCity, mb_internal_encoding());
 		return $this;
 	}
 
@@ -106,7 +106,7 @@ class Pix
 
 	public function getPayload(){
 		//CRIA O PAYLOAD
-		$payload = $this->getValue(self::ID_PAYLOAD_FORMAT_INDICATOR,'01').
+		$payload =  $this->getValue(self::ID_PAYLOAD_FORMAT_INDICATOR,'01').
 					$this->getUniquePayment().
 					$this->getMerchantAccountInformation().
 					$this->getValue(self::ID_MERCHANT_CATEGORY_CODE,'0000').
@@ -144,4 +144,4 @@ class Pix
 		return self::ID_CRC16.'04'.strtoupper(dechex($resultado));
 	}
 
-	}
+}

@@ -75,6 +75,7 @@
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<input type="hidden" name="key" id="key" value="">
+					<input type="hidden" name="timeleft" id="timeleft" value="">
 					<br><button id="finalizar" class="btn btn-primary">Finalizar Pedido</button>
 				</div>
 			</div>
@@ -177,6 +178,22 @@
 </style>
 @endsection
 @section('scripts')
+@if( isset($erros) and $erros )
+<script>
+	const ul = document.createElement('ul');
+	@foreach( $erros as $key => $erro )
+	const li{{ $key }} = document.createElement('li');
+	li{{ $key }}.innerHTML = '{{ $erro }}';
+	ul.appendChild(li{{ $key }});
+	@endforeach
+	swal({
+		icon: 'error',
+		title: 'Erros Ocorreram na Transação',
+		content: ul,
+	});
+</script>
+@endif
+<script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
 <script>
 	var cartelas = [];
 	function preencheCase(i){
@@ -226,6 +243,8 @@
 		    if( percent <= 10 )
 		    	element.find('div').addClass('bg-danger');
 
+		    $('#timeleft').val(timeleft);
+
 		    if( timeleft > 0 )
 		        timeouts.push(setTimeout(function(){ progress(timeleft - 1, timetotal, element, callback); }, 1000));
 		}
@@ -240,40 +259,55 @@
 			limparDadosCartela();
 			$('.loading').show();
 			
+			grecaptcha.ready(function(){
+				grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
+					
+					$.get( base_url+"/prevenda", function(prevenda){
+						$('.preco').html(prevenda.valor);
+						$('#key').val(prevenda.key);
+						cartelas = prevenda.cartelas;
+						$('.count_cartela').html( cartelas.length );
+						preencheCase(1);
 
-			$.get( base_url+"/prevenda", function(prevenda){
-				$('.preco').html(prevenda.valor);
-				$('#key').val(prevenda.key);
-				cartelas = prevenda.cartelas;
-				$('.count_cartela').html( cartelas.length )
-				preencheCase(1);
+						countdown( $('#countdown'), 10, function(){
+							limparDadosCartela();
+							swal({
+								icon: 'warning',
+								title: 'Seu tempo acabou :(',
+								text: 'Esta cartela não está mais disponível',
+								button: "Gerar Nova Cartela",
+								closeOnClickOutside: false,
+								closeOnEsc: false,
+								closeModal: true,
+							}).then((value) => {
+								$('#gerar').click();
+							});
+						});
 
-				countdown( $('#countdown'), 10, function(){
-					limparDadosCartela();
-					swal({
-						icon: 'warning',
-						title: 'Seu tempo acabou',
-						text: 'Gere uma nova cartela',
-						button: "Gerar Novas Cartelas",
-						closeOnClickOutside: false,
-						closeOnEsc: false,
-						closeModal: true,
-					}).then((value) => {
-						$('#gerar').click();
+					}).always(function() {
+						$('.loading').hide();
+						$('#gerar').removeAttr('disabled');
+						$('#finalizar').removeAttr('disabled');
 					});
+
+
 				});
-
-			}).always(function() {
-				$('.loading').hide();
-				$('#gerar').removeAttr('disabled');
-				$('#finalizar').removeAttr('disabled');
 			});
-
 
 		});
 		$('#gerar').click();
 		$('.next').click(function(){ preencheCase( parseInt( $('.index_cartela').html() ) + 1 ); });
 		$('.prev').click(function(){ preencheCase( parseInt( $('.index_cartela').html() ) - 1 ); });
+
+		$("#finalizar").click(function(e){
+			e.preventDefault();
+			grecaptcha.ready(function(){
+				grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
+					$('form').prepend('<input type="hidden" name="g_recaptcha_response" value="'+ token +'">');
+					$('form').submit();
+				});
+			});
+		});
 
 	});
 </script>

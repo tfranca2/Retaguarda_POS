@@ -20,7 +20,7 @@
                 <li>Na opção Pix, escolha <b>"Ler QR Code"</b></li>
                 <li>
                     <b>Leia o QR Code</b> ou, se preferir, <b>copie o código</b> para <b>Pix Copia e Cola</b>
-                    <p class="text-center"><a href="#" onclick="copiarTexto()" class="btn btn-dark"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
+                    <p class="text-center"><a class="btn btn-dark copiar" data-clipboard-text="{{ $pix }}"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
                     <p><small style="color: #ccc;">Você tem <b>24 horas</b> para pagar. Depois desse tempo seu pedido será cancelado.</small></p>
                 </li>
                 <li>Revise as informações e <b>confirme o pagamento</b></li>
@@ -35,7 +35,7 @@
             <ol>
                 <li>
                     <b>Copie o código Pix</b>
-                    <p class="text-center"><a href="#" onclick="copiarTexto()" class="btn btn-dark"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
+                    <p class="text-center"><a class="btn btn-dark copiar" data-clipboard-text="{{ $pix }}"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
                     <p><small style="color: #ccc;">Você tem <b>24 horas</b> para pagar. Depois desse tempo seu pedido será cancelado.</small></p>
                 </li>
                 <li><b>Abra o aplicativo</b> do seu banco e acesse a <b>opção Pix</b></li>
@@ -49,12 +49,11 @@
     </div>
     <br><br>
 </div>
-<input id="texto" style="display: none;" value="{{ $pix }}">
 @endsection
 @section('css')
 <style>
-    .btn-dark:focus {
-        color: #fff;
+    .btn-dark, .btn-dark:focus {
+        color: #fff !important;
     }
     #qrcode {
         box-shadow: 5px 5px 25px;
@@ -63,15 +62,13 @@
         display: block;
         margin: auto;
     }
+    ol {
+        padding-left: 15px;
+    }
 </style>
 @endsection
 @section('scripts')
 <script>
-    async function copiarTexto() {
-        let text = document.querySelector("#texto").value;
-        await navigator.clipboard.writeText(text);
-    }
-
     function showpage(){
         if( $(document).width() <= 800 ){
             $('#desktop').hide();
@@ -84,6 +81,64 @@
     showpage();
     $(window).on('resize', function(){
         showpage();
+    });
+
+    $(document).ready(function(){
+        var clipboard = new ClipboardJS('.copiar');
+
+        var timeouts = [];
+        var countdow = 0;
+        function contagemRegressivaParaRedirecionamento(){
+            if( countdow ){
+                countdow--;
+                $('#countdow').html( countdow );
+                timeouts.push( setTimeout(function(){ contagemRegressivaParaRedirecionamento(); }, 1000) );
+            } else {
+                window.location.href = "{{ env('SITE_URL') }}";
+            }
+        }
+        
+        function mostraBannerInformandoRedireccionamento(){
+
+            for (var i=0; i<timeouts.length; i++) {
+                clearTimeout(timeouts[i]);
+            }
+            timeouts = [];
+            countdow = 60; // segundos
+
+            setTimeout(function(){
+                const text = document.createElement('p');
+                text.append('Dentro de ');
+                
+                const span = document.createElement('span');
+                span.setAttribute("id", "countdow");
+                span.style.cssText = 'font-weight: bold;';
+                span.append(countdow);
+                text.appendChild(span);
+
+                const label = document.createElement('span');
+                label.style.cssText = 'font-weight: bold;';
+                label.append(' segundos');
+                text.appendChild(label);
+
+                text.append(' você será redirecionado para o site, caso queira cancelar temporariamente, clique no botão abaixo.');
+
+                swal({
+                    icon: 'info',
+                    title: 'Você será redirecionado...',
+                    content: text,
+                    button: "Espere mais um pouco!",
+                    closeOnClickOutside: false,
+                    closeOnEsc: false,
+                    closeModal: true,
+                }).then((value) => {
+                    mostraBannerInformandoRedireccionamento();
+                });
+                contagemRegressivaParaRedirecionamento();
+            }, 120000 ); // 2 minutos 2*60*1000
+        }
+        mostraBannerInformandoRedireccionamento();
+
     });
 </script>
 @endsection

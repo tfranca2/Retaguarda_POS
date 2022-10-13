@@ -39,7 +39,7 @@
 									</select>
 								</div>
 							</div>
-							<div class="col-md-3 p-lr-o">
+							<!-- <div class="col-md-3 p-lr-o">
 								<div class="form-group">
 									<label for="">Distribuidor</label>
 									<select name="distribuidor_id" id="distribuidor_id" class="form-control select2">
@@ -52,8 +52,8 @@
 										@endforelse
 									</select>
 								</div>
-							</div>
-							<div class="col-md-2 p-lr-o">
+							</div> -->
+							<!-- <div class="col-md-2 p-lr-o">
 								<div class="form-group">
 									<label for="">Dispositivo</label>
 									<select name="dispositivo_id" id="dispositivo_id" class="form-control select2">
@@ -63,7 +63,31 @@
 										<?php } ?>
 									</select>
 								</div>
+							</div> -->
+
+							<div class="col-md-2 p-lr-o">
+								<div class="form-group">
+									<label>CPF: </label>
+									<input type="text" class="form-control" name="cpf" value="{{ ((isset( $_GET['cpf'] ))?$_GET['cpf']:'') }}" >
+								</div>
 							</div>
+							<div class="col-md-2 p-lr-o">
+								<div class="form-group">
+									<label>Bilhete: </label>
+									<input type="text" class="form-control" name="bilhete" value="{{ ((isset( $_GET['bilhete'] ))?$_GET['bilhete']:'') }}" >
+								</div>
+							</div>
+							<div class="col-md-1 p-lr-o">
+								<div class="form-group">
+									<label>Tipo: </label>
+									<select name="tipo" id="tipo" class="form-control select2">
+										<option value="">Selecione</option>
+										<option value="CREDITO" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'CREDITO' ) echo 'selected="selected"'; ?>>CREDITO</option>
+										<option value="PIX" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'PIX' ) echo 'selected="selected"'; ?>>PIX</option>
+									</select>
+								</div>
+							</div>
+
 							<div class="col-md-2 p-lr-o">
 								<div class="form-group">
 									<label>De: </label>
@@ -91,12 +115,13 @@
 					<table id="basic-datatables" class="table table-striped table-bordered">
 						<thead>
 							<tr>
-								<th>Etapa</th>
-								<th>Distribuidor</th>
-								<th>Dispositivo</th>
+								<th>CPF</th>
+								<th>Nome</th>
+								<th>Telefone</th>
 								<th>Valor</th>
-								<th>Comissão</th>
+								<th>Bilhete</th>
 								<th>Data</th>
+								<th>Tipo</th>
 								@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 								<th>Ações</th>
 								@endif
@@ -122,31 +147,42 @@
 					            }
 							@endphp
 								<tr>
-									<td>{{ $venda->etapa->descricao }}</td>
-									<td>{{ @$venda->dispositivo->distribuidor->name }}</td>
-									<td>{{ ( @$venda->dispositivo->nome )?:$venda->pdv }}</td>
-									<td>
-										R$ {{ Helper::formatDecimalToView( $valor ) }}
-									</td>
-									<td>R$ {{ Helper::formatDecimalToView( $comissao ) }}</td>
-									<td>{{ Helper::convertDate( $venda->created_at ) }}</td>
+									<td>{{ Helper::formatCpfCnpj( $venda->cpf ) }}</td>
+									<td>{{ substr( $venda->nome, 0, 20 ) }}</td>
+									<td>{{ Helper::formatTelefone( $venda->telefone ) }}</td>
+									<td>R$ {{ Helper::formatDecimalToView( $valor ) }}</td>
+									<td>{{ $venda->matrizes[0]['matriz']['bilhete'] }}</td>
+									<td>{{ date( "d/m H:i", strtotime( $venda->created_at ) ) }}</td>
+									<td>@php 
+										$tipo = '';
+										if( $venda->pagamento )
+											$tipo = $venda->pagamento->tipo;
+										echo $tipo; 
+									@endphp</td>
 									@if( Helper::temPermissao('vendas-editar') or Helper::temPermissao('vendas-excluir') )
 									<td class="text-center">
-										@if( !$venda->confirmada )
+										@if( $venda->pagamento and $venda->pagamento->tipo == 'PIX' and $venda->pagamento->status == 'WAITING' )
 										@if( Helper::temPermissao('vendas-editar') )
-										<a href="{{ url('/vendas/'.$venda->id.'/confirmar') }}" class="btn btn-success" title="Confirmar"><i class="fa fa-check" aria-hidden="true"></i></a>
+										<!-- <a href="{{ url('/vendas/'.$venda->id.'/confirmar') }}" class="btn btn-success" title="Confirmar"><i class="fa fa-check" aria-hidden="true"></i></a> -->
+										<a href="{{ url('/vendas/'.$venda->id.'/confirmar/pix') }}" class="btn btn-success" title="Confirmar Pix"><i class="fa fa-check" aria-hidden="true"></i></a>
 										@else
 										<button class="btn btn-warning" title="Venda ainda não confirmada"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></button>
 										@endif
 										@endif
 										@if( Helper::temPermissao('vendas-editar') )
-										<a href="{{ url('/vendas/'.$venda->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a>
+										<!-- <a href="{{ url('/vendas/'.$venda->id.'/edit') }}" class="btn btn-info" title="Editar"><i class="fa fa-pencil" aria-hidden="true"></i></a> -->
 										@endif
 										@if( Helper::temPermissao('vendas-excluir') )
-										<form action="{{url('/vendas/'.$venda->id)}}" method="POST" style="display: inline-block;">
+										<!-- <form action="{{url('/vendas/'.$venda->id)}}" method="POST" style="display: inline-block;">
 											@method('DELETE') @csrf
 											<button type="submit" class="btn btn-danger form-delete" title="Apagar"><i class="fa fa-trash" aria-hidden="true"></i></button>
+										</form> -->
+										@if( $venda->pagamento and $venda->pagamento->tipo == 'CREDITO' and $venda->pagamento->status == 'PAID' )
+										<form action="{{url('/vendas/'.$venda->id.'/cancel')}}" method="POST" style="display: inline-block;">
+											@method('PUT') @csrf
+											<button type="submit" class="btn btn-danger form-cancel" title="Cancelar"><i class="fa fa-close" aria-hidden="true"></i></button>
 										</form>
+										@endif
 										@endif
 									</td>
 									@endif

@@ -83,12 +83,16 @@
             }
         </style>
         @yield('css')
+        <script type="text/javascript">
+            window.history.forward();
+            function noBack() { window.history.forward(); }
+        </script>
     </head>
-    <body>
+    <body onload="noBack();" onpageshow="if (event.persisted) noBack();" onunload="">
 
     <center>
         <br>
-        <a href="{{ env('WEB_URL', url('/') ) }}"><img src="{{ url('/public/images/'.$empresa->main_logo ) }}" alt="{{ $empresa->nome }}" style="max-width: 250px; max-height: 105px;"></a><br>
+        <a href="{{ env('SITE_URL', url('/') ) }}"><img src="{{ url('/public/images/'.$empresa->main_logo ) }}" alt="{{ $empresa->nome }}" style="max-width: 250px; max-height: 105px;"></a><br>
         <br>
     </center>
 
@@ -117,9 +121,17 @@
     <script src="<?php echo url('/'); ?>/assets/js/toastr.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/select2.min.js"></script>
     <script src="<?php echo url('/'); ?>/assets/js/i18n/pt-BR.js"></script>
+    <script src="<?php echo url('/'); ?>/assets/js/clipboard.min.js"></script>
     <script>var base_url = "{{ url('/') }}";</script>
     <script src="{{asset('assets/js/custom.js')}}"></script>
-    
+    <script type="text/javascript">
+        $(document).ready(function() {
+            window.history.pushState(null, "", window.location.href);        
+            window.onpopstate = function() {
+                window.history.pushState(null, "", window.location.href);
+            };
+        });
+    </script>
     @yield('scripts')
     
     </body>

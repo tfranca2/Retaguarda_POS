@@ -14,11 +14,15 @@
 	        <form id="check" action="{{ url('/checkout') }}" method="post" class="" enctype="multipart/form-data" data-parsley-validate >
 				@csrf
 	        <input type="hidden" name="valor" value="{{ $valor }}" />
-	        <input type="hidden" name="pedido_id" value="{{ $pedido_id }}" />
+	        <input type="hidden" name="pedido" value="{{ $pedido }}" />
 	        <input type="hidden" name="cliente_id" value="{{ $cliente->id }}" />
 	        <div class="form-horizontal">
 		        <div class="col-md-12">
-		            <h4>Dados do pagamento</h4>
+		            <img src="{{ url('assets/imgs/creditcard.png') }}" style="width: 40px; float: left; margin-top: -10px; margin-right: 5px;">
+		            <h4>
+		            	<a href="{{ url('/checkout/'. $pedido .'/pix') }}" class="btn text-center" style="float: right; margin-top: -12px;"><img src="{{ url('assets/imgs/pix.png') }}" style="width: 40px; margin-right: 5px;">Quero pagar com PIX</a>
+		            	Cartão de crédito
+		            </h4>
 		            <hr>
 		        </div>
 				<div class="col-md-12">
@@ -37,11 +41,11 @@
 	                    <label class="col-sm-4 control-label" style="display: block;">Vencimento: </label>
 	                    <div class="col-sm-6" style="padding: 0;">
 	                    	<div class="col-xs-4">
-													<input data-validation="required" data-validation-error-msg="Mês inválido." id="mes"  name="mes" title="Mês" data-masked="" data-inputmask="'mask': '99'" type="text" class="form-control" placeholder="Mês" min="01" max="12" required>
+								<input data-validation="required" data-validation-error-msg="Mês inválido." id="mes"  name="mes" title="Mês" data-masked="" data-inputmask="'mask': '99'" type="text" class="form-control" placeholder="Mês" min="01" max="12" required>
 	                    	</div>
 	                    	<div class="col-xs-1" style="padding: 0;"><span class="btn">/</span></div>
 	                    	<div class="col-xs-7">
-													<input data-validation="required" data-validation-error-msg="Ano inválido." id="ano" name="ano" title="Ano" data-masked="" data-inputmask="'mask': '9999'"  type="text" class="form-control" placeholder="Ano" min="{{ date('Y') }}" required>
+								<input data-validation="required" data-validation-error-msg="Ano inválido." id="ano" name="ano" title="Ano" data-masked="" data-inputmask="'mask': '9999'"  type="text" class="form-control" placeholder="Ano" min="{{ date('Y') }}" required>
 	                    	</div>
 
 	                    </div>
@@ -55,7 +59,7 @@
 	                    </div>
 	                </div>
 	            </div>
-	            @if( $pedido_id )
+	            @if( $pedido )
 				<div class="col-md-12">
 	                <div class="form-group">
 	                    <label class="col-sm-4 control-label">Valor: </label>
@@ -107,7 +111,7 @@
 				<div class="col-md-6 col-sm-offset-3 text-center">
 					<br>
 					<div class="form-group">
-						<label for="termodeuso" style="font-weight: normal;"><input type="checkbox" required="required" data-validation="required" id="termodeuso" name="termodeuso" value="1" > Estou ciente e aceito os <a href="{{ env('LINK_TERMO_DE_USO','#') }}" target="_blank" style="color: <?php echo $empresa->menu_background?>;"><b>termos de uso</b></a>.</label>
+						<label for="termodeuso" style="font-weight: normal;"><input type="checkbox" checked="checked" required="required" data-validation="required" id="termodeuso" name="termodeuso" value="1" > Estou ciente e aceito os <a href="{{ env('LINK_TERMO_DE_USO','#') }}" target="_blank" style="color: <?php echo $empresa->menu_background?>;"><b>termos de uso</b></a>.</label>
 					</div>
 		    </div>
 
@@ -127,6 +131,7 @@
 </div>
 
 </div>
+<div id="countdown" class="progress"><div class="progress-bar"></div></div>
 @endsection
 @section('scripts')
 <style>
@@ -154,7 +159,21 @@
 	.btn-primary:focus {
 		opacity: 0.9;
 	}
+
+	.progress{
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+		margin: 0;
+		height: 5px;
+		background: unset;
+		box-shadow: unset;
+	}
+	.progress-bar {
+		width: 100%;
+	}
 </style>
+<script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
 <script type="text/javascript">
 
 	function getCreditCardLabel( cardNumber ) {
@@ -194,6 +213,17 @@
 				$('#cardimg').css({ 'background-image' : 'none' });
 
 		});
+
+		$("form button[type='submit']").click(function(e){
+			e.preventDefault();
+			grecaptcha.ready(function(){
+				grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
+					$('form').prepend('<input type="hidden" name="g_recaptcha_response" value="'+ token +'">');
+					$('form').submit();
+				});
+			});
+		});
+
 	});
 </script>
 @if( isset($erros) and $erros )
@@ -214,12 +244,39 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		$('[data-masked]').inputmask();
-	});
 
-	function numberToReal(numero) {
-	    var numero = numero.toFixed(2).split('.');
-	    numero[0] = "R$ " + numero[0].split(/(?=(?:...)*$)/).join('.');
-	    return numero.join(',');
-	}
+		function progress( timeleft, timetotal, element, callback ){
+		    var progressBarWidth = timeleft * element.width() / timetotal;
+		    element.find('div').animate({ width: progressBarWidth }, 500, function(){
+		    	if( timeleft == 0 )
+		    	 	setTimeout(function(){ callback(); }, 500);
+		    });
+
+		    percent = (timeleft/timetotal)*100;
+		    if( percent <= 10 )
+		    	element.find('div').addClass('bg-danger');
+
+		    if( timeleft > 0 )
+		        setTimeout(function(){ progress(timeleft - 1, timetotal, element, callback); }, 1000);
+		}
+
+		seconds = {{ session('timeleft', 0) }};
+		if( seconds ){
+			progress(seconds, 600, $('#countdown'), function(){
+				swal({
+					icon: 'warning',
+					title: 'Seu tempo acabou :(',
+					text: 'Esta cartela não está mais disponível',
+					button: "Gerar Nova Cartela",
+					closeOnClickOutside: false,
+					closeOnEsc: false,
+					closeModal: true,
+				}).then((value) => {
+					window.location.href = "{{ url('/cartela') }}";
+				});
+			});
+		}
+
+	});
 </script>
 @endsection

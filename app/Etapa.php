@@ -50,4 +50,16 @@ class Etapa extends Model
 
 		return $this->attributes['valor'] = Helper::formatDecimalToDb($valor);
 	}
+
+	public function getcomissaoAttribute()
+	{
+		$comissao = 0;
+		switch( $this->attributes['tipo'] ){
+			case '1': $comissao = $this->attributes['v_comissao_simples']; break;
+			case '2': $comissao = $this->attributes['v_comissao_duplo']; break;
+			case '3': $comissao = $this->attributes['v_comissao_triplo']; break;
+		}
+
+		return $this->attributes['comissao'] = Helper::formatDecimalToDb($comissao);
+	}
 }

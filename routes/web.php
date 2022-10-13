@@ -11,7 +11,8 @@
 |
 */
 
-Route::get('/', function(){
+Route::get('/', 'VendaController@cartela');
+Route::get('/home', function(){
 	if( Auth::check() )
         return redirect()->route('home');
 	return view('welcome');

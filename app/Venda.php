@@ -29,6 +29,10 @@ class Venda extends Model
         return $this->hasOne( 'App\Payment', 'venda_id', 'id' );
     }
 
+    public function venda_matriz(){
+        return $this->hasOne( 'App\VendaMatriz', 'venda_id', 'id' );
+    }
+
     public function matrizes(){
         // return $this->hasMany( 'App\VendaMatriz', 'venda_id', 'id' )->with('matriz');
         $matriz = 'matriz';

@@ -1,12 +1,17 @@
 <?php use App\Helpers; ?>
 @extends('layouts.public')
 @section('content')
+@if( in_array( $venda->pagamento->status, [ 'CANCELED', 'DECLINED' ] ) )
+	<div class="col-md-12 text-center">
+		<h2 class="text-danger" style="font-weight: bold;">( VENDA CANCELADA )</h2>
+	</div>
+@else
 	<div class="col-md-12 text-center">
 		<h2>Comprovante de venda</h2>
 		@if(!$venda->confirmada)<h2 class="text-danger" style="font-weight: bold;">( AGUARDANDO CONFIRMAÇÃO )</h2>@endif
 	</div>
 
-	<div class="col-md-6 offset-md-3">
+<div class="col-md-6 offset-md-3">
 	@if(isset($venda->nome))
 	<div class="row table-bordered">
 	<div class="col-md-3"><b>Nome:</b></div>
@@ -50,6 +55,13 @@
             $valor = $venda->etapa->valor_simples;
 	@endphp
 	<div class="col-md-9">@if(!$venda->confirmada)<s>@endif R$ {{ Helper::formatDecimalToView( $valor ) }} @if(!$venda->confirmada)</s>@endif</div>
+	</div>
+
+	<div class="row table-bordered">
+		<div class="col-md-3"><b>Forma de pagamento:</b></div>
+		<div class="col-md-9" style="display: flex; align-items: center;">
+			{{ $venda->pagamento->tipo }}@if(!$venda->confirmada) <span class="text-danger">( Aguardando confirmação )</span>@endif
+		</div>
 	</div>
 
 	<div class="row table-bordered">
@@ -97,15 +109,9 @@
 			<br><br>
 		</div>
 	</div>
+@endif
 		<br>
 		<center>Acesso: {{ date("d/m/Y \à\s H:i") }}</center>
 		<br>
-	</div>
-@endsection
-@section('scripts')
-<script>
-	$(document).ready(function(){
-
-	});
-</script>
+</div>
 @endsection

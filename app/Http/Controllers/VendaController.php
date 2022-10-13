@@ -52,17 +52,31 @@ class VendaController extends Controller
 
         if( $request->has('inicio') )
             if( $request->input('inicio') )
-                $vendas->where('created_at','>',$request->inicio.' 00:00:00');
+                $vendas->where('vendas.created_at','>',$request->inicio.' 00:00:00');
 
         if( $request->has('fim') )
             if( $request->input('fim') )
-                $vendas->where('created_at','<',$request->fim.' 23:59:59');
+                $vendas->where('vendas.created_at','<',$request->fim.' 23:59:59');
 
-        return $vendas->orderBy('created_at','DESC')
+        if( $request->has('cpf') )
+            if( $request->input('cpf') )
+                $vendas->where('cpf','=', Helper::onlyNumbers($request->cpf));
+
+        if( $request->has('tipo') )
+            if( $request->input('tipo') )
+                $vendas->whereHas('pagamento', function ($query) use ($request) {
+                    $query->where('tipo', $request->input('tipo') );
+                });
+
+        if( $request->has('bilhete') )
+            if( Helper::onlyNumbers( $request->input('bilhete') ) )
+                $vendas->whereHas('venda_matriz', function ($query) use ($request) {
+                    $query->where('matriz_id', Helper::onlyNumbers( $request->input('bilhete') ) );
+                });
+
+        return $vendas->orderBy('vendas.created_at','DESC')
                     ->with('etapa')
                     ->with('dispositivo');
-
-        // return Venda::orderBy('created_at','DESC')->paginate(10);
     }
 
     public function getAll( Request $request ){
@@ -77,23 +91,13 @@ class VendaController extends Controller
         }
 
         $vendas = Self::filter( $request );
+        // $vendas->join('payments', 'vendas.id', '=', 'payments.venda_id');
 
         $totalVendas = 0;
         $totalComissao = 0;
         foreach( $vendas->get() as $venda ){
-
-            $venda->matrizes = $venda->matrizes();
-
-            if( count( $venda->matrizes ) == 2 ){
-                $totalVendas += $venda->etapa->valor_duplo;
-                $totalComissao += $venda->etapa->v_comissao_duplo;
-            } elseif( count( $venda->matrizes ) == 3 ){
-                $totalVendas += $venda->etapa->valor_triplo;
-                $totalComissao += $venda->etapa->v_comissao_triplo;
-            } else {
-                $totalVendas += $venda->etapa->valor_simples;
-                $totalComissao += $venda->etapa->v_comissao_simples;
-            }
+            $totalVendas += $venda->etapa->valor;
+            $totalComissao += $venda->etapa->comissao;
         }
         $totalVendas = Helper::formatDecimalToView( $totalVendas );
         $totalComissao = Helper::formatDecimalToView( $totalComissao );
@@ -143,25 +147,8 @@ class VendaController extends Controller
 
             foreach( $vendas as $venda ){
 
-                $venda->matrizes = $venda->matrizes();
-
-                if( count( $venda->matrizes ) == 2 ){
-                    $totalVendas += $venda->etapa->valor_duplo;
-                    $totalComissao += $venda->etapa->v_comissao_duplo;
-                    $valor = $venda->etapa->valor_duplo;
-                    $comissao = $venda->etapa->v_comissao_duplo;
-                } elseif( count( $venda->matrizes ) == 3 ){
-                    $totalVendas += $venda->etapa->valor_triplo;
-                    $totalComissao += $venda->etapa->v_comissao_triplo;
-                    $valor = $venda->etapa->valor_triplo;
-                    $comissao = $venda->etapa->v_comissao_triplo;
-                } else {
-                    $totalVendas += $venda->etapa->valor_simples;
-                    $totalComissao += $venda->etapa->v_comissao_simples;
-                    $valor = $venda->etapa->valor_simples;
-                    $comissao = $venda->etapa->v_comissao_simples;
-                }
-
+                $totalVendas += $venda->etapa->valor;
+                $totalComissao += $venda->etapa->comissao;
 
                 $dispositivo = '';
                 $distribuidor = $venda->pdv;
@@ -174,8 +161,8 @@ class VendaController extends Controller
                     utf8_decode( $venda->etapa->descricao ), 
                     utf8_decode( $distribuidor ), 
                     utf8_decode( $dispositivo ), 
-                    Helper::formatDecimalToView( $valor ), 
-                    Helper::formatDecimalToView( $comissao ), 
+                    Helper::formatDecimalToView( $venda->etapa->valor ), 
+                    Helper::formatDecimalToView( $venda->etapa->comissao ), 
                     $venda->created_at, 
                 ], ';', '"', "\n" );
             }
@@ -220,17 +207,7 @@ class VendaController extends Controller
             ], ';', chr(32), "\n");
             foreach( $vendas as $venda ){
 
-                $venda->matrizes = $venda->matrizes();
-
-                $valor = 0;
-                if( count( $venda->matrizes ) == 2 )
-                    $valor = $venda->etapa->valor_duplo;
-                elseif( count( $venda->matrizes ) == 3 )
-                    $valor = $venda->etapa->valor_triplo;
-                else
-                    $valor = $venda->etapa->valor_simples;
-
-                $valor = Helper::formatDecimalToDb($valor);
+                $matrizes = $venda->matrizes();
 
                 $cidade_nome = '';
                 $uf = '';
@@ -242,7 +219,7 @@ class VendaController extends Controller
                         $uf = strtoupper($estado->uf);
                 }
 
-                if( isset($venda->matrizes) and isset($venda->matrizes[0]) ){
+                if( isset($matrizes) and isset($matrizes[0]) ){
 
                     $nome_do_comprador = $venda->nome;
                     if( !$nome_do_comprador ){
@@ -268,7 +245,7 @@ class VendaController extends Controller
                     }
                     $nome_do_comprador = strtoupper(Helper::sanitizeString($nome_do_comprador));
 
-                    $bilhete = $venda->matrizes[0]['matriz']['bilhete'];
+                    $bilhete = $matrizes[0]['matriz']['bilhete'];
 
                     $totalVendas++;
                     if( $bilhete > $range_final )
@@ -277,7 +254,7 @@ class VendaController extends Controller
                     fputcsv( $file, [ 
                         'D3', // cabeçalho fixo
                         $bilhete, // numero do titulo
-                        $valor, // valor de venda
+                        Helper::formatDecimalToDb( $venda->etapa->valor ), // valor de venda
                         Helper::onlyNumbers($venda->cpf), // cpf
                         $nome_do_comprador, // nome comprador
                         '', // data nascimento
@@ -508,6 +485,13 @@ class VendaController extends Controller
                 }
             }
 
+            $venda->pagamento()->create([
+                'venda_id' => $venda->id,
+                'tipo' => 'POS',
+                'status' => 'WAITING',
+                'valor_bruto' => $venda->etapa->valor,
+            ]);
+
             $venda = Venda::with('etapa')->find( $venda->id );
             $venda->matrizes = $venda->matrizes();
             $etapa = Etapa::find( $venda->etapa->id );
@@ -548,7 +532,7 @@ class VendaController extends Controller
         return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
     }
     
-    public function update( Request $request, $id, $tothecheckout = false ){
+    public function update( Request $request, $id ){
 
         $venda = Venda::find($id);
         $inputs = Input::except( 'id', '_method', '_token', 'quantidade' );
@@ -556,9 +540,6 @@ class VendaController extends Controller
             $venda->$key = $value;
         }
         $venda->save();
-
-        if( $tothecheckout )
-            return response()->json([ 'redirectURL' => url('/checkout/'.$venda->key) ], 200 );
 
         return response()->json([ 
             'message' => 'Atualizado com sucesso', 
@@ -572,6 +553,8 @@ class VendaController extends Controller
         $venda = Venda::findOrFail($id);
         $venda->confirmada = 1;
         $venda->save();
+
+        $venda->pagamento()->update([ 'status' => 'PAID' ]);
 
         return response()->json([
             'message' => 'Confirmado com sucesso',
@@ -590,6 +573,10 @@ class VendaController extends Controller
     public function comprovante( Request $request, $key ){
         $venda = Venda::with('etapa')->where('key',$key)->first();
         if( $venda ){
+            
+            if( !$venda->pagamento or  in_array( $venda->pagamento->status, [ 'WAITING', 'IN_ANALYSIS' ] ) )
+                $venda->confirmada = false;
+
             $venda->matrizes = $venda->matrizes();
             return view('venda.comprovante',[ 'venda' => $venda ]);
         }
@@ -712,20 +699,15 @@ class VendaController extends Controller
             }
 
             $venda = Venda::find( $venda->id );
-            $venda->matrizes = $venda->matrizes();
-
-            $valor = 0;
-            if( count( $venda->matrizes ) == 2 )
-                $valor = $venda->etapa->valor_duplo;
-            elseif( count( $venda->matrizes ) == 3 )
-                $valor = $venda->etapa->valor_triplo;
-            else
-                $valor = $venda->etapa->valor_simples;
-
-            $valor = Helper::onlyNumbers($valor);
+            $venda->pagamento()->create([
+                'venda_id' => $venda->id,
+                'tipo' => 'API',
+                'status' => 'WAITING',
+                'valor_bruto' => $venda->etapa->valor,
+            ]);
 
             $matrizes = "";
-            foreach( $venda->matrizes as $matriz ){
+            foreach( $venda->matrizes() as $matriz ){
                 $chunk = explode( '-', $matriz->matriz->combinacoes );
                 foreach( $chunk as $k => $c ){
                     $matrizes .= $c.' ';
@@ -747,7 +729,7 @@ class VendaController extends Controller
             // chamar a api correios para registrar atendimento
             $data = [
                 'codigoCorreios' => $request->codigoCorreios,
-                'valorServico' => $valor,
+                'valorServico' => $venda->etapa->valor,
                 'quantidade' => $qtd,
                 'numeroIdentificacaoCliente' => Helper::onlyNumbers($request->cpf),
                 'chaveCliente' => $venda->key,
@@ -809,6 +791,8 @@ class VendaController extends Controller
             $venda->confirmada = true;
             $venda->save();
 
+            $venda->pagamento()->update([ 'status' => 'PAID' ]);
+
             return response()->json([ 
                 'message' => 'Venda confirmada',
                 'codigo' => $venda->key,
@@ -822,22 +806,7 @@ class VendaController extends Controller
         }
     }
     
-    public function cartela( Request $request ){
-        $estados = Estado::all();
-        return view('venda.prevenda', [ 'estados' => $estados ]);
-    }
-    
     public function prevenda( Request $request ){
-
-        return response()->json([
-            'valor' => '10,00',
-            'key' => "b3f9cf49-3056-4bd1-a79c-ed4cbfd305b4",
-            'cartelas' => [
-                [ "bilhete" => 255, "combinacoes" => "04-07-12-14-17-18-24-26-29-30-31-34-37-41-42-43-48-53-58-59" ],
-                [ "bilhete" => 400255, "combinacoes" => "02-11-17-19-20-26-29-31-33-38-39-40-41-47-48-50-51-52-53-55" ],
-                [ "bilhete" => 800255, "combinacoes" => "05-07-08-09-14-19-25-30-33-35-41-43-46-48-50-52-55-56-57-59" ],
-            ],
-        ],201);
 
         $etapa = Etapa::ativa();
         if( !$etapa )
@@ -902,20 +871,10 @@ class VendaController extends Controller
             }
 
             $venda = Venda::with('etapa')->find( $venda->id );
-            $venda->matrizes = $venda->matrizes();
-
-            $valor = 0;
-            if( count( $venda->matrizes ) == 2 ){
-                $valor = $etapa->valor_duplo;
-            } elseif( count( $venda->matrizes ) == 3 ){
-                $valor = $etapa->valor_triplo;
-            } else {
-                $valor = $etapa->valor_simples;
-            }
-
+            $matrizes = $venda->matrizes();
 
             $cartelas = [];
-            foreach( $venda->matrizes as $matriz ){
+            foreach( $matrizes as $matriz ){
                 $cartelas[] = [ 
                     'bilhete' => $matriz['matriz']['bilhete'],
                     'combinacoes' => $matriz['matriz']['combinacoes'],
@@ -924,7 +883,7 @@ class VendaController extends Controller
 
             \DB::commit();
             return response()->json([
-                'valor' => Helper::formatDecimalToView( $valor ),
+                'valor' => Helper::formatDecimalToView( $venda->etapa->valor ),
                 'key' => $venda->key,
                 'cartelas' => $cartelas,
             ],201);
@@ -934,7 +893,26 @@ class VendaController extends Controller
         }
     }
 
+    public function cartela( Request $request ){
+        $estados = Estado::all();
+
+        $erros = null;
+        if( isset($request->erros) and $request->erros )
+            $erros = $request->erros;
+
+        session()->forget('timeleft');
+
+        return view('venda.prevenda', [ 'estados' => $estados, 'erros' => $erros ]);
+    }
+
     public function prevendaconfirma( Request $request ){
+
+        $requestCaptcha = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=". env('RECAPTCHA_SECRET_KEY') ."&response=". $request->g_recaptcha_response ."&remoteip=". $_SERVER['REMOTE_ADDR']);
+        $responseCaptcha = json_decode($requestCaptcha);
+        if( !$request->g_recaptcha_response or !$responseCaptcha or $responseCaptcha->success === false ){
+            return response()->json([ 'error' => 'Captcha falhou! Tente novamente.' ], 400 );
+        }
+        $request->request->remove('g_recaptcha_response');
 
         $validators = [
             'key' => 'required|max:36|exists:vendas,key',
@@ -1009,7 +987,11 @@ class VendaController extends Controller
         $request->request->remove('cidade');
         $request->request->remove('uf');
 
-        return Self::update( $request, $venda->id, true );
+        session([ 'timeleft' => $request->timeleft ]);
+        $request->request->remove('timeleft');
+
+        Self::update( $request, $venda->id )->getData();
+        return response()->json([ 'redirectURL' => url('/checkout/'.$venda->key) ], 200 );
     }
 
     public function checkout( Request $request, $key ){
@@ -1022,19 +1004,11 @@ class VendaController extends Controller
         if( !$venda )
             $erros[] = 'Chave não localizada';
 
+        if( isset($request->erros) and $request->erros )
+            $erros = $request->erros;
+
         if( isset($venda->pagamento) )
             return redirect('comprovante/'.$venda->key);
-
-        $venda->matrizes = $venda->matrizes();
-
-        $valor = 0;
-        if( count( $venda->matrizes ) == 2 ){
-            $valor = $etapa->valor_duplo;
-        } elseif( count( $venda->matrizes ) == 3 ){
-            $valor = $etapa->valor_triplo;
-        } else {
-            $valor = $etapa->valor_simples;
-        }
 
         $cidade_nome = '';
         $uf = '';
@@ -1057,22 +1031,33 @@ class VendaController extends Controller
                 'estado' => $uf,
                 'cidade' => $cidade_nome,
             ],
-            'valor' => $valor,
-            'pedido_id' => $venda->id,
+            'valor' => $venda->etapa->valor,
+            'pedido' => $venda->key,
             'erros' => $erros,
         ]);
     }
 
     public function checkoutpagar( Request $request ){
 
-        $venda = Venda::find($request->pedido_id);
-        $matrizes = $venda->matrizes();
+        $erros = [];
 
+        $requestCaptcha = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=". env('RECAPTCHA_SECRET_KEY') ."&response=". $request->g_recaptcha_response ."&remoteip=". $_SERVER['REMOTE_ADDR']);
+        $responseCaptcha = json_decode($requestCaptcha);
+        if( !$request->g_recaptcha_response or !$responseCaptcha or $responseCaptcha->success === false ){
+            $erros[] = 'Captcha falhou! Tente novamente.';
+
+            $request->merge([ 'erros' => $erros ]);
+            return Self::checkout( $request, $request->pedido );
+        }
+
+        $venda = Venda::where('key', $request->pedido)->first();
+        $matrizes = $venda->matrizes();
+        
         $data = [
-            "reference_id" => $request->pedido_id,
+            "reference_id" => $venda->id,
             "description" => "Compra de Título: ".$matrizes[0]['matriz']['bilhete'],
             "amount" => [
-                "value" => Helper::onlyNumbers($request->valor),
+                "value" => Helper::onlyNumbers($venda->etapa->valor),
                 "currency" => "BRL"
             ],
             "payment_method" => [
@@ -1108,7 +1093,6 @@ class VendaController extends Controller
         $response = json_decode(curl_exec($ch));
         $status_code = curl_getinfo($ch)['http_code'];
         curl_close($ch);
-        $erros = [];
 
         if( isset( $response->status ) and in_array($response->status, [ 'AUTHORIZED', 'PAID' ]) ){
 
@@ -1127,34 +1111,28 @@ class VendaController extends Controller
             $venda->pagamento()->create([
                 'venda_id' => $venda->id,
                 'transaction_code' => $response->id,
+                'tipo' => 'CREDITO',
                 'status' => $response->status,
-                'valor_bruto' => $request->valor,
+                'valor_bruto' => $venda->etapa->valor,
             ]);
 
             return redirect('comprovante/'.$venda->key);
+
         } else {
             $erros[] = 'Venda não Autorizada. Verifique seu cartão de crédito!';
+
+            $request->merge([ 'erros' => $erros ]);
+            return Self::checkout( $request, $request->pedido );
         }
 
         if( isset($response->error_messages) ){
             foreach( $response->error_messages as $error ){
                 $erros[] = $error->code .': '. $error->description .' ( '. $error->parameter_name .' )';
             }
+
+            $request->merge([ 'erros' => $erros ]);
+            return Self::checkout( $request, $request->pedido );
         }
-
-
-        return view('venda.checkout',[
-            'cliente' => (object) [
-                'id' => 0,
-                'nome' => $venda->nome,
-                'cpf' => $venda->cpf,
-                'email' => $venda->email,
-                'telefone' => $venda->telefone,
-            ],
-            'valor' => $request->valor,
-            'pedido_id' => $venda->id,
-            'erros' => $erros,
-        ]);
 
         // // CONSULTAR STATUS DA VENDA
         // GET 'https://sandbox.api.pagseguro.com/charges/{{ transaction_code }}'
@@ -1169,30 +1147,31 @@ class VendaController extends Controller
         $etapa = Etapa::ativa();
         $venda = Venda::where( 'key', $key )->first();
         if( !$venda ){
-            
+            return response()->json([ 'erro' => 'Chave não localizada.' ], 404 );
         }
 
-        // if( isset($venda->pagamento) )
-        //     return redirect('comprovante/'.$venda->key);
+        if( isset($venda->pagamento) )
+            return redirect('comprovante/'.$venda->key);
 
-        $venda->matrizes = $venda->matrizes();
+        $matrizes = $venda->matrizes();
 
-        $valor = 0;
-        if( count( $venda->matrizes ) == 2 ){
-            $valor = $etapa->valor_duplo;
-        } elseif( count( $venda->matrizes ) == 3 ){
-            $valor = $etapa->valor_triplo;
-        } else {
-            $valor = $etapa->valor_simples;
-        }
+        $venda->confirmada = 1;
+        $venda->save();
+        $venda->pagamento()->create([
+            'venda_id' => $venda->id,
+            'tipo' => 'PIX',
+            'status' => 'WAITING',
+            'valor_bruto' => $venda->etapa->valor,
+        ]);
 
         $pix = (new Pix)->setPixKey( env('PIX_KEY') )
-                                  ->setDescription("Compra de Título: ".$venda->matrizes[0]['matriz']['bilhete'])
-                                  ->setMerchantName( env('PIX_MERCHANT_NAME') )
-                                  ->setMerchantCity( env('PIX_MERCHANT_CITY') )
-                                  ->setAmount( $valor )
-                                  ->setTxid( $venda->key )
-                                  ->getPayload();
+                      ->setDescription( env('APP_NAME')." TITULO ".$matrizes[0]['matriz']['bilhete'])
+                      ->setMerchantName( env('PIX_MERCHANT_NAME') )
+                      ->setMerchantCity( env('PIX_MERCHANT_CITY') )
+                      ->setAmount( $venda->etapa->valor )
+                      ->setUniquePayment( true )
+                      ->setTxid( $matrizes[0]['matriz']['bilhete'] )
+                      ->getPayload();
         $qrcode = (new Output\Png)->output( new QrCode($pix),250);
 
         return view('venda.pix',[ 
