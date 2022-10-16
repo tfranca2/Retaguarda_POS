@@ -513,3 +513,31 @@ window.ParsleyValidator.addValidator('cpf_cnpj', function (value, requirement) {
 $('.js-switch').each(function(i,html){
     new Switchery(html,{size:'small'});
 });
+
+function getOrientation(){
+    return Math.abs(window.orientation) - 90 == 0 ? "landscape" : "portrait";
+};
+function getMobileWidth(){
+    return getOrientation() == "landscape" ? screen.availHeight : screen.availWidth;
+};
+function getMobileHeight(){
+    return getOrientation() == "landscape" ? screen.availWidth : screen.availHeight;
+};
+function getResolution(){
+    return getMobileWidth()+' x '+getMobileHeight();
+};
+function visitor(){
+    $.ajax({
+        type: "GET",
+        url: base_url + '/visitor',
+        data: {
+            location: window.location.href,
+            orientation: getOrientation(),
+            resolution: getResolution(),
+        },
+    });
+};
+$(document).ready(function(){
+    visitor();
+    setInterval(function(){ visitor(); }, 10000);// 10s
+});

@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use App\Venda;
 use App\VendaMatriz;
+use App\Payment;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +24,7 @@ class ConfirmaVendaCron extends Command
      *
      * @var string
      */
-    protected $description = 'Remove vendas não confirmadas após 30 minutos';
+    protected $description = 'Remove vendas não confirmadas após 2 horas';
 
     /**
      * Create a new command instance.
@@ -43,10 +44,12 @@ class ConfirmaVendaCron extends Command
     public function handle()
     {
 
-        $vendasNaoConfirmadas = Venda::where('confirmada',0)->whereNull('protocolo')->whereRaw(' NOW() > date_add( created_at, interval 30 minute ) ')->get();
+        $vendasNaoConfirmadas = Venda::where('confirmada',0)->whereNull('protocolo')->whereRaw(' NOW() > date_add( created_at, interval 2 hour ) ')->get();
         foreach( $vendasNaoConfirmadas as $venda ){
             DB::beginTransaction();
             try {
+                if( isset( $venda->pagamento ) )
+                    Payment::where('venda_id',$venda->id)->delete();
                 VendaMatriz::where('venda_id',$venda->id)->delete();
                 Venda::where('id',$venda->id)->delete();
                 DB::commit();

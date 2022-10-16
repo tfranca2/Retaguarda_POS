@@ -5,17 +5,21 @@
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">
 			<div class="panel-heading">
-				vendas
-				<div class="pull-right">
-					<span class="btn" style="color: #808080; cursor: default;"><label>Total: R$ {{ $totalVendas }}</label></span> |
-					<span class="btn" style="color: #808080; cursor: default;"><label>Total Comissão: R$ {{ $totalComissao }}</label></span>
-					<div class="btn-group">
-						<a href="#" id="toggleFilter" class="btn btn-link pull-right" title="Mostrar Filtros">Filtros <i class="fa fa-chevron-up"></i></a>
+
+
+				<div class="row">
+					
+					<div class="col-sm-4">
+						vendas
 					</div>
-					<div class="btn-group">
-						@if( Helper::temPermissao('vendas-incluir') )
-						<a href="<?php echo url('/'); ?>/vendas/create" class="btn btn-info btn-xs"><span class="fa fa-plus"></span> Novo</a>
-						@endif
+					<div class="col-sm-3 text-center" style="color: #808080;">
+						Total: R$ {{ $totalVendas }}
+					</div>
+					<div class="col-sm-4 text-center" style="color: #808080;">
+						Total Comissão: R$ {{ $totalComissao }}
+					</div>
+					<div class="col-sm-1 text-right">
+						<a href="#" id="toggleFilter" class="btn btn-link btn-xs" title="Mostrar Filtros">Filtros <i class="fa fa-chevron-up"></i></a>
 					</div>
 				</div>
 			</div>

@@ -291,7 +291,7 @@
 		        setTimeout(function(){ progress(timeleft - 1, timetotal, element, callback); }, 1000);
 		}
 
-		seconds = {{ session('timeleft', 0) }};
+		seconds = {{ session('timeleft', 600) }};
 		if( seconds ){
 			progress(seconds, 600, $('#countdown'), function(){
 				swal({

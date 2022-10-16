@@ -124,13 +124,13 @@ class VendaController extends Controller
 
         $etapas = Etapa::orderBy('id','DESC')->get();
 
-        $vendas = Self::filter( $request )
+        $vendas = Self::filter( $request )->where('confirmada', 1)
                 ->join('payments','payments.venda_id','=','vendas.id')
                 ->get()
                 ->pluck('venda_id')
                 ->toArray();
 
-        $leads = Venda::whereNotNull('cpf')
+        $leads = Venda::withTrashed()->whereNotNull('cpf')
                 ->whereNotIn('id', $vendas)
                 ->where('etapa_id', $request->etapa_id)
                 ->orderBy('created_at', 'DESC')
@@ -1161,15 +1161,13 @@ class VendaController extends Controller
             $request->merge([ 'erros' => $erros ]);
             return Self::checkout( $request, $request->pedido );
         }
-
-        // // CONSULTAR STATUS DA VENDA
-        // GET env('PAGSEGURO_URL').'/charges/{{ $venda->pagamento()->first()->transaction_code }}'
     }
 
     public function cancel( Request $request, $id ){
 
         $venda = Venda::findOrFail($id);
 
+        // // CONSULTAR STATUS DA VENDA
         // $ch = curl_init();
         // curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento()->first()->transaction_code );
         // curl_setopt($ch, CURLOPT_HEADER, FALSE);

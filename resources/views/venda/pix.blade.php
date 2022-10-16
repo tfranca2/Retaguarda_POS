@@ -20,12 +20,12 @@
                 <li>Na opção Pix, escolha <b>"Ler QR Code"</b></li>
                 <li>
                     <b>Leia o QR Code</b> ou, se preferir, <b>copie o código</b> para <b>Pix Copia e Cola</b>
-                    <p class="text-center"><a class="btn btn-dark copiar" data-clipboard-text="{{ $pix }}"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
-                    <p><small style="color: #ccc;">Você tem <b>24 horas</b> para pagar. Depois desse tempo seu pedido será cancelado.</small></p>
+                    <p class="text-center"><a style="margin-top: 5px;" class="btn btn-dark copiar" data-clipboard-text="{{ $pix }}"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
+                    <p class="text-center"><small class="text-danger">Você tem <b>30 minutos</b> para pagar. Depois desse tempo seu pedido será <b>cancelado</b>.</small></p>
                 </li>
                 <li>Revise as informações e <b>confirme o pagamento</b></li>
-                <li>Após a finalização do pagamento, <b>envie o comprovante</b> para o número: 
-                    <p class="text-center"><a href="https://wa.me/55{{ env('WHATSAPP') }}?text={{ urlencode('Oi, vou te enviar o comprovante de pagamento do Pix') }}" target="_blank" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
+                <li>Após a finalização do pagamento, <b class="text-danger">envie o comprovante</b> para o número: 
+                    <p class="text-center"><a href="https://wa.me/55{{ env('WHATSAPP') }}?text={{ urlencode('Oi, vou te enviar o comprovante de pagamento do Pix') }}" target="_blank" style="margin-top: 5px;" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
                 </li>
             </ol>
         </div>
@@ -35,14 +35,14 @@
             <ol>
                 <li>
                     <b>Copie o código Pix</b>
-                    <p class="text-center"><a class="btn btn-dark copiar" data-clipboard-text="{{ $pix }}"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
-                    <p><small style="color: #ccc;">Você tem <b>24 horas</b> para pagar. Depois desse tempo seu pedido será cancelado.</small></p>
+                    <p class="text-center"><a style="margin-top: 5px;" class="btn btn-dark copiar" data-clipboard-text="{{ $pix }}"><i class="fa fa-files-o" aria-hidden="true"></i> COPIAR CÓDIGO PIX</a></p>
+                    <p class="text-center"><small class="text-danger">Você tem <b>30 minutos</b> para pagar. Depois desse tempo seu pedido será <b>cancelado</b>.</small></p>
                 </li>
                 <li><b>Abra o aplicativo</b> do seu banco e acesse a <b>opção Pix</b></li>
                 <li>Escolha <b>"Pix Copia e Cola"</b> e cole o código copiado</li>
                 <li>Revise as informações e <b>confirme o pagamento</b></li>
-                <li>Após a finalização do pagamento, <b>envie o comprovante</b> para o número: 
-                    <p class="text-center"><a href="https://wa.me/55{{ env('WHATSAPP') }}?text={{ urlencode('Oi, vou te enviar o comprovante de pagamento do Pix') }}" target="_blank" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
+                <li>Após a finalização do pagamento, <b class="text-danger">envie o comprovante</b> para o número: 
+                    <p class="text-center"><a href="https://wa.me/55{{ env('WHATSAPP') }}?text={{ urlencode('Oi, vou te enviar o comprovante de pagamento do Pix') }}" target="_blank" style="margin-top: 5px;" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
                 </li>
             </ol>
         </div>

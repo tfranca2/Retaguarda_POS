@@ -39,6 +39,8 @@ Route::post('/checkout', 'VendaController@checkoutpagar');
 Route::get('/checkout/{key}/pix', 'VendaController@pix');
 Route::get('/pix/{key}', 'VendaController@getpixpayload');
 
+Route::get('/visitor', 'HomeController@tracking');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');
