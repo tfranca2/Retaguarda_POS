@@ -175,6 +175,31 @@
 	.swal-button:not([disabled]):hover {
 		background: #2fa360;
 	}
+
+	.lds-dual-ring {
+		display: inline-block;
+		width: 0px;
+		height: 15px;
+	}
+	.lds-dual-ring:after {
+		content: " ";
+		display: block;
+		width: 20px;
+		height: 20px;
+		margin-left: 5px;
+		border-radius: 50%;
+		border: 2px solid #fff;
+		border-color: #fff transparent #fff transparent;
+		animation: lds-dual-ring 1.2s linear infinite;
+	}
+	@keyframes lds-dual-ring {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 </style>
 @endsection
 @section('scripts')
@@ -301,12 +326,16 @@
 
 		$("#finalizar").click(function(e){
 			e.preventDefault();
-			grecaptcha.ready(function(){
-				grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
-					$('form').prepend('<input type="hidden" name="g_recaptcha_response" value="'+ token +'">');
-					$('form').submit();
+			$('form').parsley().validate();
+			if( $('form').parsley().isValid() ){
+				grecaptcha.ready(function(){
+					grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
+						$('form').prepend('<input type="hidden" name="g_recaptcha_response" value="'+ token +'">');
+						$('#finalizar').addClass('disabled').attr('disabled', true).append('<div class="lds-dual-ring"></div>');
+						$('form').submit();
+					});
 				});
-			});
+			}
 		});
 
 	});

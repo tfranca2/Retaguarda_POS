@@ -115,3 +115,63 @@
 		<br>
 </div>
 @endsection
+@section('scripts')
+<script>
+	$(document).ready(function(){
+
+        var timeouts = [];
+        var countdow = 0;
+        function contagemRegressivaParaRedirecionamento(){
+            if( countdow ){
+                countdow--;
+                $('#countdow').html( countdow );
+                timeouts.push( setTimeout(function(){ contagemRegressivaParaRedirecionamento(); }, 1000) );
+            } else {
+                window.location.href = "{{ env('SITE_URL') }}";
+            }
+        }
+        
+        function mostraBannerInformandoRedireccionamento(){
+
+            for (var i=0; i<timeouts.length; i++) {
+                clearTimeout(timeouts[i]);
+            }
+            timeouts = [];
+            countdow = 30; // segundos
+
+            setTimeout(function(){
+                const text = document.createElement('p');
+                text.append('Dentro de ');
+                
+                const span = document.createElement('span');
+                span.setAttribute("id", "countdow");
+                span.style.cssText = 'font-weight: bold;';
+                span.append(countdow);
+                text.appendChild(span);
+
+                const label = document.createElement('span');
+                label.style.cssText = 'font-weight: bold;';
+                label.append(' segundos');
+                text.appendChild(label);
+
+                text.append(' você será redirecionado para o site, caso queira cancelar temporariamente, clique no botão abaixo.');
+
+                swal({
+                    icon: 'info',
+                    title: 'Você será redirecionado...',
+                    content: text,
+                    button: "Espere mais um pouco!",
+                    closeOnClickOutside: false,
+                    closeOnEsc: false,
+                    closeModal: true,
+                }).then((value) => {
+                    mostraBannerInformandoRedireccionamento();
+                });
+                contagemRegressivaParaRedirecionamento();
+            }, 60000 ); // 1 minuto
+        }
+        mostraBannerInformandoRedireccionamento();
+
+    });
+</script>
+@endsection

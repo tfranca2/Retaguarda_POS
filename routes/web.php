@@ -37,6 +37,7 @@ Route::post('/prevenda', 'VendaController@prevendaconfirma');
 Route::get('/checkout/{key}', 'VendaController@checkout');
 Route::post('/checkout', 'VendaController@checkoutpagar');
 Route::get('/checkout/{key}/pix', 'VendaController@pix');
+Route::get('/pix/{key}', 'VendaController@getpixpayload');
 
 Route::group(['middleware' => ['auth']], function(){
 
@@ -70,6 +71,9 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::get('vendas/csv', 'VendaController@csv');
 	Route::get('vendas/txt', 'VendaController@txt');
 	Route::get('vendas/confirmar', 'VendaController@confirmar');
+	Route::post('vendas/{id}/confirmar', 'VendaController@confirmar');
+	Route::put('vendas/{id}/cancel', 'VendaController@cancel');
+	Route::get('leads', 'VendaController@leads');
 	Route::resource('vendas', 'VendaController');
 
 	Route::resource('etapas', 'EtapaController');

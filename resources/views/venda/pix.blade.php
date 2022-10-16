@@ -25,7 +25,7 @@
                 </li>
                 <li>Revise as informações e <b>confirme o pagamento</b></li>
                 <li>Após a finalização do pagamento, <b>envie o comprovante</b> para o número: 
-                    <p class="text-center"><a href="https://api.whatsapp.com/send?phone=+55{{ env('WHATSAPP') }}&text=Olá" target="_blank" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
+                    <p class="text-center"><a href="https://wa.me/55{{ env('WHATSAPP') }}?text={{ urlencode('Oi, vou te enviar o comprovante de pagamento do Pix') }}" target="_blank" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
                 </li>
             </ol>
         </div>
@@ -42,7 +42,7 @@
                 <li>Escolha <b>"Pix Copia e Cola"</b> e cole o código copiado</li>
                 <li>Revise as informações e <b>confirme o pagamento</b></li>
                 <li>Após a finalização do pagamento, <b>envie o comprovante</b> para o número: 
-                    <p class="text-center"><a href="https://api.whatsapp.com/send?phone=+55{{ env('WHATSAPP') }}&text=Olá" target="_blank" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
+                    <p class="text-center"><a href="https://wa.me/55{{ env('WHATSAPP') }}?text={{ urlencode('Oi, vou te enviar o comprovante de pagamento do Pix') }}" target="_blank" class="btn btn-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> {{ Helper::formatTelefone( env('WHATSAPP') ) }}</a></p>
                 </li>
             </ol>
         </div>

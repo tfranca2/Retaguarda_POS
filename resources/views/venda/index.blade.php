@@ -82,8 +82,10 @@
 									<label>Tipo: </label>
 									<select name="tipo" id="tipo" class="form-control select2">
 										<option value="">Selecione</option>
+										<option value="API" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'API' ) echo 'selected="selected"'; ?>>API</option>
 										<option value="CREDITO" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'CREDITO' ) echo 'selected="selected"'; ?>>CREDITO</option>
 										<option value="PIX" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'PIX' ) echo 'selected="selected"'; ?>>PIX</option>
+										<option value="POS" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'POS' ) echo 'selected="selected"'; ?>>POS</option>
 									</select>
 								</div>
 							</div>
@@ -129,29 +131,18 @@
 						</thead>
 						<tbody>
 							@forelse( $vendas as $venda )
-							@php
-
-								$venda->matrizes = $venda->matrizes();
-
-								$valor = 0;
-								$comissao = 0;
-								if( count( $venda->matrizes ) == 2 ){
-					                $valor = $venda->etapa->valor_duplo;
-					                $comissao = $venda->etapa->v_comissao_duplo;
-					            } elseif( count( $venda->matrizes ) == 3 ){
-					                $valor = $venda->etapa->valor_triplo;
-					                $comissao = $venda->etapa->v_comissao_triplo;
-					            } else {
-					                $valor = $venda->etapa->valor_simples;
-					                $comissao = $venda->etapa->v_comissao_simples;
-					            }
-							@endphp
 								<tr>
 									<td>{{ Helper::formatCpfCnpj( $venda->cpf ) }}</td>
-									<td>{{ substr( $venda->nome, 0, 20 ) }}</td>
+									<td>{{ mb_strimwidth( $venda->nome, 0, 20, "...") }}</td>
 									<td>{{ Helper::formatTelefone( $venda->telefone ) }}</td>
-									<td>R$ {{ Helper::formatDecimalToView( $valor ) }}</td>
-									<td>{{ $venda->matrizes[0]['matriz']['bilhete'] }}</td>
+									<td>R$ 
+										@if( $venda->pagamento )
+											{{ Helper::formatDecimalToView(  $venda->etapa->valor ) }}
+										@else
+											0,00
+										@endif
+									</td>
+									<td>{{ $venda->matrizes()[0]['matriz']['bilhete'] }}</td>
 									<td>{{ date( "d/m H:i", strtotime( $venda->created_at ) ) }}</td>
 									<td>@php 
 										$tipo = '';
@@ -164,7 +155,10 @@
 										@if( $venda->pagamento and $venda->pagamento->tipo == 'PIX' and $venda->pagamento->status == 'WAITING' )
 										@if( Helper::temPermissao('vendas-editar') )
 										<!-- <a href="{{ url('/vendas/'.$venda->id.'/confirmar') }}" class="btn btn-success" title="Confirmar"><i class="fa fa-check" aria-hidden="true"></i></a> -->
-										<a href="{{ url('/vendas/'.$venda->id.'/confirmar/pix') }}" class="btn btn-success" title="Confirmar Pix"><i class="fa fa-check" aria-hidden="true"></i></a>
+										<a href="#" class="btn btn-info shareqrcode" data-key="{{ $venda->key }}" data-telefone="{{ $venda->telefone }}" title="Enviar QR code"><i class="fa fa-qrcode" aria-hidden="true"></i></a>
+										<form action="{{url('/vendas/'. $venda->id .'/confirmar')}}" method="POST" class="form-edit" style="display: inline-block;">@csrf
+											<button type="submit" class="btn btn-success" title="Confirmar Pix"><i class="fa fa-check" aria-hidden="true"></i></button>
+										</form>
 										@else
 										<button class="btn btn-warning" title="Venda ainda não confirmada"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></button>
 										@endif
@@ -203,6 +197,7 @@
 		</div>
 	</div>
 </div>
+<a id="share" href="#" target="_blank" style="display: none;"></a>
 @endsection
 @section('scripts')
 <script>
@@ -230,6 +225,23 @@
 			}
 		});
 		$('#distribuidor_id').change()
+
+		$('.shareqrcode').click(function(e){
+			e.preventDefault();
+			var telefone = $(this).data('telefone');
+			var key = $(this).data('key');
+			$.ajax({
+				type: "GET",
+				url: "{{ url('/pix') }}/"+ key,
+				success: function( data ){
+					link = "https://wa.me/55"+ telefone +"?text="+ encodeURI("Este é o código Pix para confirmar sua compra, copie o código a seguir e cole na função \"*Pix Copia e Cola*\" no seu aplicativo de banco.\n\n"+data);
+
+					$('#share').attr('href', link);
+					$('#share')[0].click();
+					$('#share').attr('href', '#');
+				}
+			});
+		});
 
 	});
 </script>

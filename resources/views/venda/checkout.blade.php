@@ -172,6 +172,31 @@
 	.progress-bar {
 		width: 100%;
 	}
+
+	.lds-dual-ring {
+		display: inline-block;
+		width: 0px;
+		height: 30px;
+	}
+	.lds-dual-ring:after {
+		content: " ";
+		display: block;
+		width: 30px;
+		height: 30px;
+		margin: 8px;
+		border-radius: 50%;
+		border: 3px solid #fff;
+		border-color: #fff transparent #fff transparent;
+		animation: lds-dual-ring 1.2s linear infinite;
+	}
+	@keyframes lds-dual-ring {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 </style>
 <script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
 <script type="text/javascript">
@@ -201,6 +226,8 @@
 
 	$(document).ready(function(){
 
+		$('body > center > a').attr('href', '#').attr('disabled', true).css({ 'cursor': 'default' });
+
 		$('#cartao').keyup(function(){
 			var numb = $('#cartao').val().match(/\d/g);
 			numb = numb.join("");
@@ -216,12 +243,16 @@
 
 		$("form button[type='submit']").click(function(e){
 			e.preventDefault();
-			grecaptcha.ready(function(){
-				grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
-					$('form').prepend('<input type="hidden" name="g_recaptcha_response" value="'+ token +'">');
-					$('form').submit();
+			$('form').parsley().validate();
+			if( $('form').parsley().isValid() ){
+				grecaptcha.ready(function(){
+					grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'homepage'}).then(function(token) {
+						$('form').prepend('<input type="hidden" name="g_recaptcha_response" value="'+ token +'">');
+						$('form button[type="submit"]').addClass('disabled').attr('disabled', true).append('<div class="lds-dual-ring"></div>');
+						$('form').submit();
+					});
 				});
-			});
+			}
 		});
 
 	});

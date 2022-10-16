@@ -11,6 +11,7 @@ use Validator;
 use App\Cidade;
 use App\Estado;
 use App\Matriz;
+use Carbon\Carbon;
 use App\Helpers\Pix;
 use App\VendaMatriz;
 use App\Dispositivo;
@@ -90,9 +91,10 @@ class VendaController extends Controller
             return redirect('/etapas');
         }
 
-        $vendas = Self::filter( $request );
-        // $vendas->join('payments', 'vendas.id', '=', 'payments.venda_id');
-
+        $vendas = Self::filter( $request )
+        ->select('vendas.*', 'payments.venda_id', 'payments.tipo', 'payments.status')
+        ->whereNotNull('cpf')
+        ->join('payments', 'vendas.id', '=', 'payments.venda_id');
         $totalVendas = 0;
         $totalComissao = 0;
         foreach( $vendas->get() as $venda ){
@@ -118,6 +120,25 @@ class VendaController extends Controller
         return view('venda.index',[ 'vendas' => $vendas->paginate(10), 'etapas' => $etapas, 'distribuidores' => $distribuidores, 'dispositivo' => $dispositivo,  'totalVendas' => $totalVendas,  'totalComissao' => $totalComissao, ]);
     }
 
+    public function leads( Request $request ){
+
+        $etapas = Etapa::orderBy('id','DESC')->get();
+
+        $vendas = Self::filter( $request )
+                ->join('payments','payments.venda_id','=','vendas.id')
+                ->get()
+                ->pluck('venda_id')
+                ->toArray();
+
+        $leads = Venda::whereNotNull('cpf')
+                ->whereNotIn('id', $vendas)
+                ->where('etapa_id', $request->etapa_id)
+                ->orderBy('created_at', 'DESC')
+                ->paginate(10);
+
+        return view('venda.leads',[ 'etapas' => $etapas, 'leads' => $leads ]);
+    }
+
     public function csv( Request $request ){
 
         $headers = array(
@@ -128,7 +149,7 @@ class VendaController extends Controller
             "Expires" => "0"
         );
 
-        $vendas = Self::filter( $request )->get();
+        $vendas = Self::filter( $request )->where('confirmada', 1)->get();
 
         $callback = function() use ( $vendas ){
 
@@ -196,6 +217,7 @@ class VendaController extends Controller
 
             $totalVendas = 0;
             $range_final = 0;
+            $range_inicial = 0;
 
             $file = fopen('php://output', 'w');
             fputcsv($file, [
@@ -224,7 +246,7 @@ class VendaController extends Controller
                     $nome_do_comprador = $venda->nome;
                     if( !$nome_do_comprador ){
                         try {
-                            if( env('CONSULTA_CPF', false) or true ){
+                            if( env('CONSULTA_CPF', false) ){
                                 $pessoa = \DB::connection('mysql2')->select("SELECT nome FROM cadcpf WHERE CPF = '". Helper::onlyNumbers($venda->cpf) ."'");
                                 if($pessoa){
                                     $nome_do_comprador = $pessoa[0]->nome;
@@ -250,6 +272,9 @@ class VendaController extends Controller
                     $totalVendas++;
                     if( $bilhete > $range_final )
                         $range_final = $bilhete;
+
+                    if( !$range_inicial )
+                        $range_inicial = $bilhete;
 
                     fputcsv( $file, [ 
                         'D3', // cabeçalho fixo
@@ -280,7 +305,7 @@ class VendaController extends Controller
             fputcsv($file, [
                 'T', // cabeçalho fixo
                 $totalVendas, // quantidade de linhas D3
-                $etapa->range_inicial, // inicial do range de vendas deste arquivo
+                $range_inicial, // inicial do range de vendas deste arquivo
                 $range_final, // final do range
             ], ';', chr(32), "\n");
 
@@ -340,7 +365,7 @@ class VendaController extends Controller
             $nome = $request->nome;
         }
 
-        if( $request->has('cpf') ){
+        if( $request->has('cpf') and !$nome ){
             if( ! Helper::validaCPF($request->cpf) )
                 return response()->json(['error'=>['cpf'=>['Informe um cpf válido.']]],400);
             try {
@@ -708,7 +733,7 @@ class VendaController extends Controller
 
             $matrizes = "";
             foreach( $venda->matrizes() as $matriz ){
-                $chunk = explode( '-', $matriz->matriz->combinacoes );
+                $chunk = explode( '-', $matriz['matriz']['combinacoes'] );
                 foreach( $chunk as $k => $c ){
                     $matrizes .= $c.' ';
                     if( in_array( $k, [ 9, 19 ] ) )
@@ -934,7 +959,7 @@ class VendaController extends Controller
             $nome = $request->nome;
         }
 
-        if( $request->has('cpf') ){
+        if( $request->has('cpf') and !$nome ){
             if( ! Helper::validaCPF($request->cpf) )
                 return response()->json(['error'=>['cpf'=>['Informe um cpf válido.']]],400);
             try {
@@ -1076,12 +1101,12 @@ class VendaController extends Controller
                 ]
             ],
         ];
-        if( !env('PAGSEGURO_COMPRADOR_EMAIL') )
+        if( ! env('PAGSEGURO_IS_SANDBOX') )
             $data['notification_urls'] = [ url('/callback') ];
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_URL, 'https://sandbox.api.pagseguro.com/charges');
+        curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges');
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -1127,7 +1152,10 @@ class VendaController extends Controller
 
         if( isset($response->error_messages) ){
             foreach( $response->error_messages as $error ){
-                $erros[] = $error->code .': '. $error->description .' ( '. $error->parameter_name .' )';
+                $str = $error->code .': '. $error->description;
+                if( isset( $error->parameter_name ) )
+                    $str .= ' ( '. $error->parameter_name .' )';
+                $erros[] = $str;
             }
 
             $request->merge([ 'erros' => $erros ]);
@@ -1135,16 +1163,103 @@ class VendaController extends Controller
         }
 
         // // CONSULTAR STATUS DA VENDA
-        // GET 'https://sandbox.api.pagseguro.com/charges/{{ transaction_code }}'
-        // // CANCELAR / ESTORNAR VENDA ( PIX < 90 dias CRÉDITO < 350 dias )
-        // POST 'https://sandbox.api.pagseguro.com/charges/{{ transaction_code }}/cancel'
-        //     { "amount": { "value": 500 } } // OPCIONAL
+        // GET env('PAGSEGURO_URL').'/charges/{{ $venda->pagamento()->first()->transaction_code }}'
+    }
+
+    public function cancel( Request $request, $id ){
+
+        $venda = Venda::findOrFail($id);
+
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento()->first()->transaction_code );
+        // curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        //     "Authorization: ".env('PAGSEGURO_TOKEN'),
+        //     "Content-Type: application/json",
+        //     "x-idempotency-key;",
+        // ));
+        // $response = json_decode(curl_exec($ch));
+        // $status_code = curl_getinfo($ch)['http_code'];
+        // curl_close($ch);
+        // dd($response);
+        // $response->reference_id
+        // $response->status;
+        // $response->amount->value;
+        // $response->amount->summary->refunded;
+
+        if( $venda->pagamento()->first()->tipo != 'CREDITO' )
+            return response()->json([ 'error' => 'Estrono permitido apenas para CREDITO.' ], 400);
+
+        $difference = ( new Carbon( $venda->created_at ) )->diff( Carbon::now() )->days;
+        if( $difference >= 90 )
+            return response()->json([ 'error' => 'Estrono não permitido após 90 dias.' ], 400);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento()->first()->transaction_code .'/cancel');
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            'amount' => [ 'value' => Helper::onlyNumbers( $venda->etapa->valor ) ],
+        ]));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Authorization: ".env('PAGSEGURO_TOKEN'),
+            "Content-Type: application/json",
+            "x-idempotency-key;",
+        ));
+        $response = json_decode(curl_exec($ch));
+        $status_code = curl_getinfo($ch)['http_code'];
+        curl_close($ch);
+
+        if( isset($response->error_messages) ){
+            foreach( $response->error_messages as $error ){
+
+                // if( $error->code == 40007 ) break; // reembolso já realizado
+
+                $str = $error->code .': '. $error->description;
+                if( isset( $error->parameter_name ) )
+                    $str .= ' ( '. $error->parameter_name .' )';
+                $erros[] = $str;
+            }
+            return response()->json([ 'error' => $erros ], 400);
+        }
+
+        $venda->pagamento()->update([ 'status' => 'CANCELED' ]);
+        $venda->confirmada = false;
+        $venda->deleted_at = Carbon::now();
+        $venda->save();
+
+        return response()->json([
+            'message' => 'Venda cancelada',
+            'venda' => $venda,
+            'redirectURL' => url('/vendas'),
+        ], 200 );
 
     }
 
+    public function getpixpayload( Request $request, $key ){
+        
+        $venda = Venda::where( 'key', $key )->first();
+        if( !$venda )
+            return response()->json([ 'erro' => 'Chave não localizada.' ], 404 );
+
+        $bilhete = $venda->matrizes()[0]['matriz']['bilhete'];
+
+        $pix = (new Pix)->setPixKey( env('PIX_KEY') )
+              ->setDescription( env('APP_NAME')." TITULO ".$bilhete )
+              ->setMerchantName( env('PIX_MERCHANT_NAME') )
+              ->setMerchantCity( env('PIX_MERCHANT_CITY') )
+              ->setAmount( $venda->etapa->valor )
+              ->setUniquePayment( true )
+              ->setTxid( $bilhete )
+              ->getPayload();
+
+        return response( $pix );
+
+    }
     public function pix( Request $request, $key ){
 
-        $etapa = Etapa::ativa();
         $venda = Venda::where( 'key', $key )->first();
         if( !$venda ){
             return response()->json([ 'erro' => 'Chave não localizada.' ], 404 );
@@ -1153,10 +1268,6 @@ class VendaController extends Controller
         if( isset($venda->pagamento) )
             return redirect('comprovante/'.$venda->key);
 
-        $matrizes = $venda->matrizes();
-
-        $venda->confirmada = 1;
-        $venda->save();
         $venda->pagamento()->create([
             'venda_id' => $venda->id,
             'tipo' => 'PIX',
@@ -1164,14 +1275,7 @@ class VendaController extends Controller
             'valor_bruto' => $venda->etapa->valor,
         ]);
 
-        $pix = (new Pix)->setPixKey( env('PIX_KEY') )
-                      ->setDescription( env('APP_NAME')." TITULO ".$matrizes[0]['matriz']['bilhete'])
-                      ->setMerchantName( env('PIX_MERCHANT_NAME') )
-                      ->setMerchantCity( env('PIX_MERCHANT_CITY') )
-                      ->setAmount( $venda->etapa->valor )
-                      ->setUniquePayment( true )
-                      ->setTxid( $matrizes[0]['matriz']['bilhete'] )
-                      ->getPayload();
+        $pix = Self::getpixpayload($request, $key);
         $qrcode = (new Output\Png)->output( new QrCode($pix),250);
 
         return view('venda.pix',[ 
