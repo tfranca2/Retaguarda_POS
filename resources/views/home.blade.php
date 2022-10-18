@@ -2,6 +2,7 @@
 @extends('layouts.app')
 @section('content')
     <div class="row justify-content-center">
+        @if( Helper::temPermissao('empresas-excluir') )
         <div class="col-md-12">
             <select name="etapa" id="etapa" class="form-control select2">
                 @foreach( $etapas as $etapa )
@@ -10,6 +11,7 @@
             </select>
             <br><br>
         </div>
+        @endif
         @if( session('status') )
         <div class="col-md-12">
             <div class="alert alert-success" role="alert">
@@ -22,7 +24,7 @@
     <div class="row">
         <div class="col-md-4">
             <div class="panel short-states bg-light" style="margin: 0;">
-                <img src="{{ url('/public/images/'. \Auth::user()->empresa()->main_logo ) }}" style="max-width: 100%; max-height: 110px; display: block; margin: auto;">
+                <img src="{{ url('/public/images/'. \Auth::user()->empresa()->main_logo ) }}" style="max-width: 100%; max-height: 110px; display: block; margin: auto; margin-bottom: 15px;">
             </div>
         </div>
         <div class="col-md-4">
@@ -73,15 +75,13 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <div class="panel charts">
                 <h3 class="text-center">Distribuição de Vendas na Semana</h3>
                 <canvas id="vendas_por_dia"></canvas>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <div class="panel charts">
                 <h3 class="text-center">Distribuição de Vendas por Hora</h3>
                 <canvas id="vendas_por_hora"></canvas>
