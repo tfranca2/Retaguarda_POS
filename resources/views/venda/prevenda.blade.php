@@ -40,31 +40,31 @@
 			<div class="row">
 				<div class="col-md-6">
 					<label for="">CPF</label>
-					<input type="text" class="form-control" name="cpf" data-parsley-cpf="true" data-parsley-required="true" required="">
+					<input type="text" class="form-control" id="cpf" name="cpf" data-parsley-cpf="true" data-parsley-required="true" required="">
 				</div>
 				<div class="col-md-6">
 					<label for="">Nome</label>
-					<input type="text" class="form-control" name="nome" data-parsley-required="true" required="">
+					<input type="text" class="form-control" id="nome" name="nome" data-parsley-required="true" required="">
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-12">
 					<label for="">E-mail</label>
-					<input type="email" class="form-control" name="email" data-parsley-required="true" required="">
+					<input type="email" class="form-control" id="email" name="email" data-parsley-required="true" required="">
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-4">
 					<label for="">Telefone</label>
-					<input type="text" class="form-control" name="telefone" data-parsley-required="true" required="">
+					<input type="text" class="form-control" id="telefone" name="telefone" data-parsley-required="true" required="">
 				</div>
 				<div class="col-md-4">
 					<label for="">Cidade</label>
-					<input type="text" class="form-control" name="cidade" data-parsley-required="true" required="">
+					<input type="text" class="form-control" id="cidade" name="cidade" data-parsley-required="true" required="">
 				</div>
 				<div class="col-md-4">
 					<label for="">Estado</label>
-					<select name="uf" class="form-control select2" data-parsley-required="true" required="">
+					<select id="uf" name="uf" class="form-control select2" data-parsley-required="true" required="">
 						<option value="">Selecione o Estado</option>
 						@foreach( $estados as $estado )
 						<option value="{{ $estado->uf }}">{{ $estado->nome }}</option>
@@ -87,7 +87,7 @@
 @endsection
 @section('css')
 <style>
-	.destaque, .round, .prev, .next {
+	.destaque, .round, .prev, .next, #finalizar {
 		background: {{ $empresa->menu_background }}; 
 		color: {{ $empresa->menu_color }};
 	}
@@ -337,6 +337,28 @@
 				});
 			}
 		});
+
+		function lead(){
+			$.ajax({
+				type: "POST",
+				url: base_url + '/lead',
+				data: {
+					key: $('#key').val(),
+					cpf: $('#cpf').val(),
+					nome: $('#nome').val(),
+					email: $('#email').val(),
+					telefone: $('#telefone').val(),
+					cidade: $('#cidade').val(),
+					uf: $('#uf option:selected').val(),
+				},
+			});
+		}
+		$('#cpf').on('input',function(e){ lead() });
+		$('#nome').on('input',function(e){ lead() });
+		$('#email').on('input',function(e){ lead() });
+		$('#telefone').on('input',function(e){ lead() });
+		$('#cidade').on('input',function(e){ lead() });
+		$('#uf').change(function(){ lead() });
 
 	});
 </script>

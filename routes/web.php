@@ -40,10 +40,12 @@ Route::get('/checkout/{key}/pix', 'VendaController@pix');
 Route::get('/pix/{key}', 'VendaController@getpixpayload');
 
 Route::get('/visitor', 'HomeController@tracking');
+Route::post('/lead', 'VendaController@updateLead');
 
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');
+	Route::get('/info', 'HomeController@dashinfo');
 
 	Route::get('/perfil', 'UserController@perfil');
 	Route::resource('usuarios', 'UserController');
@@ -71,6 +73,7 @@ Route::group(['middleware' => ['auth']], function(){
 	Route::resource('dispositivos', 'DispositivoController');
 
 	Route::get('vendas/csv', 'VendaController@csv');
+	Route::get('leads/csv', 'VendaController@leadscsv');
 	Route::get('vendas/txt', 'VendaController@txt');
 	Route::get('vendas/confirmar', 'VendaController@confirmar');
 	Route::post('vendas/{id}/confirmar', 'VendaController@confirmar');

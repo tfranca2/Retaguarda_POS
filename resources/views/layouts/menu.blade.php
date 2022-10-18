@@ -74,4 +74,18 @@ $atualMenu = explode('/',\Request::path())[0];
     .ui-aside .nav > li.active > a {
         color: {{ \Auth::user()->empresa()->menu_color }};
     }
+
+    .pagination {
+        margin: 0;
+    }
+    .pagination > .active > a, .pagination > .active > a:hover, .pagination > .active > a:focus, .pagination > .active > span, .pagination > .active > span:hover, .pagination > .active > span:focus {
+        background: {{ \Auth::user()->empresa()->menu_background }} !important;
+        color: {{ \Auth::user()->empresa()->menu_color }} !important;
+        border-color: {{ \Auth::user()->empresa()->menu_background }} !important; 
+    }
+    .pagination > li > a:hover, .pagination > li > a:focus, .pagination > li > span:hover, .pagination > li > span:focus {
+        background: {{ \Auth::user()->empresa()->menu_background }} !important;
+        color: {{ \Auth::user()->empresa()->menu_color }} !important;
+        border-color: {{ \Auth::user()->empresa()->menu_background }} !important; 
+    }
 </style>

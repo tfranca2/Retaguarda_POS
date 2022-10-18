@@ -195,6 +195,76 @@ class VendaController extends Controller
         return \Response::stream( $callback, 200, $headers );
     }
 
+    public function leadscsv( Request $request ){
+
+        $headers = array(
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; charset=UTF-8; filename=". date('YmdHis') ."_leads.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        );
+
+        $vendas = Self::filter( $request )->where('confirmada', 1)
+                ->join('payments','payments.venda_id','=','vendas.id')
+                ->get()
+                ->pluck('venda_id')
+                ->toArray();
+
+        $leads = Venda::withTrashed()->whereNotNull('cpf')
+                ->whereNotIn('id', $vendas)
+                ->where('etapa_id', $request->etapa_id)
+                ->orderBy('created_at', 'DESC')
+                ->get();
+
+        $callback = function() use ( $leads ){
+            $file = fopen('php://output', 'w');
+            fputcsv($file, [ 'CPF', 'Nome', 'Telefone', 'E-mail', 'Data' ], ';', '"', "\n");
+            foreach( $leads as $lead ){
+                fputcsv( $file, [ 
+                    Helper::formatCpfCnpj( $lead->cpf ),
+                    utf8_decode( $lead->nome ),
+                    Helper::formatTelefone( $lead->telefone ),
+                    utf8_decode( $lead->email ),
+                    $lead->created_at, 
+                ], ';', '"', "\n" );
+            }
+            fclose($file);
+        };
+
+        return \Response::stream( $callback, 200, $headers );
+    }
+
+    public function updateLead( Request $request ){
+        $venda = Venda::where( 'key', $request->key )->first();
+        if( $venda ){
+
+            if( $request->has('cpf') and $request->cpf )
+                $venda->cpf = Helper::onlyNumbers( $request->cpf );
+            if( $request->has('nome') and $request->nome )
+                $venda->nome = $request->nome;
+            if( $request->has('email') and $request->email )
+                $venda->email = $request->email;
+            if( $request->has('telefone') and $request->telefone )
+                $venda->telefone = Helper::onlyNumbers( $request->telefone );
+            
+            $cidade_id = env('CIDADE_ID_PADRAO', null);
+            if( $request->has('uf') and $request->uf ){
+                $estado = Estado::where('uf', $request->uf)->first();
+                if( $estado and $request->has('cidade') and $request->cidade ){
+                    $cidade = Cidade::where('estado_id', $estado->id)
+                            ->where('nome', $request->cidade)->first();
+                    if( $cidade )
+                        $cidade_id = $cidade->id;
+                }
+            }
+            $venda->cidade_id = $cidade_id;
+
+            $venda->save();
+        }
+        return response([]);
+    }
+
     public function txt( Request $request ){
 
         if( $request->has('etapa_id') ){

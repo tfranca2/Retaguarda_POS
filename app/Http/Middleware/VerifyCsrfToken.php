@@ -24,5 +24,6 @@ class VerifyCsrfToken extends Middleware
         'correios-salvar',
         'confirmarAtendimento',
         'visitor',
+        'lead',
     ];
 }

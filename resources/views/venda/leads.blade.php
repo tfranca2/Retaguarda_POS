@@ -72,6 +72,9 @@
 					</table>
 				</div>
 				{{ $leads->appends( request()->input() )->links() }}
+				<div class="pull-right">
+					<a href="{{ url('/leads/csv') .'?'. http_build_query( request()->input() ) }}" class="btn btn-info">Exportar .csv</a>
+				</div>
 			</div>
 		</div>
 	</div>

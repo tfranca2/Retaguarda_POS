@@ -5,11 +5,8 @@
 	<div class="col-md-12">
 		<div class="panel panel-card recent-activites">
 			<div class="panel-heading">
-
-
 				<div class="row">
-					
-					<div class="col-sm-4">
+					<div class="col-sm-3">
 						vendas
 					</div>
 					<div class="col-sm-3 text-center" style="color: #808080;">
@@ -18,7 +15,7 @@
 					<div class="col-sm-4 text-center" style="color: #808080;">
 						Total Comissão: R$ {{ $totalComissao }}
 					</div>
-					<div class="col-sm-1 text-right">
+					<div class="col-sm-2 text-right">
 						<a href="#" id="toggleFilter" class="btn btn-link btn-xs" title="Mostrar Filtros">Filtros <i class="fa fa-chevron-up"></i></a>
 					</div>
 				</div>

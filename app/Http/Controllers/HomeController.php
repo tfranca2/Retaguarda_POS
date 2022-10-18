@@ -30,9 +30,56 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index(){
+    public function index( Request $request ){
+        if( !$request->has('etapa_id') )
+            $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
 
-        $etapa = Etapa::ativa();
+        $etapas = Etapa::orderBy('id','DESC')->get();
+
+        return view('home', array_merge( 
+            ( (array) Self::dashinfo( $request )->getData() ),
+            [
+                'etapas' => $etapas,
+                'colors' => [
+                    Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 40 ),
+                    Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 20 ),
+                    Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 0 ),
+                    Self::adjustBrightness( \Auth::user()->empresa()->menu_background, -20 ),
+                    Self::adjustBrightness( \Auth::user()->empresa()->menu_background, -40 ),
+                ],
+            ])
+        );
+    }
+
+    public function adjustBrightness( $hex, $steps ) {
+        // Steps should be between -255 and 255. Negative = darker, positive = lighter
+        $steps = max(-255, min(255, $steps));
+
+        // Normalize into a six character long hex string
+        $hex = str_replace('#', '', $hex );
+        if (strlen($hex) == 3) {
+            $hex = str_repeat(substr($hex,0,1), 2).str_repeat(substr($hex,1,1), 2).str_repeat(substr($hex,2,1), 2);
+        }
+
+        // Split into three parts: R, G and B
+        $color_parts = str_split($hex, 2);
+        $return = '#';
+
+        foreach ($color_parts as $color) {
+            $color   = hexdec($color); // Convert to decimal
+            $color   = max(0,min(255,$color + $steps)); // Adjust color
+            $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
+        }
+
+        return $return;
+    }
+
+    public function dashinfo( Request $request ){
+
+        if( !$request->has('etapa_id') )
+            $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
+
+        $etapa = Etapa::find( $request->etapa_id );
 
         $valor = 0;
         switch( $etapa->tipo ){
@@ -41,24 +88,87 @@ class HomeController extends Controller
             case '3': $valor = $etapa->valor_triplo; break;
         }
 
-        $vendas = Venda::where( 'etapa_id', $etapa->id )->where('confirmada', 1)
+        $vendas = Venda::where( 'etapa_id', $request->etapa_id )->where('confirmada', 1)
                 ->join('payments','payments.venda_id','=','vendas.id')
                 ->get()
                 ->pluck('venda_id')
                 ->toArray();
         $quantidade = count( $vendas );
-        $total = $quantidade * $valor;
+        $total = 'R$ '. Helper::formatDecimalToView( $quantidade * $valor );
 
         $leads = Venda::withTrashed()->whereNotNull('cpf')
                 ->whereNotIn('id', $vendas)
-                ->where('etapa_id', $etapa->id)->count();
+                ->where('etapa_id', $request->etapa_id)->count();
 
+        $acessos = Tracking::whereRaw('DATE( updated_at ) = DATE( NOW() )')->count();
+        $online = Tracking::where('updated_at', '>=', ( new \DateTime )->modify('-30 seconds')->format('Y-m-d H:i:s') )->count();
+
+        $labels = [ 'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado' ];
+        $data = [];
+        foreach( $labels as $label )
+            $data[] = 0;
+        $color = Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 40);
+        $vendas = DB::select("  SELECT
+                                    DAYOFWEEK(created_at) AS dia,
+                                    COUNT(*) AS quantidade
+                                FROM vendas
+                                WHERE
+                                        deleted_at IS NULL
+                                    AND confirmada = 1
+                                    AND etapa_id = {$request->etapa_id}
+                                GROUP BY DAYOFWEEK(created_at);");
+        foreach( $vendas as $venda ){
+            $data[ ( $venda->dia - 1 ) ] = intval( $venda->quantidade );
+        }
+        $vendas_por_dia = [
+            'labels' => $labels,
+            'datasets' => [ (object) [
+                'label' => 'Vendas',
+                'data' => $data,
+                'backgroundColor' => $color,
+            ], ],
+        ];
+
+        $labels = [];
+        $time = strtotime('00:00:00');
+        while( $time < strtotime('23:59:59') ){
+            $labels[] = date('H:i', $time);
+            $time = strtotime('+30 minutes', $time);
+        }
+
+        $data = [];
+        foreach( $labels as $label )
+            $data[] = 0;
+
+        $color = Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 20);
+        $vendas = DB::select("  SELECT
+                                    DATE_FORMAT( created_at - INTERVAL MINUTE( created_at ) % 30 MINUTE, '%H:%i' ) AS hora,
+                                    COUNT(*) AS quantidade
+                                FROM vendas
+                                WHERE
+                                        deleted_at IS NULL
+                                    AND confirmada = 1
+                                    AND etapa_id = {$request->etapa_id}
+                                GROUP BY hora
+                                ORDER BY hora ASC;");
+        foreach( $vendas as $venda ){
+            $data[ array_search($venda->hora, $labels) ] = intval( $venda->quantidade );
+        }
+        $vendas_por_hora = [
+            'labels' => $labels,
+            'datasets' => [ (object) [
+                'label' => 'Vendas',
+                'data' => $data,
+                'borderColor' => $color,
+                'borderWidth' => 3,
+            ], ],
+        ];
 
         $ulimas10Etapas = DB::select("SELECT GROUP_CONCAT(id) AS ids FROM ( SELECT id FROM etapas ORDER BY id DESC LIMIT 10 ) x")[0]->ids;
 
         $labels = [];
         $data = [];
-        $color = Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 20);
+        $color = Self::adjustBrightness( \Auth::user()->empresa()->menu_background, -40);
         $vendas = DB::select("  SELECT
                                     etapas.descricao AS etapa,
                                     COUNT(*) AS quantidade,
@@ -87,117 +197,16 @@ class HomeController extends Controller
             ], ],
         ];
 
-        $labels = [ 'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado' ];
-        $data = [];
-        foreach( $labels as $label )
-            $data[] = 0;
-        $color = Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 0);
-        $vendas = DB::select("  SELECT
-                                    DAYOFWEEK(created_at) AS dia,
-                                    COUNT(*) AS quantidade
-                                FROM vendas
-                                WHERE
-                                        deleted_at IS NULL
-                                    AND confirmada = 1
-                                    AND etapa_id = {$etapa->id}
-                                GROUP BY DAYOFWEEK(created_at);");
-        foreach( $vendas as $venda ){
-            $data[ ( $venda->dia - 1 ) ] = intval( $venda->quantidade );
-        }
-        $vendas_por_dia = [
-            'labels' => $labels,
-            'datasets' => [ (object) [
-                'label' => 'Vendas',
-                'data' => $data,
-                'backgroundColor' => $color,
-            ], ],
-        ];
-
-        $labels = [];
-        $time = strtotime('00:00:00');
-        while( $time < strtotime('23:59:59') ){
-            $labels[] = date('H:i', $time);
-            $time = strtotime('+30 minutes', $time);
-        }
-
-        $data = [];
-        foreach( $labels as $label )
-            $data[] = 0;
-
-        $color = Self::adjustBrightness( \Auth::user()->empresa()->menu_background, -20);
-        $vendas = DB::select("  SELECT
-                                    DATE_FORMAT( created_at - INTERVAL MINUTE( created_at ) % 30 MINUTE, '%H:%i' ) AS hora,
-                                    COUNT(*) AS quantidade
-                                FROM vendas
-                                WHERE
-                                        deleted_at IS NULL
-                                    AND confirmada = 1
-                                    AND etapa_id = {$etapa->id}
-                                GROUP BY hora
-                                ORDER BY hora ASC;");
-        foreach( $vendas as $venda ){
-            $data[ array_search($venda->hora, $labels) ] = intval( $venda->quantidade );
-        }
-        $vendas_por_hora = [
-            'labels' => $labels,
-            'datasets' => [ (object) [
-                'label' => 'Vendas',
-                'data' => $data,
-                'borderColor' => $color,
-                'borderWidth' => 3,
-            ], ],
-        ];
-
-        $acessos = 0;
-        $online = 0;
-
-        $date = new \DateTime;
-        $date->modify('-30 seconds');
-        $formatted_date = $date->format('Y-m-d H:i:s');
-        $online = Tracking::where('updated_at','>=',$formatted_date)->count();
-        $acessos = Tracking::whereRaw('DATE( updated_at ) = DATE( NOW() )')->count();
-
-        return view('home',[
+        return response()->json( [
             'vendasCount' => $quantidade,
             'vendasTotal' => $total,
             'leads' => $leads,
             'online' => $online,
             'acessos' => $acessos,
-            'vendas_por_etapa' => $vendas_por_etapa,
             'vendas_por_dia' => $vendas_por_dia,
             'vendas_por_hora' => $vendas_por_hora,
-            'colors' => [
-                Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 40 ),
-                Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 20 ),
-                Self::adjustBrightness( \Auth::user()->empresa()->menu_background, 0 ),
-                Self::adjustBrightness( \Auth::user()->empresa()->menu_background, -20 ),
-                Self::adjustBrightness( \Auth::user()->empresa()->menu_background, -40 ),
-            ],
-        ]);
-
-    }
-
-    public function adjustBrightness( $hex, $steps ) {
-        // Steps should be between -255 and 255. Negative = darker, positive = lighter
-        $steps = max(-255, min(255, $steps));
-
-        // Normalize into a six character long hex string
-        $hex = str_replace('#', '', $hex );
-        if (strlen($hex) == 3) {
-            $hex = str_repeat(substr($hex,0,1), 2).str_repeat(substr($hex,1,1), 2).str_repeat(substr($hex,2,1), 2);
-        }
-
-        // Split into three parts: R, G and B
-        $color_parts = str_split($hex, 2);
-        $return = '#';
-
-        foreach ($color_parts as $color) {
-            $color   = hexdec($color); // Convert to decimal
-            $color   = max(0,min(255,$color + $steps)); // Adjust color
-            $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
-        }
-
-        return $return;
+            'vendas_por_etapa' => $vendas_por_etapa,
+        ], 200 );
     }
 
     public function tracking( Request $request ){
