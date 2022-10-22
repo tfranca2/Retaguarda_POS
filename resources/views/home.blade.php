@@ -2,7 +2,7 @@
 @extends('layouts.app')
 @section('content')
     <div class="row justify-content-center">
-        @if( Helper::temPermissao('empresas-excluir') )
+        @if( Helper::temPermissao('empresas-excluir') and env('SHOW_DASH_STATUS', false) )
         <div class="col-md-12">
             <select name="etapa" id="etapa" class="form-control select2">
                 @foreach( $etapas as $etapa )
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-
+        @if( env('SHOW_DASH_STATUS', false) )
         <div class="col-md-4">
             <div class="panel short-states bg-3">
                 <div class="pull-right state-icon"><i class="fa fa-globe"></i></div>
@@ -73,7 +73,9 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
+    @if( env('SHOW_DASH_STATUS', false) )
     <div class="row">
         <div class="col-md-6">
             <div class="panel charts">
@@ -88,6 +90,7 @@
             </div>
         </div>
     </div>
+    @endif
     <div class="row">
         <div class="col-md-12">
             <div class="panel charts">
@@ -207,7 +210,7 @@
                 }]
             }
         };
-        
+        @if( env('SHOW_DASH_STATUS', false) )
         var vendas_por_dia = new Chart( document.getElementById("vendas_por_dia").getContext("2d"), {
             type: 'bar',
             prefix: '',
@@ -220,7 +223,7 @@
             data: <?php echo json_encode( $vendas_por_hora ); ?>,
             options: { legend: { display: false } },
         });
-
+        @endif
         var vendas_por_etapa = new Chart( document.getElementById("vendas_por_etapa").getContext("2d"), {
             type: 'bar',
             prefix: 'R$ ',
@@ -237,6 +240,7 @@
                 success: function( data ){
                     $('#vendasCount').html(data.vendasCount);
                     $('#vendasTotal').html(data.vendasTotal);
+                    @if( env('SHOW_DASH_STATUS', false) )
                     $('#leads').html(data.leads);
                     $('#online').html(data.online);
                     $('#acessos').html(data.acessos);
@@ -248,7 +252,7 @@
                     vendas_por_hora.data.labels = data.vendas_por_hora.labels;
                     vendas_por_hora.data.datasets = data.vendas_por_hora.datasets;
                     vendas_por_hora.update('none');
-
+                    @endif
                     vendas_por_etapa.data.labels = data.vendas_por_etapa.labels;
                     vendas_por_etapa.data.datasets = data.vendas_por_etapa.datasets;
                     vendas_por_etapa.update('none');
