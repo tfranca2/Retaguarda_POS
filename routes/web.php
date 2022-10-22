@@ -11,7 +11,7 @@
 |
 */
 
-Route::get('/', 'VendaController@cartela');
+Route::get('/', 'HomeController@home');
 Route::get('/home', function(){
 	if( Auth::check() )
         return redirect()->route('home');
@@ -31,7 +31,7 @@ Route::post('/confirmarAtendimento', 'VendaController@correiosConfirmarAtendimen
 
 Route::get('/search/cidades', 'CidadeController@get');
 
-Route::get('/cartela', 'VendaController@cartela');
+Route::get('/cartela', 'VendaController@cartela')->name('cartela');
 Route::get('/prevenda', 'VendaController@prevenda');
 Route::post('/prevenda', 'VendaController@prevendaconfirma');
 Route::get('/checkout/{key}', 'VendaController@checkout');

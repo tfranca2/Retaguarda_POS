@@ -11,6 +11,7 @@ use Validator;
 use App\Cidade;
 use App\Estado;
 use App\Matriz;
+use App\Payment;
 use Carbon\Carbon;
 use App\Helpers\Pix;
 use App\VendaMatriz;
@@ -117,7 +118,10 @@ class VendaController extends Controller
             $distribuidores = User::where( 'id', \Auth::user()->id )->orderBy('name','ASC')->get();
         }
 
-        return view('venda.index',[ 'vendas' => $vendas->paginate(10), 'etapas' => $etapas, 'distribuidores' => $distribuidores, 'dispositivo' => $dispositivo,  'totalVendas' => $totalVendas,  'totalComissao' => $totalComissao, ]);
+        $tipos = Payment::distinct()->select('tipo')->pluck('tipo')->toArray();
+        sort($tipos);
+
+        return view('venda.index',[ 'vendas' => $vendas->paginate(10), 'etapas' => $etapas, 'distribuidores' => $distribuidores, 'dispositivo' => $dispositivo, 'totalVendas' => $totalVendas, 'totalComissao' => $totalComissao, 'tipos' => $tipos, ]);
     }
 
     public function leads( Request $request ){

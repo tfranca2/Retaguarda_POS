@@ -83,10 +83,12 @@
 									<label>Tipo: </label>
 									<select name="tipo" id="tipo" class="form-control select2">
 										<option value="">Selecione</option>
-										<option value="API" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'API' ) echo 'selected="selected"'; ?>>API</option>
-										<option value="CREDITO" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'CREDITO' ) echo 'selected="selected"'; ?>>CREDITO</option>
-										<option value="PIX" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'PIX' ) echo 'selected="selected"'; ?>>PIX</option>
-										<option value="POS" <?php if( isset( $_GET['tipo'] ) and $_GET['tipo'] == 'POS' ) echo 'selected="selected"'; ?>>POS</option>
+										@forelse( $tipos as $tipo )
+										<option value="{{ $tipo }}"
+											<?php if( ( isset( $_GET['tipo'] ) and $_GET['tipo'] == $tipo ) ) echo 'selected'; ?>
+											>{{ $tipo }}</option>
+										@empty
+										@endforelse
 									</select>
 								</div>
 							</div>

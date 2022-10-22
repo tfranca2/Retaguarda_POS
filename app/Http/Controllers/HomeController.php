@@ -21,7 +21,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth', ['except' => ['tracking']]);
+        $this->middleware('auth', ['except' => ['home', 'tracking']]);
       
     }
 
@@ -30,6 +30,10 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
+    public function home( Request $request ){
+        return redirect()->route( env('HOME', 'home') );
+    }
+
     public function index( Request $request ){
         if( !$request->has('etapa_id') )
             $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
