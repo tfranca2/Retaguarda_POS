@@ -17,7 +17,7 @@ class Fcmtoken extends Migration
             $table->bigIncrements('id');
             $table->integer('user_id');
             $table->string('fcm_token');
-            $table->string('device_token')->unique();
+            $table->string('device_token')->nullable();
             $table->timestamps();
         });
     }
