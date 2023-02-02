@@ -33,6 +33,7 @@ class EtapaController extends Controller
 
         $validator = Validator::make($request->all(), [
             'etapa' => 'required|integer',
+            'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
             'range_inicial' => 'required|integer',
             'range_final' => 'required|integer',
@@ -84,6 +85,7 @@ class EtapaController extends Controller
 
         $validator = Validator::make($request->all(), [
             'etapa' => 'required|integer',
+            'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
             'range_inicial' => 'required|integer',
             'range_final' => 'required|integer',
@@ -122,18 +124,19 @@ class EtapaController extends Controller
 
     public function ativar( Request $request, $id ){
         
+        $etapa = Etapa::findOrFail($id);
+
         $idEtapaAtiva = 0;
-        $etapaAtiva = Etapa::where('ativa','1')->first();
+        $etapaAtiva = Etapa::where('ativa','1')->where('frequencia', $etapa->frequencia)->first();
         if( $etapaAtiva )
             $idEtapaAtiva = $etapaAtiva->id;
 
-        $etapa = Etapa::findOrFail($id);
-        $dataMaisRecente = Etapa::whereRaw('data > NOW()')->orderBy('data')->first()->data;
+        @$dataMaisRecente = Etapa::whereRaw('data > NOW()')->where('frequencia', $etapa->frequencia)->orderBy('data')->first()->data;
 
         if( strtotime( $etapa->data ) < strtotime( $dataMaisRecente ) and $id != $idEtapaAtiva )
             return response()->json([ 'error' => 'Essa não é a etapa mais recente!', 'id' => $idEtapaAtiva ], 400 );
 
-        DB::table('etapas')->update(array('ativa' => 0));
+        DB::table('etapas')->where('frequencia', $etapa->frequencia)->update(array('ativa' => 0));
 
         $etapa->ativa = true;
         $etapa->save();

@@ -43,24 +43,35 @@
 						</div>
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
-								<label for="">Código SUSEP</label>
-								<input type="text" class="form-control" name="codigo_susep" value="{{(isset($etapa) and $etapa->codigo_susep)?$etapa->codigo_susep:$old_codigo_susep}}" required="">
+								<label for="">Frequência</label>
+								<select name="frequencia" id="frequencia" class="form-control" required="">
+									<option value="semanal" @if( isset( $etapa ) and $etapa->frequencia == 'semanal' ) echo selected="selected" @endif >Semanal</option>
+									<option value="mensal" @if( isset( $etapa ) and $etapa->frequencia == 'mensal' ) echo selected="selected" @endif >Mensal</option>
+								</select>
 							</div>
 						</div>
 					</div><!-- /row -->
 					<div class="row">
-						<div class="col-md-3 p-lr-o">
+						<div class="col-md-4 p-lr-o">
+							<div class="form-group">
+								<label for="">Código SUSEP</label>
+								<input type="text" class="form-control" name="codigo_susep" value="{{(isset($etapa) and $etapa->codigo_susep)?$etapa->codigo_susep:$old_codigo_susep}}" required="">
+							</div>
+						</div>
+						<div class="col-md-4 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Inicial</label>
 								<input type="number" min="0" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
 							</div>
 						</div>
-						<div class="col-md-3 p-lr-o">
+						<div class="col-md-4 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Final</label>
 								<input type="number" min="0" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
 							</div>
 						</div>
+					</div><!-- /row -->
+					<div class="row">
 						<div class="col-md-3 p-lr-o">
 							<div class="form-group">
 								<label for="">Tipo</label>

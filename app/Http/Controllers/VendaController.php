@@ -391,7 +391,12 @@ class VendaController extends Controller
 
     public function create( Request $request ){
         $dispositivos = Dispositivo::get();
-        $etapa = Etapa::ativa();
+
+        $frequencia = 'semanal';
+        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+            $frequencia = 'mensal';
+
+        $etapa = Etapa::ativa( $frequencia );
         return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
     }
     
@@ -405,7 +410,11 @@ class VendaController extends Controller
             'telefone' => 'required|max:255',
         ];
 
-        $etapa = Etapa::ativa();
+        $frequencia = 'semanal';
+        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+            $frequencia = 'mensal';
+
+        $etapa = Etapa::ativa( $frequencia );
         // if( $request->has('etapa_id') )
         //     $etapa = Etapa::find($request->etapa_id);
         if( !$etapa )
@@ -689,8 +698,12 @@ class VendaController extends Controller
         $validator = Validator::make($request->all(),$validators);
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
+        
+        $frequencia = 'semanal';
+        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+            $frequencia = 'mensal';
 
-        $etapa = Etapa::ativa();
+        $etapa = Etapa::ativa( $frequencia );
         return view('venda.correios',[ 'etapa' => $etapa, 'codigoCorreios' => $request->codigoCorreios ]);
     }
 
@@ -703,7 +716,11 @@ class VendaController extends Controller
             'cidade_id' => 'required|integer|exists:cidades,id',
         ];
 
-        $etapa = Etapa::ativa();
+        $frequencia = 'semanal';
+        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+            $frequencia = 'mensal';
+
+        $etapa = Etapa::ativa( $frequencia );
         // if( $request->has('etapa_id') )
         //     $etapa = Etapa::find($request->etapa_id);
         if( !$etapa )
@@ -907,7 +924,11 @@ class VendaController extends Controller
     
     public function prevenda( Request $request ){
 
-        $etapa = Etapa::ativa();
+        $frequencia = 'semanal';
+        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+            $frequencia = 'mensal';
+
+        $etapa = Etapa::ativa( $frequencia );
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
 
@@ -1098,7 +1119,11 @@ class VendaController extends Controller
         $sessionID = '';
         $erros = null;
 
-        $etapa = Etapa::ativa();
+        $frequencia = 'semanal';
+        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+            $frequencia = 'mensal';
+
+        $etapa = Etapa::ativa( $frequencia );
         $venda = Venda::where( 'key', $key )->first();
         if( !$venda )
             $erros[] = 'Chave não localizada';

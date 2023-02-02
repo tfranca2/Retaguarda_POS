@@ -22,6 +22,7 @@
 								<th>Nº Etapa</th>
 								<th>Descrição</th>
 								<th>Data</th>
+								<th class="text-center">Frequência</th>
 								@if( Helper::temPermissao('etapas-gerenciar') )
 								<th class="text-center">Ativar</th>
 								@endif
@@ -34,9 +35,10 @@
 									<td>{{ $etapa->etapa}}</td>
 									<td>{{ $etapa->descricao }}</td>
 									<td>{{ Helper::convertDate($etapa->data) }}</td>
+									<td class="text-center">{{ strtoupper($etapa->frequencia) }}</td>
 									@if( Helper::temPermissao('etapas-gerenciar') )
 									<td class="text-center">
-										<label class="switch switch-success"><input type="checkbox" data-id="{{ $etapa->id }}" {{ (($etapa->ativa)?'checked="checked"':'') }} ><span class="slider round"></span></label>
+										<label class="switch switch-success" data-frequencia="{{ $etapa->frequencia }}"><input type="checkbox" data-id="{{ $etapa->id }}"  {{ (($etapa->ativa)?'checked="checked"':'') }} ><span class="slider round"></span></label>
 									</td>
 									@endif
 									<td class="text-center">
@@ -68,7 +70,7 @@
 	$('.switch').click(function(){
 		var obj = $(this);
 
-		$('.switch').not( $(obj) ).find('input').prop('checked',false);
+		$('.switch[data-frequencia="'+ $(obj).data('frequencia') +'"]').not( $(obj) ).find('input').prop('checked',false);
 		
 		if( $(obj).find('input').is(':checked') ){
 			$.ajax({

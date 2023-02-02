@@ -10,15 +10,15 @@ class Etapa extends Model
 {
     
     protected $table = 'etapas';
-	protected $fillable = [ 'etapa', 'descricao', 'data', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'codigo_susep' ];	
+	protected $fillable = [ 'etapa', 'descricao', 'data', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'codigo_susep', 'frequencia' ];	
 	protected $hidden = [ 'id', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'created_at', 'updated_at', 'deleted_at' ];
 	protected $appends = ['valor', 'elegibilidade'];
 	public function getElegibilidadeAttribute()
     {
-    	$previousEtapa = \DB::table( with( new Etapa )->getTable() )->where('ativa', '0')->where('data', '<', $this->attributes['data'])->orderBy('data', 'DESC')->first();
+    	$previousEtapa = \DB::table( with( new Etapa )->getTable() )->where('ativa', '0')->where('frequencia', $this->attributes['frequencia'])->where('data', '<', $this->attributes['data'])->orderBy('data', 'DESC')->first();
     	
     	if( !$previousEtapa ){
-    		$etapa = Etapa::ativa();
+    		$etapa = Etapa::ativa( $this->attributes['frequencia'] );
     		$previousEtapa = (Object) array( 'data' => Carbon::parse($etapa->data)->subDays(7)->format('Y-m-d') );
     	}
 
@@ -27,8 +27,8 @@ class Etapa extends Model
         	'final' => Carbon::parse($this->attributes['data'])->subDay()->format('d/m/Y') ] ;
     }
 
-	public static function ativa(){
-		return \DB::table( with( new Etapa )->getTable() )->where('ativa', '1')->first();
+	public static function ativa( $frequencia = 'semanal' ){
+		return \DB::table( with( new Etapa )->getTable() )->where('frequencia', $frequencia)->where('ativa', '1')->first();
 	}
 
 	public function premiacao(){
