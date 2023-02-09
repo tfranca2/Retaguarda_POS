@@ -16,17 +16,26 @@ class PremiacaoController extends Controller
     }
 
     public function index( Request $request ){
-        $etapas_ativas = [ Etapa::ativa()->id, Etapa::ativa('mensal')->id ];
+        $etapas_ativas = [];
+        foreach( [ 'semanal', 'mensal' ] as $tipo ){
+            @$etp = Etapa::ativa($tipo)->id;
+            if( $etp )
+                $etapas_ativas[] = $etp;
+        }
         $premiacoes = Premiacao::whereIn('etapa_id', $etapas_ativas)->orderBy('etapa_id')->orderBy('seq')->paginate(10);
         return view('premiacao.index',[ 'premiacoes' => $premiacoes ]);
     }
 
     public function create( Request $request ){
-        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
-        $proximas_sequencias = [
-            Premiacao::where('etapa_id', Etapa::ativa()->id)->max('seq') + 1,
-            Premiacao::where('etapa_id', Etapa::ativa('mensal')->id)->max('seq') + 1,
-        ];
+        $etapas_ativas = [];
+        $proximas_sequencias = [];
+        foreach( [ 'semanal', 'mensal' ] as $tipo ){
+            @$etp = Etapa::ativa($tipo);
+            if( $etp ){
+                $etapas_ativas[] = $etp;
+                $proximas_sequencias[] = Premiacao::where('etapa_id', Etapa::ativa($tipo)->id)->max('seq') + 1;
+            }
+        }
         return view('premiacao.form',[ 'etapas_ativas' => $etapas_ativas, 'proximas_sequencias' => $proximas_sequencias ]);
     }
 
@@ -44,9 +53,17 @@ class PremiacaoController extends Controller
 
     public function edit( Request $request, $id ){
         $premiacao = Premiacao::findOrFail($id);
-        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
+        $etapas_ativas = [];
+        $proximas_sequencias = [];
+        foreach( [ 'semanal', 'mensal' ] as $tipo ){
+            @$etp = Etapa::ativa($tipo);
+            if( $etp ){
+                $etapas_ativas[] = $etp;
+                $proximas_sequencias[] = Premiacao::where('etapa_id', Etapa::ativa($tipo)->id)->max('seq') + 1;
+            }
+        }
 
-        return view('premiacao.form',['premiacao' => $premiacao, 'etapas_ativas' => $etapas_ativas]);
+        return view('premiacao.form',['premiacao' => $premiacao, 'etapas_ativas' => $etapas_ativas, 'proximas_sequencias' => $proximas_sequencias]);
     }
 
     public function update( Request $request, $id ){

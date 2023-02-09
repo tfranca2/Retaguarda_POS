@@ -103,9 +103,11 @@
             if( $('#etapa_id').prop("selectedIndex") == 0 ){
                 $('#seq').val({{ $proximas_sequencias[0] }});
                 $('#seq').attr('min', {{ $proximas_sequencias[0] }});
+            @if( isset( $proximas_sequencias[1] ) )
             } else {
                 $('#seq').val({{ $proximas_sequencias[1] }});
                 $('#seq').attr('min', {{ $proximas_sequencias[1] }});
+            @endif
             }
         });
     });

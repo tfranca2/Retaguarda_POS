@@ -18,14 +18,24 @@ class PremiacaoEletronicaController extends Controller
 
     public function index(Request $request)
     {
-        $etapas_ativas = [ Etapa::ativa()->id, Etapa::ativa('mensal')->id ];
+        $etapas_ativas = [];
+        foreach( [ 'semanal', 'mensal' ] as $tipo ){
+            @$etp = Etapa::ativa($tipo)->id;
+            if( $etp )
+                $etapas_ativas[] = $etp;
+        }
         $premiacoes = premiacaoEletronica::whereIn('etapa_id', $etapas_ativas)->orderBy('etapa_id')->orderBy('numero')->paginate(10);
         return view('premiacaoEletronica.index', ['premiacoes' => $premiacoes]);
     }
 
     public function create(Request $request)
     {
-        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
+        $etapas_ativas = [];
+        foreach( [ 'semanal', 'mensal' ] as $tipo ){
+            @$etp = Etapa::ativa($tipo);
+            if( $etp )
+                $etapas_ativas[] = $etp;
+        }
         return view('premiacaoEletronica.form',['etapas_ativas' => $etapas_ativas]);
     }
 
@@ -48,7 +58,12 @@ class PremiacaoEletronicaController extends Controller
     public function edit(Request $request, $id)
     {
         $premiacao = premiacaoEletronica::findOrFail($id);
-        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
+        $etapas_ativas = [];
+        foreach( [ 'semanal', 'mensal' ] as $tipo ){
+            @$etp = Etapa::ativa($tipo);
+            if( $etp )
+                $etapas_ativas[] = $etp;
+        }
         return view('premiacaoEletronica.form', ['premiacao' => $premiacao, 'etapas_ativas' => $etapas_ativas]);
     }
 
