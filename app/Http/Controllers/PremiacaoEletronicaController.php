@@ -18,13 +18,15 @@ class PremiacaoEletronicaController extends Controller
 
     public function index(Request $request)
     {
-        $premiacoes = premiacaoEletronica::where('etapa_id', Etapa::ativa()->id)->orderBy('numero')->paginate(10);
+        $etapas_ativas = [ Etapa::ativa()->id, Etapa::ativa('mensal')->id ];
+        $premiacoes = premiacaoEletronica::whereIn('etapa_id', $etapas_ativas)->orderBy('etapa_id')->orderBy('numero')->paginate(10);
         return view('premiacaoEletronica.index', ['premiacoes' => $premiacoes]);
     }
 
     public function create(Request $request)
     {
-        return view('premiacaoEletronica.form',['etapa' => Etapa::ativa()]);
+        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
+        return view('premiacaoEletronica.form',['etapas_ativas' => $etapas_ativas]);
     }
 
     public function store(Request $request)
@@ -33,7 +35,6 @@ class PremiacaoEletronicaController extends Controller
         for ($i = 1; $i <= $quantidadePremios; $i++) {
             $premiacao = Input::except('id', '_method', '_token');
             $premiacao['numero'] = $i;
-            $premiacao['etapa_id'] = Etapa::ativa()->id;
             $premiacao = PremiacaoEletronica::create($premiacao);
         }
         
@@ -47,21 +48,21 @@ class PremiacaoEletronicaController extends Controller
     public function edit(Request $request, $id)
     {
         $premiacao = premiacaoEletronica::findOrFail($id);
-        $etapa = $premiacao->etapa;
-        return view('premiacaoEletronica.form', ['premiacao' => $premiacao, 'etapa' => $etapa]);
+        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
+        return view('premiacaoEletronica.form', ['premiacao' => $premiacao, 'etapas_ativas' => $etapas_ativas]);
     }
 
     public function update(Request $request, $id)
     {
         $premiacao = premiacaoEletronica::find($id);
-        $inputs = Input::except('id', 'etapa_id', '_method', '_token');
+        $inputs = Input::except('id', '_method', '_token');
         foreach ($inputs as $key => $value) {
             $premiacao->$key = $value;
         }
         $premiacao->save();
         return response()->json([
             'message' => 'Atualizado com sucesso',
-            'redirectURL' => url('/premiacaoEletronica'),
+            'redirectURL' => url('/premiacaoeletronica'),
             'premiacao' => $premiacao
         ], 200);
     }

@@ -16,20 +16,23 @@ class PremiacaoController extends Controller
     }
 
     public function index( Request $request ){
-        $premiacoes = Premiacao::where('etapa_id', Etapa::ativa()->id)->orderBy('seq')->paginate(10);
+        $etapas_ativas = [ Etapa::ativa()->id, Etapa::ativa('mensal')->id ];
+        $premiacoes = Premiacao::whereIn('etapa_id', $etapas_ativas)->orderBy('etapa_id')->orderBy('seq')->paginate(10);
         return view('premiacao.index',[ 'premiacoes' => $premiacoes ]);
     }
 
     public function create( Request $request ){
-        $prox_seq = Premiacao::where('etapa_id', Etapa::ativa()->id)->max('seq') + 1;
-        return view('premiacao.form',[ 'etapa' => Etapa::ativa(), 'prox_seq' => $prox_seq ]);
+        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
+        $proximas_sequencias = [
+            Premiacao::where('etapa_id', Etapa::ativa()->id)->max('seq') + 1,
+            Premiacao::where('etapa_id', Etapa::ativa('mensal')->id)->max('seq') + 1,
+        ];
+        return view('premiacao.form',[ 'etapas_ativas' => $etapas_ativas, 'proximas_sequencias' => $proximas_sequencias ]);
     }
 
     public function store( Request $request ){
 
         $premiacao = Input::except( 'id', '_method', '_token' );
-        $premiacao['etapa_id'] = Etapa::ativa()->id;
-
         $premiacao = Premiacao::create( $premiacao );
 
         return response()->json([
@@ -41,14 +44,14 @@ class PremiacaoController extends Controller
 
     public function edit( Request $request, $id ){
         $premiacao = Premiacao::findOrFail($id);
-        $etapa = $premiacao->etapa;
+        $etapas_ativas = [ Etapa::ativa(), Etapa::ativa('mensal') ];
 
-        return view('premiacao.form',['premiacao' => $premiacao, 'etapa' => $etapa]);
+        return view('premiacao.form',['premiacao' => $premiacao, 'etapas_ativas' => $etapas_ativas]);
     }
 
     public function update( Request $request, $id ){
         $premiacao = Premiacao::find($id);
-        $inputs = Input::except( 'id', 'etapa_id', '_method', '_token' );
+        $inputs = Input::except( 'id', '_method', '_token' );
         foreach( $inputs as $key => $value ){
             $premiacao->$key = $value;
         }

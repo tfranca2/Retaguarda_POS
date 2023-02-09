@@ -5,7 +5,7 @@
         <div class="col-md-12">
             <div class="panel panel-card recent-activites">
                 <div class="panel-heading">
-                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação Eletrônica da Etapa {{ $etapa->etapa }} {{ $etapa->descricao }}
+                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação Eletrônica da Etapa
                     <div class="pull-right">
                         <div class="btn-group">
                             @if( Helper::temPermissao('premiacao_eletronica-listar') )
@@ -26,24 +26,45 @@
                                     @endif
                                     @csrf
                                     <div class="row">
-                                        <div class="col-md-1 p-lr-o">
+                                        <div class="col-md-3 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
-                                                <input type="text" class="form-control" readonly value="{{ $etapa->etapa }}">
+                                                <select name="etapa_id" class="form-control" required>
+                                                @forelse( $etapas_ativas as $etapa )
+                                                @php
+                                                 $check = '';
+                                                 if( isset($premiacao) && $premiacao->etapa_id == $etapa->id )
+                                                    $check = 'selected="selected"';
+                                                @endphp
+                                                    <option value="{{ $etapa->id }}" {{ $check }}>{{ $etapa->etapa }} - {{ $etapa->descricao }}</option>
+                                                @empty
+                                                    <option>Sem Etapa ativa</option>
+                                                @endforelse
+                                                </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-1 p-lr-o">
+                                        <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
-                                                <label for="">Quant</label>
+                                                <label for="">Quantidade</label>
                                                 <input type="number" class="form-control" name="numero"
                                                        value="{{(isset($premiacao) and $premiacao->numero)?$premiacao->numero:''}}">
                                             </div>
                                         </div>
-                                        <div class="col-md-6 p-lr-o">
+                                        <div class="col-md-7 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Descrição</label>
                                                 <input type="text" class="form-control" name="descricao"
                                                        value="{{(isset($premiacao) and $premiacao->descricao)?$premiacao->descricao:''}}">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-8 p-lr-o">
+                                            <div class="form-group">
+                                                <label for="">Observação</label>
+                                                <input type="text" class="form-control" name="observacao"
+                                                       value="{{(isset($premiacao) and $premiacao->observacao)?$premiacao->observacao:''}}">
                                             </div>
                                         </div>
                                         <div class="col-md-2 p-lr-o">
@@ -58,13 +79,6 @@
                                                 <label for="">Liquido</label>
                                                 <input type="text" class="form-control" name="liquido"
                                                        value="{{(isset($premiacao) and $premiacao->liquido)?$premiacao->liquido:''}}">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12 p-lr-o">
-                                            <div class="form-group">
-                                                <label for="">Observação</label>
-                                                <input type="text" class="form-control" name="observacao"
-                                                       value="{{(isset($premiacao) and $premiacao->observacao)?$premiacao->observacao:''}}">
                                             </div>
                                         </div>
                                     </div>

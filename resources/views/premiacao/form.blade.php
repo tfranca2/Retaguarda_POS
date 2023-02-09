@@ -5,7 +5,7 @@
         <div class="col-md-12">
             <div class="panel panel-card recent-activites">
                 <div class="panel-heading">
-                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação da Etapa {{ $etapa->etapa }} {{ $etapa->descricao }}
+                    {{ ((isset($premiacao))?'Editar':'Nova') }} Premiação da Etapa
                     <div class="pull-right">
                         <div class="btn-group">
                             @if( Helper::temPermissao('premiacao-listar') )
@@ -26,26 +26,40 @@
                                     @endif
                                     @csrf
                                     <div class="row">
-                                        <div class="col-md-2 p-lr-o">
+                                        <div class="col-md-3 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Nº Etapa</label>
-                                                <input type="text" class="form-control" readonly value="{{ $etapa->etapa }}">
+                                                <select name="etapa_id" id="etapa_id" class="form-control" required>
+                                                @forelse( $etapas_ativas as $etapa )
+                                                @php
+                                                 $check = '';
+                                                 if( isset($premiacao) && $premiacao->etapa_id == $etapa->id )
+                                                    $check = 'selected="selected"';
+                                                @endphp
+                                                    <option value="{{ $etapa->id }}" {{ $check }}>{{ $etapa->etapa }} - {{ $etapa->descricao }}</option>
+                                                @empty
+                                                    <option>Sem Etapa ativa</option>
+                                                @endforelse
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="col-md-2 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Sequencia</label>
-                                                <input type="number" class="form-control" name="seq" min="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:$prox_seq}}" value="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:$prox_seq}}" >
+                                                <input type="number" class="form-control" name="seq" id="seq" min="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:$proximas_sequencias[0]}}" value="{{(isset($premiacao) and $premiacao->seq)?$premiacao->seq:$proximas_sequencias[0]}}" >
                                             </div>
                                         </div>
-                                        <div class="col-md-2 p-lr-o">
+                                        <div class="col-md-7 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Prêmiação</label>
                                                 <input type="text" class="form-control" name="premiacao"
                                                        value="{{(isset($premiacao) and $premiacao->premiacao)?$premiacao->premiacao:''}}">
                                             </div>
                                         </div>
-                                        <div class="col-md-2 p-lr-o">
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-8 p-lr-o">
                                             <div class="form-group">
                                                 <label for="">Descrição</label>
                                                 <input type="text" class="form-control" name="descricao"
@@ -81,4 +95,19 @@
             </div>
         </div>
     </div>
+@endsection
+@section('scripts')
+<script>
+    $(document).ready(function(){
+        $('#etapa_id').change(function(){
+            if( $('#etapa_id').prop("selectedIndex") == 0 ){
+                $('#seq').val({{ $proximas_sequencias[0] }});
+                $('#seq').attr('min', {{ $proximas_sequencias[0] }});
+            } else {
+                $('#seq').val({{ $proximas_sequencias[1] }});
+                $('#seq').attr('min', {{ $proximas_sequencias[1] }});
+            }
+        });
+    });
+</script>
 @endsection

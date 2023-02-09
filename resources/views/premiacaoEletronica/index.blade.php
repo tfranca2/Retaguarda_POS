@@ -13,7 +13,7 @@
                         <div class="btn-group">
                             @if( Helper::temPermissao('premiacao_eletronica-incluir') )
                                 <a href="<?php echo url('/'); ?>/premiacaoeletronica/create" class="btn btn-info btn-xs"><span
-                                        class="fa fa-plus"></span> Novo Rodada Especial</a>
+                                        class="fa fa-plus"></span> Nova Rodada Especial</a>
                             @endif
                         </div>
                     </div>
@@ -24,7 +24,8 @@
                             <thead>
                             <tr>
                                 <th>Nº Etapa</th>
-                                <th>Sequência</th>
+                                <th class="text-center">Frequência</th>
+                                <th class="text-center">Sequência</th>
                                 <th>Descrição prêmio</th>
                                 <th>Valor</th>
                                 <th>Ações</th>
@@ -33,10 +34,11 @@
                             <tbody>
                             @forelse( $premiacoes as $premiacao )
                                 <tr>
-                                    <td>{{ $premiacao->etapa->etapa }}</td>
-                                    <td>{{ $premiacao->numero }} º</td>
+                                    <td>{{ $premiacao->etapa->etapa }} - {{ $premiacao->etapa->descricao }}</td>
+                                    <td class="text-center">{{ strtoupper($premiacao->etapa->frequencia) }}</td>
+                                    <td class="text-center">{{ $premiacao->numero }} º</td>
                                     <td>{{ $premiacao->descricao }}</td>
-                                    <td>{{ $premiacao->bruto }}</td>
+                                    <td>R$ {{ Helper::formatDecimalToView($premiacao->bruto) }}</td>
                                     <td class="text-center">
                                         @if( Helper::temPermissao('premiacao_eletronica-editar') )
                                             <a href="{{ url('/premiacaoeletronica/'.$premiacao->id.'/edit') }}"

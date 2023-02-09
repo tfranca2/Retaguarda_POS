@@ -27,8 +27,9 @@
                         <table id="basic-datatables" class="table table-striped table-bordered">
                             <thead>
                             <tr>
-                                <th>Nº Etapa</th>
-                                <th>Sequência</th>
+                                <th>Etapa</th>
+                                <th class="text-center">Frequência</th>
+                                <th class="text-center">Sequência</th>
                                 <th>Descrição prêmio</th>
                                 <th>Valor</th>
                                 <th>Ações</th>
@@ -37,10 +38,11 @@
                             <tbody>
                             @forelse( $premiacoes as $premiacao )
                                 <tr>
-                                    <td>{{ $premiacao->etapa->etapa }}</td>
-                                    <td>{{ $premiacao->seq }} º</td>
+                                    <td>{{ $premiacao->etapa->etapa }} - {{ $premiacao->etapa->descricao }}</td>
+                                    <td class="text-center">{{ strtoupper($premiacao->etapa->frequencia) }}</td>
+                                    <td class="text-center">{{ $premiacao->seq }} º</td>
                                     <td>{{ $premiacao->descricao }}</td>
-                                    <td>{{ $premiacao->bruto }}</td>
+                                    <td>R$ {{ Helper::formatDecimalToView($premiacao->bruto) }}</td>
                                     <td class="text-center">
                                         @if( Helper::temPermissao('premiacao-editar') )
                                             <a href="{{ url('/premiacao/'.$premiacao->id.'/edit') }}"
