@@ -63,13 +63,30 @@ class EtapaController extends Controller
     }
     
     public function show( Request $request ){
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'nullable|integer|exists:etapas,id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([ 'error' => $validator->messages() ], 400 );
+        }
+
         try {
-            $id = Etapa::ativa()->id;
-            if( $request->has('id') )
-                $id = $request->id;
-            
-            $etapa = Etapa::with('premiacao')->with('premiacaoEletronica')->findOrFail($id);
-            return response()->json($etapa);
+            $etapas=[];
+
+            if( $request->has('id') ){
+                $etapas[] = Etapa::with('premiacao')->with('premiacaoEletronica')->findOrFail($request->id);
+            } else {
+                foreach( ['semanal', 'mensal'] as $frequencia ){
+                    $etapaAtiva = Etapa::ativa( $frequencia );
+                    if( !$etapaAtiva )
+                        continue;
+
+                    $etapas[] = Etapa::with('premiacao')->with('premiacaoEletronica')->findOrFail($etapaAtiva->id);
+                }
+            }
+
+            return response()->json($etapas);
         } catch( \Exception $e ){
             return response()->json([ 'error' => $e->getMessage() ], 404 );
         }
