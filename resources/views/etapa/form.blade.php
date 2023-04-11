@@ -77,11 +77,9 @@
 								<label for="">Tipo</label>
 								<select name="tipo" id="tipo" class="form-control" required="">
 									<option value="">Selecione</option>
-									<option value="1" @if( isset( $etapa ) and $etapa->tipo == 1 ) echo selected="selected" @endif >Simples</option>
-									<option value="2" @if( isset( $etapa ) and $etapa->tipo == 2 ) echo selected="selected" @endif >Dupla</option>
-									<option value="3" @if( isset( $etapa ) and $etapa->tipo == 3 ) echo selected="selected" @endif >Tripla</option>
-									<option value="4" @if( isset( $etapa ) and $etapa->tipo == 4 ) echo selected="selected" @endif >Simples e Dupla</option>
-									<option value="5" @if( isset( $etapa ) and $etapa->tipo == 5 ) echo selected="selected" @endif >Simples e Tripla</option>
+									@foreach( $tipos as $key => $tipo )
+									<option value="{{ $key }}" @if( isset( $etapa ) and $etapa->tipo_enum == $key ) selected="selected" @endif >{{ ucwords( strtolower( $tipo['descricao'] ) ) }}</option>
+									@endforeach
 								</select>
 							</div>
 						</div>

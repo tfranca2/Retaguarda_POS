@@ -492,16 +492,8 @@ class VendaController extends Controller
 
         }
 
-        $qtd = 1;
-        if( $etapa->tipo == 1)
-            $qtd = 1;
-        elseif( $etapa->tipo == 2)
-            $qtd = 2;
-        elseif( $etapa->tipo == 3)
-            $qtd = 3;
-        elseif( $etapa->tipo == 4 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2 ] ) )
-            $qtd = $request->quantidade;
-        elseif( $etapa->tipo == 5 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2, 3 ] ) )
+        $qtd = Etapa::TIPOS[ $etapa->tipo ]['quantidade'][0];
+        if( $request->has('quantidade') && in_array($request->quantidade, Etapa::TIPOS[ $etapa->tipo ]['quantidade'] ) )
             $qtd = $request->quantidade;
 
         // validar se bilhete consta como vendido

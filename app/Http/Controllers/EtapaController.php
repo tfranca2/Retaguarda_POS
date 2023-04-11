@@ -26,17 +26,18 @@ class EtapaController extends Controller
 
         @$old_codigo_susep = DB::table('etapas')->select('codigo_susep')->whereNotNull('codigo_susep')->groupBy('codigo_susep')->orderByRaw('COUNT(*) DESC')->first()->codigo_susep;
         
-        return view('etapa.form',[ 'prox_etapa' => $prox_etapa, 'old_codigo_susep' => $old_codigo_susep ]);
+        return view('etapa.form',[ 'prox_etapa' => $prox_etapa, 'old_codigo_susep' => $old_codigo_susep, 'tipos' => Etapa::TIPOS ]);
     }
     
     public function store( Request $request ){
 
         $validator = Validator::make($request->all(), [
-            'etapa' => 'required|integer',
+            'etapa' => 'required|integer|unique:etapas,etapa',
             'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
             'range_inicial' => 'required|integer',
             'range_final' => 'required|integer',
+            'tipo' => 'required|in:'. implode(', ', array_keys( Etapa::TIPOS ) ),
         ]);
 
         if ($validator->fails()) {
@@ -95,17 +96,18 @@ class EtapaController extends Controller
     public function edit( Request $request, $id ){
         $etapa = Etapa::findOrFail($id);
         $old_codigo_susep = $etapa->codigo_susep;
-        return view('etapa.form',[ 'etapa' => $etapa, 'old_codigo_susep' => $old_codigo_susep ]);
+        return view('etapa.form',[ 'etapa' => $etapa, 'old_codigo_susep' => $old_codigo_susep, 'tipos' => Etapa::TIPOS ]);
     }
     
     public function update( Request $request, $id ){
 
         $validator = Validator::make($request->all(), [
-            'etapa' => 'required|integer',
+            'etapa' => 'required|integer|unique:etapas,etapa,'. $id,
             'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
             'range_inicial' => 'required|integer',
             'range_final' => 'required|integer',
+            'tipo' => 'required|in:'. implode(', ', array_keys( Etapa::TIPOS ) ),
         ]);
 
         if ($validator->fails()) {
