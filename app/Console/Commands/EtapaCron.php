@@ -41,22 +41,20 @@ class EtapaCron extends Command
      */
     public function handle()
     {
-
         // ativa a próxima etapa disponível 
         foreach( ['semanal', 'mensal'] as $frequencia ){
-        $etapa = Etapa::ativa($frequencia);
-        if( strtotime( $etapa->data .' 23:59:59') < strtotime( date('Y-m-d H:i:s') ) ){
-
-            DB::table('etapas')->where('frequencia', $etapa->frequencia)->update([ 'ativa' => 0 ]);
-            DB::table('etapas')
-                ->whereRaw(' data > NOW()')
-                ->where('frequencia', $etapa->frequencia)
-                ->orderBy('data')
-                ->limit(1)
-                ->update([ 'ativa' => 1 ]);
-
+            $etapa = Etapa::ativa($frequencia);
+            if( $etapa ){
+                if( strtotime( $etapa->data .' 23:59:59') < strtotime( date('Y-m-d H:i:s') ) ){
+                    DB::table('etapas')->where('frequencia', $etapa->frequencia)->update([ 'ativa' => 0 ]);
+                    DB::table('etapas')
+                        ->whereRaw(' data > NOW()')
+                        ->where('frequencia', $etapa->frequencia)
+                        ->orderBy('data')
+                        ->limit(1)
+                        ->update([ 'ativa' => 1 ]);
+                }
+            }
         }
-        }
-
     }
 }
