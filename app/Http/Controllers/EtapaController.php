@@ -36,7 +36,7 @@ class EtapaController extends Controller
             'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
             'range_inicial' => 'required|integer',
-            'range_final' => 'required|integer',
+            'range_final' => 'required|integer|min:'. (int) $request->range_inicial,
             'tipo' => 'required|in:'. implode(', ', array_keys( Etapa::TIPOS ) ),
         ]);
 

@@ -61,13 +61,13 @@
 						<div class="col-md-4 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Inicial</label>
-								<input type="number" min="0" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
+								<input type="number" min="1" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
 							</div>
 						</div>
 						<div class="col-md-4 p-lr-o">
 							<div class="form-group">
 								<label for="">Range Final</label>
-								<input type="number" min="0" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
+								<input type="number" min="1" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
 							</div>
 						</div>
 					</div><!-- /row -->
@@ -144,6 +144,10 @@
 @section('scripts')
 <script type="text/javascript">
 	$(document).ready(function(){
+
+		$('input[name=range_inicial]').on('keyup', function(){
+			$('input[name=range_final]').attr('min', $(this).val());
+		});
 
 		function limpa(){
 

@@ -221,7 +221,7 @@
         var vendas_por_hora = new Chart( document.getElementById("vendas_por_hora").getContext("2d"), {
             type: 'line',
             data: <?php echo json_encode( $vendas_por_hora ); ?>,
-            options: { legend: { display: false } },
+            options: { legend: { display: false }, scales: { yAxes: [{ ticks: { beginAtZero: true } }] } },
         });
         @endif
         var vendas_por_etapa = new Chart( document.getElementById("vendas_por_etapa").getContext("2d"), {
@@ -240,6 +240,7 @@
                 success: function( data ){
                     $('#vendasCount').html(data.vendasCount);
                     $('#vendasTotal').html(data.vendasTotal);
+
                     @if( env('SHOW_DASH_STATUS', false) )
                     $('#leads').html(data.leads);
                     $('#online').html(data.online);
@@ -247,15 +248,16 @@
 
                     vendas_por_dia.data.labels = data.vendas_por_dia.labels;
                     vendas_por_dia.data.datasets = data.vendas_por_dia.datasets;
-                    vendas_por_dia.update('none');
+                    vendas_por_dia.update();
 
                     vendas_por_hora.data.labels = data.vendas_por_hora.labels;
                     vendas_por_hora.data.datasets = data.vendas_por_hora.datasets;
-                    vendas_por_hora.update('none');
+                    vendas_por_hora.update();
                     @endif
+
                     vendas_por_etapa.data.labels = data.vendas_por_etapa.labels;
                     vendas_por_etapa.data.datasets = data.vendas_por_etapa.datasets;
-                    vendas_por_etapa.update('none');
+                    vendas_por_etapa.update();
                 }
             });
         }
