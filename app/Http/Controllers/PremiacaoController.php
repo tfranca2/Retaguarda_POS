@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Premiacao;
 use Validator;
 use DB;
+use Session;
 use App\Etapa;
 use Illuminate\Support\Facades\Input;
 class PremiacaoController extends Controller
@@ -27,6 +28,12 @@ class PremiacaoController extends Controller
     }
 
     public function create( Request $request ){
+
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
+
         $etapas_ativas = [];
         $proximas_sequencias = [];
         foreach( [ 'semanal', 'mensal' ] as $tipo ){
@@ -52,6 +59,12 @@ class PremiacaoController extends Controller
     }
 
     public function edit( Request $request, $id ){
+
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
+
         $premiacao = Premiacao::findOrFail($id);
         $etapas_ativas = [];
         $proximas_sequencias = [];

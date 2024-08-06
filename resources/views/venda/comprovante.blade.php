@@ -73,7 +73,11 @@
 		@php
 		if(!$venda->confirmada)
 			echo '<s>';
-		$chunk = explode( '-', $matriz['matriz']['combinacoes'] );
+		
+		$matches = array();
+		preg_match( '/([0-9]+)([^0-9]+)/', $matriz['matriz']['combinacoes'], $matches );
+		$chunk = explode( end( $matches ), $matriz['matriz']['combinacoes'] );
+
 		foreach( $chunk as $k => $c ){
 			echo $c.' ';
 			if( in_array( $k, [ 9, 19 ] ) )

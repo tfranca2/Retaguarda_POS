@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\PremiacaoEletronica;
 use Validator;
 use DB;
+use Session;
 use App\Etapa;
 use Illuminate\Support\Facades\Input;
 
@@ -30,6 +31,12 @@ class PremiacaoEletronicaController extends Controller
 
     public function create(Request $request)
     {
+
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
+
         $etapas_ativas = [];
         foreach( [ 'semanal', 'mensal' ] as $tipo ){
             @$etp = Etapa::ativa($tipo);
@@ -57,6 +64,12 @@ class PremiacaoEletronicaController extends Controller
 
     public function edit(Request $request, $id)
     {
+
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
+
         $premiacao = premiacaoEletronica::findOrFail($id);
         $etapas_ativas = [];
         foreach( [ 'semanal', 'mensal' ] as $tipo ){

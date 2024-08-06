@@ -126,6 +126,11 @@ class VendaController extends Controller
 
     public function leads( Request $request ){
 
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
+
         $etapas = Etapa::orderBy('id','DESC')->get();
 
         $vendas = Self::filter( $request )->where('confirmada', 1)
@@ -816,7 +821,11 @@ class VendaController extends Controller
 
             $matrizes = "";
             foreach( $venda->matrizes() as $matriz ){
-                $chunk = explode( '-', $matriz['matriz']['combinacoes'] );
+
+                $matches = array();
+                preg_match( '/([0-9]+)([^0-9]+)/', $matriz['matriz']['combinacoes'], $matches );
+                $chunk = explode( end( $matches ), $matriz['matriz']['combinacoes'] );
+
                 foreach( $chunk as $k => $c ){
                     $matrizes .= $c.' ';
                     if( in_array( $k, [ 9, 19 ] ) )

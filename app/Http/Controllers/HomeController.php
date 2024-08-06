@@ -35,6 +35,12 @@ class HomeController extends Controller
     }
 
     public function index( Request $request ){
+
+        if( ! Etapa::ativa() ){
+            Session::flash('error', "Não existe etapa ativa!");
+            return redirect('/etapas');
+        }
+
         if( !$request->has('etapa_id') )
             $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
 
