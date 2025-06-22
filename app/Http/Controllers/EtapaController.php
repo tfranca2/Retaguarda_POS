@@ -146,6 +146,7 @@ class EtapaController extends Controller
     
     public function destroy( Request $request, $id ){
         $etapa = Etapa::findOrFail($id);
+        $etapa->ranges()->delete();
         $etapa->delete();
         return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
     }
