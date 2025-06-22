@@ -10,7 +10,9 @@ class Matriz extends Model
 	protected $fillable = [ 'bilhete', 'combinacoes' ];
 	protected $hidden = [ 'id', 'created_at', 'updated_at' ];
 
-	function __construct(){
+	function __construct( $table = '' ){
 	    $this->table = env('MATRIZ', 'matrizes');
+	    if( $table and $table != env('MATRIZ', 'matrizes') )
+	    	$this->table = $table;
 	}
 }

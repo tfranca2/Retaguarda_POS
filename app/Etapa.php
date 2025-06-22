@@ -10,9 +10,9 @@ class Etapa extends Model
 {
     
     protected $table = 'etapas';
-	protected $fillable = [ 'etapa', 'descricao', 'data', 'range_inicial', 'range_final', 'tipo', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'codigo_susep', 'frequencia' ];	
-	protected $hidden = [ 'id', 'tipo_enum', 'range_inicial', 'range_final', 'intervalo', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo', 'ativa', 'created_at', 'updated_at', 'deleted_at' ];
-	protected $appends = ['valor', 'elegibilidade', 'tipo_enum'];
+	protected $fillable = [ 'etapa', 'descricao', 'data', 'ativa', 'codigo_susep', 'frequencia' ];
+	protected $hidden = [ 'id', 'ativa', 'created_at', 'updated_at', 'deleted_at' ];
+	protected $appends = [ 'elegibilidade' ];
 
 	public const FREQUENCIAS = [
 		'semanal' => "SEMANAL",
@@ -21,45 +21,65 @@ class Etapa extends Model
 
 	public const TIPOS = [
 		1 => [ 
-				'descricao' => "SIMPLES",
-				'quantidade' => [ 1 ],
+				'descricao' => 'SIMPLES',
+				'quantidade' => 1,
+				'intervalo' => 0,
 		],
-		2 => [ 
-				'descricao' => "DUPLA",
-				'quantidade' => [ 2 ],
+		2 => [
+				'descricao' => 'DUPLA',
+				'quantidade' => 2,
+				'intervalo' => 500000,
 		],
-		3 => [ 
-				'descricao' => "TRIPLA",
-				'quantidade' => [ 3 ],
+		3 => [
+				'descricao' => 'TRIPLA',
+				'quantidade' => 3,
+				'intervalo' => 300000,
 		],
-		// 6 => [ 
-		// 		'descricao' => "QUADRUPLA",
-		// 		'quantidade' => [ 4 ],
-		// ],
-		4 => [ 
-				'descricao' => "SIMPLES E DUPLA",
-				'quantidade' => [ 1, 2 ],
+		4 => [
+				'descricao' => 'QUADRUPLA',
+				'quantidade' => 4,
+				'intervalo' => 250000,
 		],
-		5 => [ 
-				'descricao' => "SIMPLES E TRIPLA",
-				'quantidade' => [ 1, 3 ],
+		5 => [
+				'descricao' => 'QUINTUPLA',
+				'quantidade' => 5,
+				'intervalo' => 200000,
 		],
-		// 7 => [ 
-		// 		'descricao' => "SIMPLES E QUADRUPLA",
-		// 		'quantidade' => [ 1, 4 ],
-		// ],
-		// 8 => [ 
-		// 		'descricao' => "DUPLA E TRIPLA",
-		// 		'quantidade' => [ 2, 3 ],
-		// ],
-		// 9 => [ 
-		// 		'descricao' => "DUPLA E QUADRUPLA",
-		// 		'quantidade' => [ 2, 4 ],
-		// ],
-		// 10 => [ 
-		// 		'descricao' => "TRIPLA E QUADRUPLA",
-		// 		'quantidade' => [ 3, 4 ],
-		// ],
+		6 => [
+				'descricao' => 'SEXTUPLA',
+				'quantidade' => 6,
+				'intervalo' => 100000,
+		],
+		7 => [
+				'descricao' => 'SEPTUPLA',
+				'quantidade' => 7,
+				'intervalo' => 100000,
+		],
+		8 => [
+				'descricao' => 'OCTUPLA',
+				'quantidade' => 8,
+				'intervalo' => 100000,
+		],
+		9 => [
+				'descricao' => 'NONUPLA',
+				'quantidade' => 9,
+				'intervalo' => 100000,
+		],
+		10 => [
+				'descricao' => 'DECTUPLA',
+				'quantidade' => 10,
+				'intervalo' => 100000,
+		],
+		11 => [
+				'descricao' => 'UNDECUPLA',
+				'quantidade' => 11,
+				'intervalo' => 50000,
+		],
+		12 => [
+				'descricao' => 'DUODECUPLA',
+				'quantidade' => 12,
+				'intervalo' => 50000,
+		],
 	];
 
 	public function getElegibilidadeAttribute()
@@ -76,16 +96,6 @@ class Etapa extends Model
         	'final' => Carbon::parse($this->attributes['data'])->subDay()->format('d/m/Y') ] ;
     }
 
-    public function getTipoEnumAttribute()
-    {
-    	return $this->attributes['tipo'];
-    }
-
-    public function getTipoAttribute()
-    {
-    	return Self::TIPOS[ $this->attributes['tipo'] ]['descricao'];
-    }
-
 	public static function ativa( $frequencia = 'semanal' ){
 		return \DB::table( with( new Etapa )->getTable() )->where('frequencia', $frequencia)->where('ativa', '1')->first();
 	}
@@ -98,27 +108,8 @@ class Etapa extends Model
 		return $this->hasMany('App\PremiacaoEletronica', 'etapa_id', 'id')->orderBy('numero', 'ASC');
 	}
 
-	public function getvalorAttribute()
-	{
-		$valor = 0;
-		switch( $this->attributes['tipo'] ){
-			case '1': $valor = $this->attributes['valor_simples']; break;
-			case '2': $valor = $this->attributes['valor_duplo']; break;
-			case '3': $valor = $this->attributes['valor_triplo']; break;
-		}
-
-		return $this->attributes['valor'] = Helper::formatDecimalToDb($valor);
+	public function ranges(){
+		return $this->hasMany('App\Range', 'etapa_id', 'id')->orderBy('chances', 'ASC');
 	}
 
-	public function getcomissaoAttribute()
-	{
-		$comissao = 0;
-		switch( $this->attributes['tipo'] ){
-			case '1': $comissao = $this->attributes['v_comissao_simples']; break;
-			case '2': $comissao = $this->attributes['v_comissao_duplo']; break;
-			case '3': $comissao = $this->attributes['v_comissao_triplo']; break;
-		}
-
-		return $this->attributes['comissao'] = Helper::formatDecimalToDb($comissao);
-	}
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Validator;
 use DB;
 use App\Etapa;
+use App\Range;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
@@ -35,27 +36,31 @@ class EtapaController extends Controller
             'etapa' => 'required|integer|unique:etapas,etapa',
             'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
-            'range_inicial' => 'required|integer',
-            'range_final' => 'required|integer|min:'. (int) $request->range_inicial,
-            'tipo' => 'required|in:'. implode(', ', array_keys( Etapa::TIPOS ) ),
         ]);
 
         if ($validator->fails()) {
             return response()->json([ 'error' => $validator->messages() ], 400 );
         }
 
-        $inputs = Input::except( 'id', '_method', '_token', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo' );
+        $inputs = Input::only( 'etapa', 'descricao', 'data', 'frequencia', 'codigo_susep' );
         foreach( $inputs as $key => $value )
             $etapa[$key] = $value;
 
-        $etapa['valor_simples'] = \Helper::formatDecimalToDb($request->valor_simples);
-        $etapa['valor_duplo'] = \Helper::formatDecimalToDb($request->valor_duplo);
-        $etapa['valor_triplo'] = \Helper::formatDecimalToDb($request->valor_triplo);
-        $etapa['v_comissao_simples'] = \Helper::formatDecimalToDb($request->v_comissao_simples);
-        $etapa['v_comissao_duplo'] = \Helper::formatDecimalToDb($request->v_comissao_duplo);
-        $etapa['v_comissao_triplo'] = \Helper::formatDecimalToDb($request->v_comissao_triplo);
-
         $etapa = Etapa::create( $etapa );
+
+        foreach( range( 0, count($request->tipo)-1 ) as $i => $rng ){
+            Range::create([
+                'etapa_id' => $etapa->id,
+                'tipo' => Etapa::TIPOS[$request->tipo[$i]]['descricao'],
+                'chances' => $request->chances[$i],
+                'inicio' => $request->inicio[$i],
+                'final' => $request->final[$i],
+                'intervalo' => $request->intervalo[$i],
+                'valor' => \Helper::formatDecimalToDb( $request->valor[$i] ),
+                'comissao' => \Helper::formatDecimalToDb( $request->comissao[$i] ),
+            ]);
+        }
+
         return response()->json([ 
             'message' => 'Criado com sucesso', 
             'redirectURL' => url('/etapas'), 
@@ -105,9 +110,6 @@ class EtapaController extends Controller
             'etapa' => 'required|integer|unique:etapas,etapa,'. $id,
             'frequencia' => 'required|string|in:semanal,mensal',
             'data' => 'required|date|after:today',
-            'range_inicial' => 'required|integer',
-            'range_final' => 'required|integer',
-            'tipo' => 'required|in:'. implode(', ', array_keys( Etapa::TIPOS ) ),
         ]);
 
         if ($validator->fails()) {
@@ -115,19 +117,26 @@ class EtapaController extends Controller
         }
 
         $etapa = Etapa::find($id);
-        $inputs = Input::except( 'id', '_method', '_token', 'valor_simples', 'valor_duplo', 'valor_triplo', 'v_comissao_simples', 'v_comissao_duplo', 'v_comissao_triplo' );
+        $inputs = Input::only( 'etapa', 'descricao', 'data', 'frequencia', 'codigo_susep' );
         foreach( $inputs as $key => $value ){
             $etapa->$key = $value;
         }
 
-        $etapa->valor_simples = \Helper::formatDecimalToDb($request->valor_simples);
-        $etapa->valor_duplo = \Helper::formatDecimalToDb($request->valor_duplo);
-        $etapa->valor_triplo = \Helper::formatDecimalToDb($request->valor_triplo);
-        $etapa->v_comissao_simples = \Helper::formatDecimalToDb($request->v_comissao_simples);
-        $etapa->v_comissao_duplo = \Helper::formatDecimalToDb($request->v_comissao_duplo);
-        $etapa->v_comissao_triplo = \Helper::formatDecimalToDb($request->v_comissao_triplo);
-
         $etapa->save();
+        $etapa->ranges()->delete();
+        foreach( range( 0, count($request->tipo)-1 ) as $i => $rng ){
+            Range::create([
+                'etapa_id' => $etapa->id,
+                'tipo' => Etapa::TIPOS[$request->tipo[$i]]['descricao'],
+                'chances' => $request->chances[$i],
+                'inicio' => $request->inicio[$i],
+                'final' => $request->final[$i],
+                'intervalo' => intval($request->intervalo[$i]),
+                'valor' => \Helper::formatDecimalToDb( $request->valor[$i] ),
+                'comissao' => \Helper::formatDecimalToDb( $request->comissao[$i] ),
+            ]);
+        }
+
         return response()->json([ 
             'message' => 'Atualizado com sucesso', 
             'redirectURL' => url('/etapas'), 

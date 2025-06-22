@@ -252,7 +252,7 @@
 
                     vendas_por_hora.data.labels = data.vendas_por_hora.labels;
                     vendas_por_hora.data.datasets = data.vendas_por_hora.datasets;
-                    vendas_por_hora.update();
+                    vendas_por_hora.update('none');
                     @endif
 
                     vendas_por_etapa.data.labels = data.vendas_por_etapa.labels;

@@ -19,8 +19,8 @@
 
 		<div class="col-md-12" style="position: relative;">
 			<div class="loading"><img src="{{ asset('assets/imgs/loading.gif') }}"></div>
-			<div class="prev"><i class="fa fa-chevron-left"></i></div>
-			<div class="next"><i class="fa fa-chevron-right"></i></div>
+			<div class="prev" style="display: none;"><i class="fa fa-chevron-left"></i></div>
+			<div class="next" style="display: none;"><i class="fa fa-chevron-right"></i></div>
 			<div class="round-case">
 				@foreach( range(1,20) as $i )<div class="round"><br></div>@endforeach
 			</div>
@@ -29,12 +29,12 @@
 			<br><a href="#" id="gerar" class="btn btn-success"><i class="fa fa-refresh"></i> Gerar Novas Cartelas</a><br><br>
 		</div>
 	</div>
-	<div class="col-md-12 text-center">
+	<div class="col-md-12 text-center customerdata" style="display: none;">
 		<h2><b>DADOS OBRIGATÓRIOS PARA <span class="text-danger">RECEBER O PRÊMIO</span></b></h2>
 		<small>Cartela <b class="numero_cartela"></b> - R$ <span class="preco"></span></small><br>
 	</div>
 
-	<div class="col-md-12">
+	<div class="col-md-12 customerdata" style="display: none;">
 		<form class="form-edit" method="post" action="{{ url('/prevenda') }}">
 			@csrf
 			<div class="row">
@@ -64,10 +64,10 @@
 				</div>
 				<div class="col-md-4">
 					<label for="">Estado</label>
-					<select id="uf" name="uf" class="form-control select2" data-parsley-required="true" required="">
+					<select id="uf" name="uf" class="form-control" data-parsley-required="true" required="">
 						<option value="">Selecione o Estado</option>
 						@foreach( $estados as $estado )
-						<option value="{{ $estado->uf }}">{{ $estado->nome }}</option>
+						<option value="{{ $estado->uf }}">{{ $estado->uf }} - {{ $estado->nome }}</option>
 						@endforeach
 					</select>
 				</div>
@@ -243,8 +243,9 @@
 		$('.numero_cartela').html('');
 		$('.preco').html('');
 		$('#key').val('');
-		$('#gerar').attr('disabled', true);
-		$('#finalizar').attr('disabled',true);
+		$('#gerar').addClass('disabled').attr('disabled', true);
+		$('#finalizar').addClass('disabled').attr('disabled', true);
+		$('form').parsley().reset();
 	}
 
 	var timeouts = [];
@@ -292,6 +293,12 @@
 						$('#key').val(prevenda.key);
 						cartelas = prevenda.cartelas;
 						$('.count_cartela').html( cartelas.length );
+
+						if( cartelas.length > 1 ){
+							$('.prev').show();
+							$('.next').show();
+						}
+
 						preencheCase(1);
 
 						countdown( $('#countdown'), 10, function(){
@@ -311,8 +318,12 @@
 
 					}).always(function() {
 						$('.loading').hide();
-						$('#gerar').removeAttr('disabled');
-						$('#finalizar').removeAttr('disabled');
+					}).done(function() {
+						$('.customerdata').show();
+						$('#gerar').removeClass('disabled').removeAttr('disabled');
+						$('#finalizar').removeClass('disabled').removeAttr('disabled');
+					}).error(function() {
+						toastr.error('Erro ao carregar dados da cartela. Contate o vendedor.');
 					});
 
 

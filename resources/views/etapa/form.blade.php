@@ -23,25 +23,27 @@
 					@endif
 					@csrf					
 					<div class="row">
-						<div class="col-md-2 p-lr-o">
+						<div class="col-md-2">
 							<div class="form-group">
 								<label for="">Nº Etapa</label>
 								<input type="number" min="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" class="form-control" name="etapa" value="{{(isset($etapa) and $etapa->etapa)?$etapa->etapa:$prox_etapa}}" required="">
 							</div>
 						</div>
-						<div class="col-md-5 p-lr-o">
+						<div class="col-md-10">
 							<div class="form-group">
 								<label for="">Descrição</label>
 								<input type="text" class="form-control" name="descricao" value="{{(isset($etapa) and $etapa->descricao)?$etapa->descricao:''}}" required="">
 							</div>
 						</div>
-						<div class="col-md-2 p-lr-o">
+					</div>
+					<div class="row">
+						<div class="col-md-4">
 							<div class="form-group">
-								<label for="">Data</label>
+								<label for="">Data Sorteio</label>
 								<input type="date" class="form-control" name="data" value="{{(isset($etapa) and $etapa->data)?$etapa->data:''}}" required="">
 							</div>
 						</div>
-						<div class="col-md-3 p-lr-o">
+						<div class="col-md-4">
 							<div class="form-group">
 								<label for="">Frequência</label>
 								<select name="frequencia" id="frequencia" class="form-control" required="">
@@ -50,86 +52,29 @@
 								</select>
 							</div>
 						</div>
-					</div><!-- /row -->
-					<div class="row">
-						<div class="col-md-4 p-lr-o">
+						<div class="col-md-4">
 							<div class="form-group">
 								<label for="">Código SUSEP</label>
 								<input type="text" class="form-control" name="codigo_susep" value="{{(isset($etapa) and $etapa->codigo_susep)?$etapa->codigo_susep:$old_codigo_susep}}" required="">
 							</div>
 						</div>
-						<div class="col-md-4 p-lr-o">
-							<div class="form-group">
-								<label for="">Range Inicial</label>
-								<input type="number" min="1" class="form-control" name="range_inicial" value="{{(isset($etapa) and $etapa->range_inicial)?$etapa->range_inicial:''}}">
-							</div>
-						</div>
-						<div class="col-md-4 p-lr-o">
-							<div class="form-group">
-								<label for="">Range Final</label>
-								<input type="number" min="1" class="form-control" name="range_final" value="{{(isset($etapa) and $etapa->range_final)?$etapa->range_final:''}}">
-							</div>
-						</div>
-					</div><!-- /row -->
+					</div>
+					<hr>
 					<div class="row">
-						<div class="col-md-3 p-lr-o">
-							<div class="form-group">
-								<label for="">Tipo</label>
-								<select name="tipo" id="tipo" class="form-control" required="">
-									<option value="">Selecione</option>
-									@foreach( $tipos as $key => $tipo )
-									<option value="{{ $key }}" @if( isset( $etapa ) and $etapa->tipo_enum == $key ) selected="selected" @endif >{{ ucwords( strtolower( $tipo['descricao'] ) ) }}</option>
-									@endforeach
-								</select>
-							</div>
+						<div class="col-xs-4">
 						</div>
-						<div class="col-md-3 p-lr-o">
-							<div class="form-group">
-								<label for="">Intervalo</label>
-								<input type="number" class="form-control" id="intervalo" name="intervalo" value="{{(isset($etapa) and $etapa->intervalo)?$etapa->intervalo:''}}">
-							</div>
+						<div class="col-xs-4 text-center">
+							<label>Ranges</label>
 						</div>
-					</div><!-- /row -->
+						<div class="col-xs-4 text-right">
+							<button class="btn btn-success" id="add-range" title="Adicionar range"><i class="fa fa-plus"></i></button>
+						</div>
+					</div>
+					<br>
+					<div id="ranges"></div>
+					<hr>
 					<div class="row">
-						<div class="col-md-3">
-							<div class="form-group">
-								<label for="">Valor Simples</label>
-								<input type="text" class="form-control decimal" id="valor_simples" name="valor_simples" value="{{(isset($etapa) and $etapa->valor_simples)?\Helper::formatDecimalToView($etapa->valor_simples):''}}">
-							</div>
-						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<label for="">Valor Comissão Simples</label>
-								<input type="text" class="form-control decimal" id="v_comissao_simples" name="v_comissao_simples" value="{{(isset($etapa) and $etapa->v_comissao_simples)?\Helper::formatDecimalToView($etapa->v_comissao_simples):''}}">
-							</div>
-						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<label for="">Valor Dupla</label>
-								<input type="text" class="form-control decimal" id="valor_duplo" name="valor_duplo" value="{{(isset($etapa) and $etapa->valor_duplo)?\Helper::formatDecimalToView($etapa->valor_duplo):''}}">
-							</div>
-						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<label for="">Valor Comissão Dupla</label>
-								<input type="text" class="form-control decimal" id="v_comissao_duplo" name="v_comissao_duplo" value="{{(isset($etapa) and $etapa->v_comissao_duplo)?\Helper::formatDecimalToView($etapa->v_comissao_duplo):''}}">
-							</div>
-						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<label for="">Valor Tripla</label>
-								<input type="text" class="form-control decimal" id="valor_triplo" name="valor_triplo" value="{{(isset($etapa) and $etapa->valor_triplo)?\Helper::formatDecimalToView($etapa->valor_triplo):''}}">
-							</div>
-						</div>
-						<div class="col-md-3">
-							<div class="form-group">
-								<label for="">Valor Comissão Tripla</label>
-								<input type="text" class="form-control decimal" id="v_comissao_triplo" name="v_comissao_triplo" value="{{(isset($etapa) and $etapa->v_comissao_triplo)?\Helper::formatDecimalToView($etapa->v_comissao_triplo):''}}">
-							</div>
-						</div>
-					</div><!-- /row -->
-					<div class="row">
-						<div class="col-md-12 p-lr-o">
+						<div class="col-md-12">
 							<div class="form-group">
 								<br><input type="submit" value="Salvar" class="btn btn-info pull-right">
 							</div>
@@ -140,70 +85,129 @@
 		</div>
 	</div>
 </div>
+<div id="copy-range" style="display: none;">
+	<div class="row range">
+
+		<div class="col-xs-10 col-sm-10 col-md-2">
+			<div class="form-group">
+				<label for="">Chance</label>
+				<select name="tipo[]" class="form-control" required="">
+					<option value="">Selecione</option>
+					@foreach( $tipos as $key => $tipo )
+					<option value="{{ $key }}">{{ $tipo['quantidade'] .' - '. ucwords( strtolower( $tipo['descricao'] ) ) }}</option>
+					@endforeach
+				</select>
+				<input type="hidden" name="chances[]">
+			</div>
+		</div>
+		<div class="col-xs-1 col-sm-2 text-right visible-xs visible-sm">
+			<br>
+			<div class="btn btn-danger remove-range" title="Remover range"><i class="fa fa-trash"></i></div>
+			<br><br>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label for="">Inicio</label>
+				<input type="number" min="1" class="form-control" name="inicio[]" required="">
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label for="">Final</label>
+				<input type="number" min="1" class="form-control" name="final[]" required="">
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label for="">Intervalo</label>
+				<input type="number" class="form-control" name="intervalo[]" min="0" required="">
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label for="">Valor</label>
+				<input type="text" class="form-control decimal" name="valor[]" required="">
+			</div>
+		</div>
+		<div class="col-md-1 pr-md-0">
+			<div class="form-group">
+				<label for="">Comissão</label>
+				<input type="text" class="form-control decimal" name="comissao[]" required="">
+			</div>
+		</div>
+		<div class="col-xs-1 text-right hidden-xs hidden-sm">
+			<br>
+			<div class="btn btn-danger remove-range" title="Remover range"><i class="fa fa-trash"></i></div>
+		</div>
+
+	</div>
+</div>
 @endsection
 @section('scripts')
+<style>
+	.range {
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		margin-bottom: 5px;
+		padding-top: 5px;
+	}
+	@media (min-width: 992px) {
+		.pr-md-0 {
+			padding-right: 0;
+		}
+	}
+</style>
 <script type="text/javascript">
 	$(document).ready(function(){
 
-		$('input[name=range_inicial]').on('keyup', function(){
-			$('input[name=range_final]').attr('min', $(this).val());
+		$('#add-range').click(function(e){
+			e.preventDefault();
+			$('#ranges').append( $('#copy-range').html() );
 		});
 
-		function limpa(){
+		@if( isset($etapa) )
+		function preencher(){
+			@forelse( $etapa->ranges as $range )
 
-			$('#intervalo').removeAttr('required').parent().parent().hide();
-			$('#valor_simples').removeAttr('required').parent().parent().hide();
-			$('#valor_duplo').removeAttr('required').parent().parent().hide();
-			$('#valor_triplo').removeAttr('required').parent().parent().hide();
-			$('#v_comissao_simples').removeAttr('required').parent().parent().hide();
-			$('#v_comissao_triplo').removeAttr('required').parent().parent().hide();
-			$('#v_comissao_duplo').removeAttr('required').parent().parent().hide();
+				$('#add-range').click();
 
+				row = $('#ranges .range').last();
+				$(row).find('select[name="tipo[]"]').val({{ $range->chances }}).change();
+				$(row).find('input[name="inicio[]"]').val({{ $range->inicio }}).keyup();
+				$(row).find('input[name="final[]"]').val({{ $range->final }});
+				$(row).find('input[name="intervalo[]"]').val({{ $range->intervalo }});
+				$(row).find('input[name="valor[]"]').val('{{ \Helper::formatDecimalToView($range->valor) }}');
+				$(row).find('input[name="comissao[]"]').val('{{ \Helper::formatDecimalToView($range->comissao) }}');
+			@empty
+				$('#add-range').click();
+			@endforelse
 		}
+		preencher();
+		@else
+		if( $('#ranges .range').length == 0 )
+			$('#add-range').click();
+		@endif
 
-		$("#tipo").on('change',function(){
+	});
 
-			limpa();
+	$(document).on('click', '.remove-range', function(){
+		$(this).closest('.range').remove();
 
-			var tipo = $("#tipo option:selected").val();
-			switch( tipo ){
-				case "1": // simples
-					$('#valor_simples').attr('required','true').parent().parent().show();
-					$('#v_comissao_simples').attr('required','true').parent().parent().show();
-				break;
-			
-				case "2": // dupla
-					$('#valor_duplo').attr('required','true').parent().parent().show();
-					$('#v_comissao_duplo').attr('required','true').parent().parent().show();
-					$('#intervalo').attr('required','true').parent().parent().show();
-				break;
-			
-				case "3": // tripla:
-					$('#valor_triplo').attr('required','true').parent().parent().show();
-					$('#v_comissao_triplo').attr('required','true').parent().parent().show();
-					$('#intervalo').attr('required','true').parent().parent().show();
-				break;
+		if( $('#ranges .range').length == 0 )
+			$('#add-range').click();
+	});
 
-				case "4": // simples e dupla
-					$('#valor_simples').attr('required','true').parent().parent().show();
-					$('#v_comissao_simples').attr('required','true').parent().parent().show();
-					$('#valor_duplo').attr('required','true').parent().parent().show();
-					$('#v_comissao_duplo').attr('required','true').parent().parent().show();
-					$('#intervalo').attr('required','true').parent().parent().show();
-				break;
+	$(document).on('change', 'select[name="tipo[]"]', function(){
+		$(this).parent().find('input[name="chances[]"]').val( $(this).val() );
 
-				case "5": // simples e tripla
-					$('#valor_simples').attr('required','true').parent().parent().show();
-					$('#v_comissao_simples').attr('required','true').parent().parent().show();
-					$('#valor_triplo').attr('required','true').parent().parent().show();
-					$('#v_comissao_triplo').attr('required','true').parent().parent().show();
-					$('#intervalo').attr('required','true').parent().parent().show();
-				break;
-			}
-		});
+		intervalo = $(this).parent().parent().parent().find('input[name="intervalo[]"]');
+		$(intervalo).attr('required', true).removeClass('disabled');
+		if( $(this).val() == 1 )
+			$(intervalo).removeAttr('required').addClass('disabled').val(0);
+	});
 
-		$("#tipo").change();
-
+	$(document).on('keyup', 'input[name="inicio[]"]', function(){
+		$(this).parent().parent().parent().find('input[name="final[]"]').attr('min', parseInt( $(this).val() ) + 1 );
 	});
 </script>
 </script>

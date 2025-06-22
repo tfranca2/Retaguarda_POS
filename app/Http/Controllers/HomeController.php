@@ -21,8 +21,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth', ['except' => ['home', 'tracking']]);
-      
+        $this->middleware('auth', ['except' => ['home', 'site', 'tracking']]);
     }
 
     /**
@@ -32,6 +31,10 @@ class HomeController extends Controller
      */
     public function home( Request $request ){
         return redirect()->route( env('HOME', 'home') );
+    }
+
+    public function site( Request $request ){
+        return view('site');
     }
 
     public function index( Request $request ){

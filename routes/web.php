@@ -42,6 +42,8 @@ Route::get('/pix/{key}', 'VendaController@getpixpayload');
 Route::get('/visitor', 'HomeController@tracking');
 Route::post('/lead', 'VendaController@updateLead');
 
+Route::get('/site', 'HomeController@site')->name('site');
+
 Route::group(['middleware' => ['auth']], function(){
 
 	Route::get('/home', 'HomeController@index')->name('home');

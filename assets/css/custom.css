@@ -240,3 +240,10 @@ input:checked + .slider:before {
 .slider.round:before {
 	border-radius: 50%;
 }
+
+.form-control.disabled {
+    cursor: not-allowed;
+    background-color: #eee;
+    opacity: 1;
+    pointer-events:none;
+}
