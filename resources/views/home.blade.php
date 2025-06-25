@@ -2,16 +2,6 @@
 @extends('layouts.app')
 @section('content')
     <div class="row justify-content-center">
-        @if( Helper::temPermissao('empresas-excluir') and env('SHOW_DASH_STATUS', false) )
-        <div class="col-md-12">
-            <select name="etapa" id="etapa" class="form-control select2">
-                @foreach( $etapas as $etapa )
-                <option value="{{ $etapa->id }}" @if( isset( $_GET['etapa_id'] ) and $_GET['etapa_id'] == $etapa->id ) selected="selected" @endif >{{ $etapa->descricao }}</option>
-                @endforeach
-            </select>
-            <br><br>
-        </div>
-        @endif
         @if( session('status') )
         <div class="col-md-12">
             <div class="alert alert-success" role="alert">
@@ -27,27 +17,9 @@
                 <img src="{{ url('/public/images/'. \Auth::user()->empresa()->main_logo ) }}" style="max-width: 100%; max-height: 110px; display: block; margin: auto; margin-bottom: 15px;">
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="panel short-states bg-1">
-                <div class="pull-right state-icon"><i class="fa fa-line-chart"></i></div>
-                <div class="panel-body">
-                    <h1 id="vendasCount">{{ $vendasCount }}</h1>
-                    <strong class="text-uppercase">Vendas</strong>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="panel short-states bg-2">
-                <div class="pull-right state-icon"><i class="fa fa-dollar"></i></div>
-                <div class="panel-body">
-                    <h1 id="vendasTotal">{{ $vendasTotal }}</h1>
-                    <strong class="text-uppercase">Faturamento</strong>
-                </div>
-            </div>
-        </div>
         @if( env('SHOW_DASH_STATUS', false) )
         <div class="col-md-4">
-            <div class="panel short-states bg-3">
+            <div class="panel short-states bg-1">
                 <div class="pull-right state-icon"><i class="fa fa-globe"></i></div>
                 <div class="panel-body">
                     <h1 id="online">{{ $online }}</h1>
@@ -56,7 +28,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="panel short-states bg-4">
+            <div class="panel short-states bg-2">
                 <div class="pull-right state-icon"><i class="fa fa-chrome"></i></div>
                 <div class="panel-body">
                     <h1 id="acessos">{{ $acessos }}</h1>
@@ -64,9 +36,28 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-md-offset-3">
+            <hr style="border-color: #ccc;">
+            <select name="etapa" id="etapa" class="form-control select2">
+                @foreach( $etapas as $etapa )
+                <option value="{{ $etapa->id }}" 
+                @if( isset( $_GET['etapa_id'] ) and $_GET['etapa_id'] == $etapa->id ) 
+                    selected="selected" 
+                @elseif( $etapa->ativa == 1 )
+                    selected="selected" 
+                @endif 
+                >{{ $etapa->descricao }}</option>
+                @endforeach
+            </select>
+            <br><br>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-4">
-            <div class="panel short-states bg-5">
-                <div class="pull-right state-icon"><i class="fa fa-exclamation-circle"></i></div>
+            <div class="panel short-states bg-3">
+                <div class="pull-right state-icon"><i class="fa fa-filter"></i></div>
                 <div class="panel-body">
                     <h1 id="leads">{{ $leads }}</h1>
                     <strong class="text-uppercase">Leads</strong>
@@ -74,6 +65,24 @@
             </div>
         </div>
         @endif
+        <div class="col-md-4">
+            <div class="panel short-states bg-4">
+                <div class="pull-right state-icon"><i class="fa fa-line-chart"></i></div>
+                <div class="panel-body">
+                    <h1 id="vendasCount">{{ $vendasCount }}</h1>
+                    <strong class="text-uppercase">Vendas</strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel short-states bg-5">
+                <div class="pull-right state-icon"><i class="fa fa-dollar"></i></div>
+                <div class="panel-body">
+                    <h1 id="vendasTotal">{{ $vendasTotal }}</h1>
+                    <strong class="text-uppercase">Faturamento</strong>
+                </div>
+            </div>
+        </div>
     </div>
     @if( env('SHOW_DASH_STATUS', false) )
     <div class="row">
@@ -107,6 +116,10 @@
     @endif
     <br><br>
 <style>
+
+    .panel {
+        box-shadow: unset;
+    }
 
     .short-states h1 {
         color: inherit !important;

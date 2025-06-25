@@ -25,7 +25,6 @@
 				<div id="filter" style="/*display: none;*/">
 					<form action="{{ url('/vendas') }}" method="GET">
 						<div class="row">
-							
 							<div class="col-md-2 p-lr-o">
 								<div class="form-group">
 									<label for="">Etapa</label>
@@ -40,32 +39,6 @@
 									</select>
 								</div>
 							</div>
-							<!-- <div class="col-md-3 p-lr-o">
-								<div class="form-group">
-									<label for="">Distribuidor</label>
-									<select name="distribuidor_id" id="distribuidor_id" class="form-control select2">
-										<option value="">Selecione</option>
-										@forelse( $distribuidores as $distribuidor )
-										<option value="{{ $distribuidor->id }}"
-											<?php if( ( isset( $_GET['distribuidor_id'] ) and $_GET['distribuidor_id'] == $distribuidor->id ) or request()->distribuidor_id == $distribuidor->id ) echo 'selected'; ?>
-											>{{ $distribuidor->name }}</option>
-										@empty
-										@endforelse
-									</select>
-								</div>
-							</div> -->
-							<!-- <div class="col-md-2 p-lr-o">
-								<div class="form-group">
-									<label for="">Dispositivo</label>
-									<select name="dispositivo_id" id="dispositivo_id" class="form-control select2">
-										<option value="">Selecione</option>
-										<?php if( isset( $dispositivo ) and $dispositivo and isset( $_GET['dispositivo_id'] ) and $_GET['dispositivo_id'] ) { ?>
-											<option value="{{ $dispositivo->id }}" selected="" >{{ $dispositivo->nome }}</option>
-										<?php } ?>
-									</select>
-								</div>
-							</div> -->
-
 							<div class="col-md-2 p-lr-o">
 								<div class="form-group">
 									<label>CPF: </label>
@@ -81,7 +54,7 @@
 							<div class="col-md-1 p-lr-o">
 								<div class="form-group">
 									<label>Tipo: </label>
-									<select name="tipo" id="tipo" class="form-control select2">
+									<select name="tipo" id="tipo" class="form-control">
 										<option value="">Selecione</option>
 										@forelse( $tipos as $tipo )
 										<option value="{{ $tipo }}"
@@ -140,7 +113,7 @@
 									<td>{{ Helper::formatTelefone( $venda->telefone ) }}</td>
 									<td>R$ 
 										@if( $venda->pagamento )
-											{{ Helper::formatDecimalToView(  $venda->etapa->valor ) }}
+											{{ Helper::formatDecimalToView( $venda->pagamento->valor_bruto ) }}
 										@else
 											0,00
 										@endif

@@ -95,8 +95,8 @@ class HomeController extends Controller
         $etapa = Etapa::with('ranges')->find( $request->etapa_id );
 
         $vendas = Venda::where( 'etapa_id', $request->etapa_id )->where('confirmada', 1)
-                ->where('payments.status', '<>', 'WAITING')
-                ->join('payments','payments.venda_id','=','vendas.id');
+                ->join('payments','payments.venda_id','=','vendas.id')
+                ->where('payments.status', '<>', 'WAITING');
         $vendas_id = $vendas->get()
                 ->pluck('venda_id')
                 ->toArray();
@@ -179,13 +179,14 @@ class HomeController extends Controller
         $vendas = DB::select("  SELECT
                                     etapas.descricao AS etapa,
                                     COUNT(*) AS quantidade,
-                                    SUM( COALESCE( `range`.valor, 0) ) AS valor
+                                    SUM( COALESCE( payments.valor_bruto, 0) ) AS valor
                                 FROM vendas
                                 JOIN etapas ON etapas.id = vendas.etapa_id
-                                LEFT JOIN `range` ON etapas.id = `range`.etapa_id 
+                                LEFT JOIN payments ON vendas.id = payments.venda_id 
                                 WHERE
                                         deleted_at IS NULL
                                     AND confirmada = 1
+                                    AND payments.status <> 'WAITING'
                                     AND vendas.etapa_id IN ({$ulimas10Etapas})
                                 GROUP BY vendas.etapa_id;");
         foreach( $vendas as $venda ){

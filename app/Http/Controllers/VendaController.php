@@ -100,8 +100,8 @@ class VendaController extends Controller
         $totalVendas = 0;
         $totalComissao = 0;
         foreach( $vendas->get() as $venda ){
-            $totalVendas += $venda->etapa->valor;
-            $totalComissao += $venda->etapa->comissao;
+            $totalVendas += $venda->pagamento->valor_bruto;
+            $totalComissao += $venda->pagamento->comissao;
         }
         $totalVendas = Helper::formatDecimalToView( $totalVendas );
         $totalComissao = Helper::formatDecimalToView( $totalComissao );
@@ -119,7 +119,7 @@ class VendaController extends Controller
             $distribuidores = User::where( 'id', \Auth::user()->id )->orderBy('name','ASC')->get();
         }
 
-        $tipos = Payment::distinct()->select('tipo')->pluck('tipo')->toArray();
+        $tipos = Payment::distinct()->select('tipo')->whereNotNull('tipo')->pluck('tipo')->toArray();
         sort($tipos);
 
         return view('venda.index',[ 'vendas' => $vendas->paginate(10), 'etapas' => $etapas, 'distribuidores' => $distribuidores, 'dispositivo' => $dispositivo, 'totalVendas' => $totalVendas, 'totalComissao' => $totalComissao, 'tipos' => $tipos, ]);
@@ -136,6 +136,7 @@ class VendaController extends Controller
 
         $vendas = Self::filter( $request )->where('confirmada', 1)
                 ->join('payments','payments.venda_id','=','vendas.id')
+                ->where('payments.status', '<>', 'WAITING')
                 ->get()
                 ->pluck('venda_id')
                 ->toArray();
@@ -178,8 +179,8 @@ class VendaController extends Controller
 
             foreach( $vendas as $venda ){
 
-                $totalVendas += $venda->etapa->valor;
-                $totalComissao += $venda->etapa->comissao;
+                $totalVendas += $venda->pagamento->valor_bruto;
+                $totalComissao += $venda->pagamento->comissao;
 
                 $dispositivo = '';
                 $distribuidor = $venda->pdv;
@@ -192,8 +193,8 @@ class VendaController extends Controller
                     utf8_decode( $venda->etapa->descricao ), 
                     utf8_decode( $distribuidor ), 
                     utf8_decode( $dispositivo ), 
-                    Helper::formatDecimalToView( $venda->etapa->valor ), 
-                    Helper::formatDecimalToView( $venda->etapa->comissao ), 
+                    Helper::formatDecimalToView( $venda->pagamento->valor_bruto ), 
+                    Helper::formatDecimalToView( $venda->pagamento->comissao ), 
                     $venda->created_at, 
                 ], ';', '"', "\n" );
             }
@@ -592,6 +593,7 @@ class VendaController extends Controller
                 'tipo' => 'POS',
                 'status' => 'WAITING',
                 'valor_bruto' => $range->valor,
+                'comissao' => $range->comissao,
             ]);
 
             $venda = Venda::with('etapa')->find( $venda->id );
@@ -718,8 +720,8 @@ class VendaController extends Controller
             $frequencia = 'mensal';
 
         $etapa = Etapa::ativa( $frequencia );
-        // if( $request->has('etapa_id') )
-        //     $etapa = Etapa::find($request->etapa_id);
+        $chances_possiveis = array_unique( $etapa->ranges->pluck('chances')->toArray() );
+
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
 
@@ -727,12 +729,8 @@ class VendaController extends Controller
         if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
             return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
 
-        if( $etapa->tipo == 4 ) // simples e dupla
-            $validators['quantidade'] = 'required|integer|in:1,2';
+        $validators['quantidade'] = 'required|integer|in:'.implode(',', $chances_possiveis );
 
-        if( $etapa->tipo == 5 ) // simples e tripla
-            $validators['quantidade'] = 'required|integer|in:1,3';
-        
         $validator = Validator::make($request->all(),$validators);
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
@@ -756,17 +754,9 @@ class VendaController extends Controller
             if( ! Helper::validaCelular($request->telefone) )
                 return response()->json(['error'=>['telefone'=>['Informe um telefone válido.']]],400);
 
-        $qtd = 1;
-        if( $etapa->tipo == 1)
-            $qtd = 1;
-        elseif( $etapa->tipo == 2)
-            $qtd = 2;
-        elseif( $etapa->tipo == 3)
-            $qtd = 3;
-        elseif( $etapa->tipo == 4 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2 ] ) )
-            $qtd = $request->quantidade;
-        elseif( $etapa->tipo == 5 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2, 3 ] ) )
-            $qtd = $request->quantidade;
+        $qtd = $request->quantidade;
+
+        $range = $etapa->ranges()->where('chances', $qtd)->first();
         
         \DB::beginTransaction();
         try {
@@ -783,13 +773,13 @@ class VendaController extends Controller
             $matriz_id = 0;
             for( $i=0; $i<$qtd; $i++ ){ 
                 // calcula saldo do intervalo
-                $inicio = $etapa->range_inicial;
+                $inicio = $range->inicio;
                 if( $matriz_id )
-                    $inicio = $matriz_id + $etapa->intervalo;
+                    $inicio = $matriz_id + $range->intervalo;
                 // seleciona o id do titulo disponivel mais próximo
                 $matriz_id = Matriz::whereBetween( 'id', [ 
                                 $inicio, 
-                                $etapa->range_final + ( $etapa->intervalo * $i )
+                                $range->final + ( $range->intervalo * $i )
                             ])
                             ->whereNotIn( 'id', function($query) use ($etapa) {
                                 $query->select('matriz_id')
@@ -816,7 +806,8 @@ class VendaController extends Controller
                 'venda_id' => $venda->id,
                 'tipo' => 'API',
                 'status' => 'WAITING',
-                'valor_bruto' => $venda->etapa->valor,
+                'valor_bruto' => $range->valor,
+                'comissao' => $range->comissao,
             ]);
 
             $matrizes = "";
@@ -1003,6 +994,7 @@ class VendaController extends Controller
                 'venda_id' => $venda->id,
                 'status' => 'WAITING',
                 'valor_bruto' => $range->valor,
+                'comissao' => $range->comissao,
             ]);
 
             \DB::commit();
