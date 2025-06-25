@@ -45,16 +45,7 @@
 
 	<div class="row table-bordered">
 	<div class="col-md-3"><b>Valor:</b></div>
-	@php
-		$valor = 0;
-		if( count( $venda->matrizes ) == 2 )
-            $valor = $venda->etapa->valor_duplo;
-        elseif( count( $venda->matrizes ) == 3 )
-            $valor = $venda->etapa->valor_triplo;
-        else
-            $valor = $venda->etapa->valor_simples;
-	@endphp
-	<div class="col-md-9">@if(!$venda->confirmada)<s>@endif R$ {{ Helper::formatDecimalToView( $valor ) }} @if(!$venda->confirmada)</s>@endif</div>
+	<div class="col-md-9">@if(!$venda->confirmada)<s>@endif R$ {{ Helper::formatDecimalToView( $venda->pagamento->valor_bruto ) }} @if(!$venda->confirmada)</s>@endif</div>
 	</div>
 
 	<div class="row table-bordered">
@@ -71,23 +62,29 @@
 		<b>{{ $matriz['matriz']['bilhete'] }}</b>:
 		<div class="text-center" style="padding-bottom: 5px;">
 		@php
-		if(!$venda->confirmada)
-			echo '<s>';
 		
 		$matches = array();
 		preg_match( '/([0-9]+)([^0-9]+)/', $matriz['matriz']['combinacoes'], $matches );
 		$chunk = explode( end( $matches ), $matriz['matriz']['combinacoes'] );
 
 		foreach( $chunk as $k => $c ){
-			echo $c.' ';
-			if( in_array( $k, [ 9, 19 ] ) )
+			if( $k > 0 and $k % 5 == 0 )
 				echo '<br>';
+			if($venda->confirmada)
+				echo $c.' ';
+			else
+				echo '&#9646; ';
 		}
-		if(!$venda->confirmada)
-			echo '</s>';
 		@endphp
 		@if(isset($matriz['matriz']['extra']))
-		<b>Chance Extra</b>: @if(!$venda->confirmada)<s>@endif{{ $matriz['matriz']['extra'] }}@if(!$venda->confirmada)</s>@endif
+		<br><b>Chance Extra</b>: 
+			@if($venda->confirmada)
+				{{ $matriz['matriz']['extra'] }}
+			@else
+				@foreach( range( 1, strlen( $matriz['matriz']['extra'] ) ) as $chacter )
+					-
+				@endforeach
+			@endif
 		@endif
 		</div>
 		@endforeach
@@ -102,7 +99,7 @@
 			</div>
 			<div>
 			@foreach( $venda->etapa->premiacao as $premio )
-				{{ $premio->seq }}&ordm; Prêmio: <b>{{ $premio->descricao }}</b> - R$ {{ Helper::formatDecimalToView($premio->liquido) }}<br>
+				{{ $premio->seq }}&ordm; Prêmio: <b>{{ ($premio->descricao)?:$premio->premiacao }}</b> - R$ {{ Helper::formatDecimalToView($premio->liquido) }}<br>
 			@endforeach
 			</div>
 			<div class="text-center">

@@ -81,14 +81,14 @@ class EtapaController extends Controller
             $etapas=[];
 
             if( $request->has('id') ){
-                $etapas[] = Etapa::with('premiacao')->with('premiacaoEletronica')->findOrFail($request->id);
+                $etapas[] = Etapa::with('ranges')->with('premiacao')->with('premiacaoEletronica')->findOrFail($request->id);
             } else {
                 foreach( ['semanal', 'mensal'] as $frequencia ){
                     $etapaAtiva = Etapa::ativa( $frequencia );
                     if( !$etapaAtiva )
                         continue;
 
-                    $etapas[] = Etapa::with('premiacao')->with('premiacaoEletronica')->findOrFail($etapaAtiva->id);
+                    $etapas[] = Etapa::with('ranges')->with('premiacao')->with('premiacaoEletronica')->findOrFail($etapaAtiva->id);
                 }
             }
 

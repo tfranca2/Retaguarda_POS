@@ -92,25 +92,19 @@ class HomeController extends Controller
         if( !$request->has('etapa_id') )
             $request->merge([ 'etapa_id' => Etapa::ativa()->id ]);
 
-        $etapa = Etapa::find( $request->etapa_id );
-
-        $valor = 0;
-        switch( $etapa->tipo ){
-            case '1': $valor = $etapa->valor_simples; break;
-            case '2': $valor = $etapa->valor_duplo; break;
-            case '3': $valor = $etapa->valor_triplo; break;
-        }
+        $etapa = Etapa::with('ranges')->find( $request->etapa_id );
 
         $vendas = Venda::where( 'etapa_id', $request->etapa_id )->where('confirmada', 1)
-                ->join('payments','payments.venda_id','=','vendas.id')
-                ->get()
+                ->where('payments.status', '<>', 'WAITING')
+                ->join('payments','payments.venda_id','=','vendas.id');
+        $vendas_id = $vendas->get()
                 ->pluck('venda_id')
                 ->toArray();
-        $quantidade = count( $vendas );
-        $total = 'R$ '. Helper::formatDecimalToView( $quantidade * $valor );
+        $quantidade = $vendas->count();
+        $total = 'R$ '. Helper::formatDecimalToView( $vendas->sum('payments.valor_bruto') );
 
         $leads = Venda::withTrashed()->whereNotNull('cpf')
-                ->whereNotIn('id', $vendas)
+                ->whereNotIn('id', $vendas_id)
                 ->where('etapa_id', $request->etapa_id)->count();
 
         $acessos = Tracking::whereRaw('DATE( updated_at ) = DATE( NOW() )')->count();
@@ -185,18 +179,15 @@ class HomeController extends Controller
         $vendas = DB::select("  SELECT
                                     etapas.descricao AS etapa,
                                     COUNT(*) AS quantidade,
-                                    SUM(
-                                        IF( etapas.tipo = 1, etapas.valor_simples,
-                                            IF( etapas.tipo = 2, etapas.valor_duplo,
-                                                IF( etapas.tipo = 3, etapas.valor_triplo, 0 ) ) )
-                                    ) AS valor
+                                    SUM( COALESCE( `range`.valor, 0) ) AS valor
                                 FROM vendas
                                 JOIN etapas ON etapas.id = vendas.etapa_id
+                                LEFT JOIN `range` ON etapas.id = `range`.etapa_id 
                                 WHERE
                                         deleted_at IS NULL
                                     AND confirmada = 1
-                                    AND etapa_id IN ({$ulimas10Etapas})
-                                GROUP BY etapa_id;");
+                                    AND vendas.etapa_id IN ({$ulimas10Etapas})
+                                GROUP BY vendas.etapa_id;");
         foreach( $vendas as $venda ){
             $labels[] = $venda->etapa;
             $data[] = floatval( number_format( $venda->valor, 2, '.', '' ) );

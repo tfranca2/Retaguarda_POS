@@ -95,6 +95,7 @@ class VendaController extends Controller
         $vendas = Self::filter( $request )
         ->select('vendas.*', 'payments.venda_id', 'payments.tipo', 'payments.status')
         ->whereNotNull('cpf')
+        ->whereNotNull('payments.tipo')
         ->join('payments', 'vendas.id', '=', 'payments.venda_id');
         $totalVendas = 0;
         $totalComissao = 0;
@@ -394,16 +395,16 @@ class VendaController extends Controller
         return \Response::stream( $callback, 200, $headers );
     }
 
-    public function create( Request $request ){
-        $dispositivos = Dispositivo::get();
+    // public function create( Request $request ){
+    //     $dispositivos = Dispositivo::get();
 
-        $frequencia = 'semanal';
-        if( $request->has('frequencia') and $request->frequencia == 'mensal' )
-            $frequencia = 'mensal';
+    //     $frequencia = 'semanal';
+    //     if( $request->has('frequencia') and $request->frequencia == 'mensal' )
+    //         $frequencia = 'mensal';
 
-        $etapa = Etapa::ativa( $frequencia );
-        return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
-    }
+    //     $etapa = Etapa::ativa( $frequencia );
+    //     return view('venda.form',[ 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
+    // }
     
     public function store( Request $request ){
 
@@ -419,9 +420,9 @@ class VendaController extends Controller
         if( $request->has('frequencia') and $request->frequencia == 'mensal' )
             $frequencia = 'mensal';
 
-        $etapa = Etapa::ativa( $frequencia );
-        // if( $request->has('etapa_id') )
-        //     $etapa = Etapa::find($request->etapa_id);
+        $etapa = Etapa::with('ranges')->find( Etapa::ativa( $frequencia )->id );
+        $chances_possiveis = array_unique( $etapa->ranges->pluck('chances')->toArray() );
+
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
 
@@ -429,12 +430,8 @@ class VendaController extends Controller
         if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
             return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
 
-        if( $etapa->tipo == 4 ) // simples e dupla
-            $validators['quantidade'] = 'required|integer|in:1,2';
+        $validators['quantidade'] = 'required|integer|in:'.implode(',', $chances_possiveis );
 
-        if( $etapa->tipo == 5 ) // simples e tripla
-            $validators['quantidade'] = 'required|integer|in:1,3';
-        
         $validator = Validator::make($request->all(),$validators);
         if( $validator->fails() )
             return response()->json(['error'=>$validator->messages()],400);
@@ -497,9 +494,7 @@ class VendaController extends Controller
 
         }
 
-        $qtd = Etapa::TIPOS[ $etapa->tipo ]['quantidade'];
-        if( $request->has('quantidade') && $request->quantidade == Etapa::TIPOS[ $etapa->tipo ]['quantidade'] )
-            $qtd = $request->quantidade;
+        $qtd = $request->quantidade;
 
         // validar se bilhete consta como vendido
         if( $request->has('bilhete') ){
@@ -550,16 +545,18 @@ class VendaController extends Controller
             $venda['matriz'] = env('MATRIZ', 'matrizes');
             $venda = Venda::create( $venda );
 
+            $range = $etapa->ranges()->where('chances', $qtd)->first();
+
             $matriz_id = 0;
             for( $i=0; $i<$qtd; $i++ ){ 
                 // calcula saldo do intervalo
-                $inicio = $etapa->range_inicial;
+                $inicio = $range->inicio;
                 if( $matriz_id )
-                    $inicio = $matriz_id + $etapa->intervalo;
+                    $inicio = $matriz_id + $range->intervalo;
                 // seleciona o id do titulo disponivel mais próximo
                 $matriz_id = Matriz::whereBetween( 'id', [ 
                                 $inicio, 
-                                $etapa->range_final + ( $etapa->intervalo * $i )
+                                $range->final + ( $range->intervalo * $i )
                             ])->whereNotIn( 'id', function($query) use ($etapa) {
                                 $query->select('matriz_id')
                                 ->distinct()
@@ -594,10 +591,11 @@ class VendaController extends Controller
                 'venda_id' => $venda->id,
                 'tipo' => 'POS',
                 'status' => 'WAITING',
-                'valor_bruto' => $venda->etapa->valor,
+                'valor_bruto' => $range->valor,
             ]);
 
             $venda = Venda::with('etapa')->find( $venda->id );
+            $venda->valor = $range->valor;
             $venda->matrizes = $venda->matrizes();
             $etapa = Etapa::find( $venda->etapa->id );
             $venda->premiacao = $etapa->premiacao;
@@ -612,6 +610,7 @@ class VendaController extends Controller
             ],201);
         } catch( \Exception $e ){
             \DB::rollback();
+            report($e);
             return response()->json(['error'=>$e->getMessage()],404);
         }
     }
@@ -619,6 +618,7 @@ class VendaController extends Controller
     public function show( Request $request, $key ){
         try {
             $venda = Venda::with('etapa')->where('key', $key)->first();
+            $venda->valor = $venda->pagamento->valor_bruto;
             $venda->matrizes = $venda->matrizes();
             $etapa = Etapa::find( $venda->etapa->id );
             $venda->premiacao = $etapa->premiacao;
@@ -629,13 +629,13 @@ class VendaController extends Controller
         }
     }
     
-    public function edit( Request $request, $id ){
-        $dispositivos = Dispositivo::get();
-        $venda = Venda::find($id);
-        $venda->matrizes = $venda->matrizes();
-        $etapa = Etapa::find($venda->etapa_id);
-        return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
-    }
+    // public function edit( Request $request, $id ){
+    //     $dispositivos = Dispositivo::get();
+    //     $venda = Venda::find($id);
+    //     $venda->matrizes = $venda->matrizes();
+    //     $etapa = Etapa::find($venda->etapa_id);
+    //     return view('venda.form',[ 'venda' => $venda, 'dispositivos' => $dispositivos, 'etapa' => $etapa ]);
+    // }
     
     public function update( Request $request, $id ){
 
@@ -669,11 +669,11 @@ class VendaController extends Controller
         ], 200 );
     }
     
-    public function destroy( Request $request, $id ){
-        $venda = Venda::findOrFail($id);
-        $venda->delete();
-        return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
-    }
+    // public function destroy( Request $request, $id ){
+    //     $venda = Venda::findOrFail($id);
+    //     $venda->delete();
+    //     return response()->json([ 'message' => 'Deletado com sucesso' ], 204 );
+    // }
     
     public function comprovante( Request $request, $key ){
         $venda = Venda::with('etapa')->where('key',$key)->first();
@@ -929,7 +929,9 @@ class VendaController extends Controller
         if( $request->has('frequencia') and $request->frequencia == 'mensal' )
             $frequencia = 'mensal';
 
-        $etapa = Etapa::ativa( $frequencia );
+        $etapa = Etapa::with('ranges')->find( Etapa::ativa( $frequencia )->id );
+        $chances_possiveis = array_unique( $etapa->ranges->pluck('chances')->toArray() );
+
         if( !$etapa )
             return response()->json(['error'=>['etapa'=>['Etapa não localizada.']]],400);
 
@@ -937,16 +939,9 @@ class VendaController extends Controller
         if( strtotime( $etapa->data.' 23:59:59' ) < strtotime( date('Y-m-d H:i:s') ) )
             return response()->json(['error'=>['etapa'=>['Etapa inválida.']]],400);
 
-        $qtd = 1;
-        if( $etapa->tipo == 1)
-            $qtd = 1;
-        elseif( $etapa->tipo == 2)
-            $qtd = 2;
-        elseif( $etapa->tipo == 3)
-            $qtd = 3;
-        elseif( $etapa->tipo == 4 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2 ] ) )
-            $qtd = $request->quantidade;
-        elseif( $etapa->tipo == 5 && $request->has('quantidade') && in_array( $request->quantidade, [ 1, 2, 3 ] ) )
+        sort($chances_possiveis);
+        $qtd = $chances_possiveis[0];
+        if( $request->has('quantidade') )
             $qtd = $request->quantidade;
         
         \DB::beginTransaction();
@@ -960,16 +955,18 @@ class VendaController extends Controller
             $venda['matriz'] = env('MATRIZ', 'matrizes');
             $venda = Venda::create( $venda );
 
+            $range = $etapa->ranges()->where('chances', $qtd)->first();
+
             $matriz_id = 0;
             for( $i=0; $i<$qtd; $i++ ){ 
                 // calcula saldo do intervalo
-                $inicio = $etapa->range_inicial;
+                $inicio = $range->inicio;
                 if( $matriz_id )
-                    $inicio = $matriz_id + $etapa->intervalo;
+                    $inicio = $matriz_id + $range->intervalo;
                 // seleciona o id do titulo disponivel mais próximo
                 $matriz_id = Matriz::whereBetween( 'id', [ 
                                 $inicio, 
-                                $etapa->range_final + ( $etapa->intervalo * $i )
+                                $range->final + ( $range->intervalo * $i )
                             ])->whereNotIn( 'id', function($query) use ($etapa) {
                                 $query->select('matriz_id')
                                 ->distinct()
@@ -1002,9 +999,15 @@ class VendaController extends Controller
                 ];
             }
 
+            $venda->pagamento()->create([
+                'venda_id' => $venda->id,
+                'status' => 'WAITING',
+                'valor_bruto' => $range->valor,
+            ]);
+
             \DB::commit();
             return response()->json([
-                'valor' => Helper::formatDecimalToView( $venda->etapa->valor ),
+                'valor' => Helper::formatDecimalToView( $range->valor ),
                 'key' => $venda->key,
                 'cartelas' => $cartelas,
             ],201);
@@ -1132,7 +1135,7 @@ class VendaController extends Controller
         if( isset($request->erros) and $request->erros )
             $erros = $request->erros;
 
-        if( isset($venda->pagamento) )
+        if( isset($venda->pagamento) and $venda->pagamento->status != 'WAITING' )
             return redirect('comprovante/'.$venda->key);
 
         $cidade_nome = '';
@@ -1156,7 +1159,7 @@ class VendaController extends Controller
                 'estado' => $uf,
                 'cidade' => $cidade_nome,
             ],
-            'valor' => $venda->etapa->valor,
+            'valor' => $venda->pagamento->valor_bruto,
             'pedido' => $venda->key,
             'erros' => $erros,
         ]);
@@ -1182,7 +1185,7 @@ class VendaController extends Controller
             "reference_id" => $venda->id,
             "description" => "Compra de Título: ".$matrizes[0]['matriz']['bilhete'],
             "amount" => [
-                "value" => Helper::onlyNumbers($venda->etapa->valor),
+                "value" => Helper::onlyNumbers($venda->pagamento->valor_bruto),
                 "currency" => "BRL"
             ],
             "payment_method" => [
@@ -1233,12 +1236,10 @@ class VendaController extends Controller
             $venda->confirmada = 1;
             $venda->save();
 
-            $venda->pagamento()->create([
-                'venda_id' => $venda->id,
+            $venda->pagamento()->update([
                 'transaction_code' => $response->id,
                 'tipo' => 'CREDITO',
                 'status' => $response->status,
-                'valor_bruto' => $venda->etapa->valor,
             ]);
 
             return redirect('comprovante/'.$venda->key);
@@ -1269,7 +1270,7 @@ class VendaController extends Controller
 
         // // CONSULTAR STATUS DA VENDA
         // $ch = curl_init();
-        // curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento()->first()->transaction_code );
+        // curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento->transaction_code );
         // curl_setopt($ch, CURLOPT_HEADER, FALSE);
         // curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         // curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -1286,7 +1287,7 @@ class VendaController extends Controller
         // $response->amount->value;
         // $response->amount->summary->refunded;
 
-        if( $venda->pagamento()->first()->tipo != 'CREDITO' )
+        if( $venda->pagamento->tipo != 'CREDITO' )
             return response()->json([ 'error' => 'Estrono permitido apenas para CREDITO.' ], 400);
 
         $difference = ( new Carbon( $venda->created_at ) )->diff( Carbon::now() )->days;
@@ -1295,7 +1296,7 @@ class VendaController extends Controller
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento()->first()->transaction_code .'/cancel');
+        curl_setopt($ch, CURLOPT_URL, env('PAGSEGURO_URL').'/charges/'. $venda->pagamento->transaction_code .'/cancel');
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
@@ -1363,15 +1364,10 @@ class VendaController extends Controller
             return response()->json([ 'erro' => 'Chave não localizada.' ], 404 );
         }
 
-        if( isset($venda->pagamento) )
+        if( isset($venda->pagamento) and $venda->pagamento->status != 'WAITING' )
             return redirect('comprovante/'.$venda->key);
 
-        $venda->pagamento()->create([
-            'venda_id' => $venda->id,
-            'tipo' => 'PIX',
-            'status' => 'WAITING',
-            'valor_bruto' => $venda->etapa->valor,
-        ]);
+        $venda->pagamento()->update([ 'tipo' => 'PIX' ]);
 
         $pix = Self::getpixpayload($request, $key);
         $qrcode = (new Output\Png)->output( new QrCode($pix),250);
