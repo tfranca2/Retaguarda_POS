@@ -53,4 +53,5 @@ Route::group(['middleware' => 'auth:api'], function( $router ){
 	Route::post('venda/{id}/confirmar', 'VendaController@confirmar');
 	// matrizes?
 
+	Route::get('sequencias', 'SequenciaController@get');
 });
