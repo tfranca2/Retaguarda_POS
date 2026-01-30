@@ -985,7 +985,7 @@ class VendaController extends Controller
             $cartelas = [];
             foreach( $matrizes as $matriz ){
                 $cartelas[] = [ 
-                    'bilhete' => $matriz['matriz']['bilhete'],
+                    'bilhete' => str_pad($matriz['matriz']['bilhete'], 6, '0', STR_PAD_LEFT),
                     'combinacoes' => $matriz['matriz']['combinacoes'],
                 ];
             }
@@ -998,7 +998,15 @@ class VendaController extends Controller
             ]);
 
             \DB::commit();
+
+            $banner = '';
+            if( isset( $etapa->banner ) and $etapa->banner )
+                $banner = url('/public/images/'. $etapa->banner);
+
             return response()->json([
+                'etapa' => $etapa->etapa,
+                'data' => date('d/m/Y', strtotime($etapa->data)),
+                'banner' => $banner,
                 'valor' => Helper::formatDecimalToView( $range->valor ),
                 'key' => $venda->key,
                 'cartelas' => $cartelas,

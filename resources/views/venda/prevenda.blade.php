@@ -6,17 +6,30 @@
 @extends('layouts.public')
 @section('content')
 <div class="container">
+	<div class="row banner">
+		<div class="col-md-12 text-center">
+			<img class="banner" src="" alt=""><br><br>
+		</div>
+	</div>
+
 	<div class="row">
 		<div class="col-md-12 text-center">
 			<b><i class="fa fa-shopping-cart"></i> TOTAL: R$ <span class="preco"></span></b><br>
-			cartela <span class="index_cartela"></span> / <span class="count_cartela"></span><br><br>
 		</div>
-		<div class="col-md-12 text-center">
-			<div class="destaque"><b>Número do título: <span class="numero_cartela"></span></b></div>
-			<div class="destaque-sub">Números para participações</div>
+		<div class="col-md-4 col-md-offset-4">
+			Sorteio: <span class="etapa"></span> - <span class="data"></span>
+			<span class="pull-right">				
+				cartela <span class="index_cartela"></span> / <span class="count_cartela"></span>
+			</span>
 		</div>
-
-
+		<div class="col-md-12">
+			<div class="destaque">
+				<div class="pull-left">Nº: <b><span class="numero_cartela"></span></b></div>
+				<div class="pull-right"><span class="chance"></span>ª Chance</div>
+				<div style="clear: both;"></div>
+			</div>
+			<div class="destaque-sub" style="padding: 12px;"></div>
+		</div>
 		<div class="col-md-12" style="position: relative;">
 			<div class="loading"><img src="{{ asset('assets/imgs/loading.gif') }}"></div>
 			<div class="prev" style="display: none;"><i class="fa fa-chevron-left"></i></div>
@@ -30,8 +43,9 @@
 		</div>
 	</div>
 	<div class="col-md-12 text-center customerdata" style="display: none;">
-		<h2><b>DADOS OBRIGATÓRIOS PARA <span class="text-danger">RECEBER O PRÊMIO</span></b></h2>
-		<small>Cartela <b class="numero_cartela"></b> - R$ <span class="preco"></span></small><br>
+		<h4><b>DADOS OBRIGATÓRIOS PARA <span class="text-danger">RECEBER O PRÊMIO</span></b></h4>
+		<!-- <small>Cartela <b class="numero_cartela"></b> - R$ <span class="preco"></span></small><br> -->
+		<!-- <small>Sorteio <span class="etapa"></span> - <b class="data"></b></small><br> -->
 	</div>
 
 	<div class="col-md-12 customerdata" style="display: none;">
@@ -176,6 +190,15 @@
 		background: #2fa360;
 	}
 
+	body > center img {
+		max-height: 50px !important;
+	}
+
+	.banner {
+		display: none;
+		max-width: 100%;
+	}
+
 	.lds-dual-ring {
 		display: inline-block;
 		width: 0px;
@@ -229,6 +252,7 @@
 			i = 0;
 		$('.index_cartela').html( i + 1 );
 		$('.numero_cartela').html( cartelas[i].bilhete );
+		$('.chance').html( i + 1 );
 		$('.round-case').empty();
 		separador = cartelas[i].combinacoes.match(/[^\d]/g)[1];
 		bolas = cartelas[i].combinacoes.split(separador);
@@ -241,6 +265,10 @@
 		$('.index_cartela').html('');
 		$('.count_cartela').html('');
 		$('.numero_cartela').html('');
+		$('.chance').html('');
+		$('.etapa').html('');
+		$('.data').html('');
+		$('.chance').html('');
 		$('.preco').html('');
 		$('#key').val('');
 		$('#gerar').addClass('disabled').attr('disabled', true);
@@ -290,6 +318,10 @@
 					
 					$.get( base_url+"/prevenda", function(prevenda){
 						$('.preco').html(prevenda.valor);
+						$('.etapa').html(prevenda.etapa);
+						$('.data').html(prevenda.data);
+						if( prevenda.banner )
+							$('.banner').attr('src', prevenda.banner).show();
 						$('#key').val(prevenda.key);
 						cartelas = prevenda.cartelas;
 						$('.count_cartela').html( cartelas.length );
